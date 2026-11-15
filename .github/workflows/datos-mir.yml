@@ -1,0 +1,49 @@
+# Trae los exámenes MIR oficiales al repositorio y regenera data/mir.json.
+# Lánzalo desde la pestaña «Actions» → «Datos MIR» → «Run workflow».
+name: Datos MIR
+on:
+  workflow_dispatch:
+    inputs:
+      paso:
+        description: 'todo | descubrir | descargar | procesar'
+        default: 'todo'
+        required: true
+permissions:
+  contents: write
+jobs:
+  datos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Dependencias
+        run: |
+          pip install playwright==1.47.0 pdfplumber==0.11.4
+          python -m playwright install --with-deps chromium
+      - name: Pruebas del extractor
+        run: python tests/test_datos.py
+      - name: Descubrir enlaces en el portal FSE
+        if: inputs.paso == 'todo' || inputs.paso == 'descubrir'
+        run: python scripts/mir_fetch.py --descubrir
+      - name: Descargar cuadernos y plantillas definitivas
+        if: inputs.paso == 'todo' || inputs.paso == 'descargar'
+        run: python scripts/mir_fetch.py --descargar
+      - name: Extraer preguntas y clasificar
+        if: inputs.paso != 'descubrir'
+        run: python scripts/mir_datos.py || true
+      - name: Informe en el resumen de la ejecución
+        if: always()
+        run: cat data/informe.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "Sin informe todavía" >> "$GITHUB_STEP_SUMMARY"
+      - name: Guardar capturas del portal (para ajustar el descubrimiento)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: {name: portal-debug, path: data/raw/_debug, if-no-files-found: ignore}
+      - name: Subir los datos al repositorio
+        run: |
+          git config user.name "oraculomir-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/fuentes.json data/raw/20*/ data/mir.json data/informe.md 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Datos MIR: exámenes oficiales y extracción ($(date -u +%F))"
+          git push

@@ -1,0 +1,91 @@
+# OráculoMIR
+
+Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado a partir de los exámenes MIR oficiales, con simulacros de preguntas oficiales y un generador de preguntas nuevas revisadas por varios agentes de IA. Aplicación web de un solo fichero.
+
+**Usar la app:** https://fborrasumh.github.io/oraculomir/
+**Idiomas:** español (por defecto), inglés y portugués. Se cambia en el selector de la barra superior o con `?lang=en` / `?lang=pt` en la URL. Las preguntas del MIR se muestran siempre en español.
+
+## Qué hace
+
+1. **Predicción por asignatura.** Cuenta cuántas preguntas ha tenido cada asignatura en cada MIR, las convierte en proporción del examen y estima cuántas tendrá en 2027 sobre 200, con un intervalo del 80 %.
+   - Método: media ponderada en la que los años recientes pesan más (semivida de 4 años), más la mitad de la tendencia lineal.
+2. **Cuánto fiarse.** Se hace una validación a ciegas en los tres últimos MIR: cada uno se predice solo con los años anteriores y se compara con lo que salió.
+   - El método se mide frente a dos referencias sencillas: repetir el año anterior y la media de todos los años.
+   - Si no las mejora, la app lo dice y recomienda usar el resultado solo como orden de prioridad.
+3. **Simulacro probable.** Usa preguntas oficiales en la proporción que predice el modelo, cada una con la respuesta de la plantilla definitiva.
+   - Puntúa como el MIR: +3 por acierto, −1 por fallo, 0 en blanco, y calcula la neta.
+   - Reloj opcional al ritmo del MIR: 270 minutos para 210 preguntas.
+   - Gratis y sin clave.
+4. **Reto diario.** Diez preguntas oficiales, las mismas para todo el mundo cada día.
+   - Racha de días seguidos.
+   - Resultado en emojis para compartir sin desvelar las respuestas.
+5. **Generador con agentes**, con la clave de IA de cada persona:
+   - **Agente 1** redacta preguntas nuevas de la asignatura elegida. Recibe tres preguntas oficiales solo como muestra de estilo.
+   - **Agentes 2 y 3** resuelven a ciegas, cada uno con las opciones barajadas de otra forma. El segundo puede usar otro proveedor de IA.
+   - **El código** comprueba el formato (4 opciones distintas, clave entre 1 y 4, sin «todas/ninguna de las anteriores») y descarta las preguntas que se parecen demasiado a una oficial.
+   - Una pregunta solo se **acepta** si los dos resolutores eligen la misma respuesta que el redactor. Si discrepa uno queda **dudosa**; si discrepan los dos se **descarta**.
+   - Las preguntas aceptadas se exportan a Word, CSV y Moodle (GIFT).
+
+## Lo que no hace (límites reales)
+
+- **No predice preguntas concretas**, solo cuántas tendrá cada asignatura. El simulacro entrena el formato y el ritmo; no adivina el examen.
+- **La clasificación por asignatura es automática**, por palabras clave (`data/asignaturas.json`), y se equivoca en algunas preguntas, sobre todo en las que tocan dos asignaturas. La portada muestra la parte sin clasificar.
+- **Que tres agentes coincidan no garantiza que una pregunta generada sea correcta.** Reduce los errores, pero varios modelos pueden equivocarse a la vez. Las únicas respuestas con respaldo oficial son las de las preguntas oficiales.
+- **Las preguntas con imagen y las anuladas no entran en los simulacros**: no se extraen los cuadernillos de imágenes.
+- Herramienta independiente, sin relación con el Ministerio de Sanidad.
+
+## Datos: cómo se traen los exámenes al repositorio
+
+El flujo **Actions → «Datos MIR» → Run workflow** (`.github/workflows/datos-mir.yml`) hace estos pasos:
+
+1. `scripts/mir_fetch.py --descubrir` abre con Chromium el portal FSE del Ministerio (apartado de cuadernos de examen de convocatorias anteriores). Recorre sus desplegables y anota en `data/fuentes.json` los PDF de Medicina: el cuaderno (versión 0) y la plantilla **definitiva** de cada año.
+2. `scripts/mir_fetch.py --descargar` baja esos PDF a `data/raw/<año>/`.
+3. `scripts/mir_datos.py` extrae el texto (también de páginas a dos columnas), separa preguntas y opciones (4 o 5, según el año), lee la respuesta oficial, clasifica cada pregunta y escribe `data/mir.json` (lo que lee la app) y `data/informe.md` (año a año: preguntas, respuestas leídas, anuladas y huecos).
+
+El portal es una aplicación web sin lista pública de enlaces, así que el descubrimiento es heurístico. Si algún año falla:
+
+- Mira las capturas del portal en el artefacto `portal-debug` de la ejecución.
+- Escribe a mano la URL en `data/fuentes.json` con `"origen": "manual"`.
+- Relanza el flujo con el paso `descargar`.
+
+**Revisa a mano al menos 20 preguntas por año contra el PDF antes de dar los datos por buenos.** Mientras no exista `data/mir.json`, la app funciona en **modo demostración**: recuentos ficticios y 12 preguntas escritas para la demo, ambos marcados como tales.
+
+## Privacidad
+
+- La predicción, los simulacros, el reto diario, la racha y la clave de IA se quedan en el navegador.
+- El generador envía al proveedor elegido la asignatura y unas preguntas oficiales de ejemplo, nunca datos de la persona. Antes del primer envío muestra lo que va a salir.
+- Cada tanda son tres llamadas a la IA, que cada persona paga con su propia clave.
+
+## Para que se difunda (diseño)
+
+- **Gratis y sin registro:** predicción, simulacros y reto no piden clave. La fricción de la clave solo aparece en el generador.
+- **Reto diario igual para todos**, con resultado en emojis (estilo Wordle) y racha: da algo que comparar cada día en los grupos de WhatsApp de la promoción.
+- **«Te reto con este mismo examen»:** el enlace `?sim=<semilla>&n=<n>` reproduce exactamente el mismo simulacro en otro móvil.
+- **Imagen de la predicción** (1080×1350), lista para Instagram y X, con el enlace de la app.
+- **Cuenta atrás** hasta el 23 de enero en la portada.
+- **Honestidad como argumento:** la tarjeta «¿Cuánto fiarse?» enseña el acierto a ciegas en lugar de prometer.
+
+## Desarrollo y pruebas
+
+```bash
+python3 scripts/i18n_fuente.py     # regenera src/i18n.js (diccionarios en/pt)
+python3 build.py                   # monta index.html
+node tests/test_nucleo.js          # predicción, validación, muestreo, puntuación, comprobaciones del generador
+python3 tests/test_datos.py        # extracción de cuadernos y plantillas (textos de prueba)
+python3 tests/smoke_test.py        # app completa en Chromium con IA simulada
+```
+
+## Autoría
+
+Fernando Borrás Rocher (Universidad Miguel Hernández de Elche) · ORCID [0000-0002-5519-4573](https://orcid.org/0000-0002-5519-4573).
+Basada en ConvocatorIA (Fernando Borrás Rocher), adaptada al examen MIR.
+
+Fuente de las preguntas oficiales: cuadernos de examen y plantillas definitivas de respuestas publicados por el Ministerio de Sanidad (portal de Formación Sanitaria Especializada).
+
+## Cómo citar
+
+Borrás Rocher, F. (2026). *OráculoMIR* (v1.0.0) [Software]. https://github.com/fborrasumh/oraculomir (DOI en trámite)
+
+## Licencia
+
+Código: MIT. Véase [LICENSE](LICENSE). Las preguntas oficiales pertenecen a su fuente (Ministerio de Sanidad) y se reproducen citándola.

@@ -1,0 +1,153 @@
+/* ══ Núcleo de OráculoMIR: lógica pura, sin DOM (se prueba en Node con tests/test_nucleo.js) ══
+   · conteos por año y asignatura · predicción con validación a ciegas · muestreo reproducible · puntuación MIR
+   · comprobaciones del generador multiagente (formato, plagio del banco, acuerdo entre agentes) ══ */
+const N_MIR = 200;                                          // preguntas puntuables del MIR (más 10 de reserva)
+const FECHA_MIR = '2027-01-23T14:00:00+01:00';             // Orden SND/854/2026 (BOE 10-8-2026)
+const ANIO_OBJ = 2027;
+
+/* generador pseudoaleatorio con semilla (mulberry32): mismo texto → mismo examen en cualquier móvil */
+function semillaDe(s) { let h = 1779033703 ^ String(s).length; for (let i = 0; i < String(s).length; i++) { h = Math.imul(h ^ String(s).charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; } return h >>> 0; }
+function rng(seed) { let a = typeof seed === 'number' ? seed >>> 0 : semillaDe(seed); return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function baraja(arr, r) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* {año: {asig: n}} y totales por año */
+function conteos(preguntas) {
+  const c = {};
+  for (const q of preguntas) { (c[q.anio] = c[q.anio] || {}); c[q.anio][q.asig] = (c[q.anio][q.asig] || 0) + 1; }
+  return c;
+}
+const aniosDe = c => Object.keys(c).map(Number).sort((a, b) => a - b);
+function cuotas(c) {   // proporción de cada asignatura en cada examen (los exámenes antiguos tenían 250 preguntas, los nuevos 210)
+  const o = {};
+  for (const y of aniosDe(c)) { const tot = Object.values(c[y]).reduce((s, v) => s + v, 0) || 1; o[y] = {}; for (const k in c[y]) o[y][k] = c[y][k] / tot; }
+  return o;
+}
+
+/* Predicción para el año «obj» con los años anteriores:
+   media ponderada con semivida «h» años (lo reciente pesa más) + tendencia lineal ponderada amortiguada a la mitad.
+   Se renormaliza para que la suma sea N_MIR. El intervalo combina la dispersión histórica y el azar de un recuento (Poisson). */
+function predice(c, obj = ANIO_OBJ, {h = 4, amort = 0.5, n = N_MIR, asigs} = {}) {
+  const q = cuotas(c), ys = aniosDe(c).filter(y => y < obj);
+  if (!ys.length) return {filas: [], anios: []};
+  const ids = asigs || [...new Set(ys.flatMap(y => Object.keys(q[y])))];
+  const w = ys.map(y => Math.pow(0.5, (obj - 1 - y) / h)), W = w.reduce((s, v) => s + v, 0);
+  const yb = ys.reduce((s, y, i) => s + w[i] * y, 0) / W;
+  const filas = ids.map(id => {
+    const s = ys.map(y => q[y][id] || 0);
+    const m = s.reduce((a, v, i) => a + w[i] * v, 0) / W;
+    let sxx = 0, sxy = 0; ys.forEach((y, i) => { sxx += w[i] * (y - yb) ** 2; sxy += w[i] * (y - yb) * (s[i] - m); });
+    const b = sxx > 0 && ys.length >= 3 ? sxy / sxx : 0;
+    const p = Math.max(0, m + amort * b * (obj - yb));
+    const res = ys.map((y, i) => s[i] - (m + b * (y - yb)));
+    const sd = Math.sqrt(res.reduce((a, r, i) => a + w[i] * r * r, 0) / W);
+    const ult = ys.slice(-3).map(y => ({anio: y, n: (c[y] || {})[id] || 0}));
+    const ultimaVez = [...ys].reverse().find(y => ((c[y] || {})[id] || 0) > 0) || null;
+    return {id, cuota: p, tendencia: b, sd, ult, ultimaVez};
+  });
+  const tot = filas.reduce((a, f) => a + f.cuota, 0) || 1;
+  for (const f of filas) {
+    f.cuota /= tot; f.n = f.cuota * n;
+    const sdN = Math.sqrt((f.sd * n) ** 2 + f.n);           // dispersión entre años + azar de Poisson
+    f.lo = Math.max(0, Math.round(f.n - 1.28 * sdN)); f.hi = Math.round(f.n + 1.28 * sdN);   // ≈ intervalo del 80 %
+    f.tend = f.tendencia * n > 0.6 ? 'sube' : f.tendencia * n < -0.6 ? 'baja' : 'estable';
+  }
+  filas.sort((a, b) => b.n - a.n);
+  return {filas, anios: ys};
+}
+
+/* Validación a ciegas: para cada uno de los «k» últimos años se predice SOLO con los anteriores y se compara con lo que salió.
+   Referencias: «igual que el año anterior» y «media simple de todos los años». Error = media de |predicho − real| en preguntas. */
+function valida(c, {k = 3, n = N_MIR} = {}) {
+  const ys = aniosDe(c), q = cuotas(c), out = [];
+  for (const Y of ys.slice(-k)) {
+    const prev = ys.filter(y => y < Y); if (prev.length < 3) continue;
+    const sub = {}; prev.forEach(y => sub[y] = c[y]);
+    const ids = [...new Set([...prev.flatMap(y => Object.keys(c[y])), ...Object.keys(c[Y])])];
+    const p = predice(sub, Y, {n, asigs: ids}), real = id => (q[Y][id] || 0) * n;
+    const pm = Object.fromEntries(p.filas.map(f => [f.id, f.n]));
+    const ant = prev.at(-1), media = id => prev.reduce((a, y) => a + (q[y][id] || 0), 0) / prev.length * n;
+    const err = f => ids.reduce((a, id) => a + Math.abs(f(id) - real(id)), 0) / ids.length;
+    const top = [...ids].sort((a, b) => (pm[b] || 0) - (pm[a] || 0)).slice(0, 10), topReal = [...ids].sort((a, b) => real(b) - real(a)).slice(0, 10);
+    out.push({anio: Y, mae: err(id => pm[id] || 0), maeAnterior: err(id => (q[ant][id] || 0) * n), maeMedia: err(media), aciertoTop10: top.filter(x => topReal.includes(x)).length});
+  }
+  if (!out.length) return null;
+  const av = key => out.reduce((a, o) => a + o[key], 0) / out.length;
+  const r = {porAnio: out, mae: av('mae'), maeAnterior: av('maeAnterior'), maeMedia: av('maeMedia'), aciertoTop10: av('aciertoTop10')};
+  r.nivel = r.mae <= 0.85 * Math.min(r.maeAnterior, r.maeMedia) ? 'alta' : r.mae <= Math.min(r.maeAnterior, r.maeMedia) * 1.02 ? 'media' : 'baja';
+  return r;
+}
+
+/* reparto entero de n preguntas según las cuotas (restos mayores) */
+function reparto(filas, n) {
+  const base = filas.map(f => ({id: f.id, x: f.cuota * n})); base.forEach(b => { b.k = Math.floor(b.x); b.r = b.x - b.k; });
+  let falta = n - base.reduce((a, b) => a + b.k, 0);
+  [...base].sort((a, b) => b.r - a.r).forEach(b => { if (falta > 0) { b.k++; falta--; } });
+  return Object.fromEntries(base.map(b => [b.id, b.k]));
+}
+const utilizable = q => q && q.correcta && !q.anulada && !q.imagen && Array.isArray(q.opciones) && q.opciones.length >= 4;
+
+/* Simulacro «probable 2027»: n preguntas oficiales, en la proporción que predice el modelo; reproducible con la semilla */
+function simulacro(preguntas, filas, n, semilla, soloAsig) {
+  const r = rng(semilla), pool = {};
+  for (const q of preguntas) if (utilizable(q) && (!soloAsig || soloAsig.includes(q.asig))) (pool[q.asig] = pool[q.asig] || []).push(q);
+  const fs = filas.filter(f => pool[f.id] && (!soloAsig || soloAsig.includes(f.id)));
+  if (!fs.length) return [];
+  const tot = fs.reduce((a, f) => a + f.cuota, 0) || 1, rep = reparto(fs.map(f => ({id: f.id, cuota: f.cuota / tot})), n);
+  let sel = [];
+  for (const f of fs) sel.push(...baraja(pool[f.id], r).slice(0, rep[f.id]));
+  if (sel.length < n) { const ya = new Set(sel.map(q => q.id)); sel.push(...baraja(fs.flatMap(f => pool[f.id]).filter(q => !ya.has(q.id)), r).slice(0, n - sel.length)); }
+  return baraja(sel, r).slice(0, n);
+}
+
+/* Puntuación del MIR: acierto +3, fallo −1, en blanco 0. «neta» = aciertos − fallos/3 (la escala que usa la gente) */
+function puntua(qs, resp) {
+  let ac = 0, fa = 0, bl = 0; const porAsig = {};
+  qs.forEach(q => {
+    const r = resp[q.id], a = (porAsig[q.asig] = porAsig[q.asig] || {ac: 0, fa: 0, bl: 0});
+    if (!r) { bl++; a.bl++; } else if (r === q.correcta) { ac++; a.ac++; } else { fa++; a.fa++; }
+  });
+  return {ac, fa, bl, puntos: 3 * ac - fa, neta: Math.round((ac - fa / 3) * 100) / 100, porAsig};
+}
+
+/* reto diario: misma fecha → mismas 10 preguntas para todo el mundo (por eso se puede comparar y compartir) */
+function fechaMadrid(d = new Date()) { return new Intl.DateTimeFormat('en-CA', {timeZone: 'Europe/Madrid'}).format(d); }
+const RETO_INICIO = '2026-11-15';
+function numReto(fecha) { return Math.round((Date.parse(fecha + 'T12:00:00Z') - Date.parse(RETO_INICIO + 'T12:00:00Z')) / 864e5) + 1; }
+function diasHastaMIR(d = new Date()) { return Math.max(0, Math.ceil((Date.parse(FECHA_MIR) - d.getTime()) / 864e5)); }
+function textoCompartirReto(num, marcas, sc, dias, url) {
+  const em = marcas.map(m => m === 'ok' ? '🟩' : m === 'ko' ? '🟥' : '⬜').join('');
+  return `OráculoMIR · Reto #${num}\n${em} ${sc.ac}/${marcas.length}\n${dias ? `⏳ ${dias} días para el MIR 2027\n` : ''}${url}`;
+}
+
+/* ── generador multiagente: lo que el código puede comprobar sin fiarse de ninguna IA ── */
+const palabras = s => new Set(String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').match(/[a-zñ0-9]{4,}/g) || []);
+function jaccard(a, b) { const A = palabras(a), B = palabras(b); if (!A.size || !B.size) return 0; let i = 0; A.forEach(x => { if (B.has(x)) i++; }); return i / (A.size + B.size - i); }
+/* formato: enunciado razonable, 4 opciones distintas y no vacías, clave entre 1 y 4 */
+function revisaFormato(g) {
+  const fallos = [];
+  const ops = Array.isArray(g.opciones) ? g.opciones.map(o => String(o || '').trim()) : [];
+  if (String(g.enunciado || '').trim().split(/\s+/).length < 12) fallos.push('enunciado demasiado corto');
+  if (ops.length !== 4 || ops.some(o => !o)) fallos.push('no tiene 4 opciones');
+  if (new Set(ops.map(o => o.toLowerCase())).size !== ops.length) fallos.push('opciones repetidas');
+  if (![1, 2, 3, 4].includes(Number(g.correcta))) fallos.push('respuesta correcta fuera de 1-4');
+  if (ops.some(o => /todas las (anteriores|opciones)|ninguna de las anteriores/i.test(o))) fallos.push('usa «todas/ninguna de las anteriores»');
+  return fallos;
+}
+/* ¿se parece demasiado a una pregunta oficial? (no queremos copias disfrazadas: el banco oficial ya está para practicar) */
+function parecidoBanco(g, banco, umbral = 0.55) {
+  let mejor = {s: 0, id: null};
+  for (const q of banco) { const s = jaccard(g.enunciado, q.enunciado); if (s > mejor.s) mejor = {s, id: q.id}; }
+  return mejor.s >= umbral ? mejor : null;
+}
+/* permutación de opciones para cada resolutor y su inversa: el resolutor no ve la clave y no puede «adivinar por posición» */
+function permuta(g, r) { const idx = baraja([0, 1, 2, 3], r); return {opciones: idx.map(i => g.opciones[i]), aOriginal: k => idx[k - 1] + 1}; }
+/* veredicto: aceptada si los dos resolutores, a ciegas, eligen la clave del redactor; dudosa si discrepa uno; descartada si discrepan los dos */
+function veredicto(clave, respuestas) {
+  const ok = respuestas.filter(x => x === clave).length;
+  return ok === respuestas.length ? 'aceptada' : ok === 0 ? 'descartada' : 'dudosa';
+}
+/* GIFT (formato de preguntas de Moodle) */
+const giftEsc = s => String(s).replace(/([~=#{}:\\])/g, '\\$1');
+function aGIFT(qs) { return qs.map((q, i) => `::OraculoMIR ${i + 1}::${giftEsc(q.enunciado)} {\n${q.opciones.map((o, k) => `${k + 1 === q.correcta ? '=' : '~'}${giftEsc(o)}`).join('\n')}\n}`).join('\n\n') + '\n'; }
+
+if (typeof module !== 'undefined') module.exports = {N_MIR, FECHA_MIR, rng, baraja, conteos, cuotas, predice, valida, reparto, simulacro, puntua, utilizable, fechaMadrid, numReto, diasHastaMIR, textoCompartirReto, jaccard, revisaFormato, parecidoBanco, permuta, veredicto, aGIFT};
