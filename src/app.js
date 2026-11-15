@@ -41,7 +41,7 @@ function pintaInicio() {
   $('cuenta').innerHTML = `<b>${d}</b> <span>${esc(d === 1 ? t('día para el MIR 2027') : t('días para el MIR 2027'))}</span><small>${esc(t('Sábado 23 de enero de 2027, 14:00'))}${S.racha.n ? ' · 🔥 ' + esc(t('racha de {0} días', S.racha.n)) : ''}</small>`;
   const ys = aniosDe(DATA.conteos), sc = DATA.preguntas.filter(q => q.asig === 'otras').length;
   $('estadoDatos').innerHTML = DATA.real
-    ? `<div class="okbox">${esc(t('Banco oficial: {0} preguntas de los MIR {1} a {2}. {3} se pueden usar en simulacros (con respuesta, sin imagen y no anuladas). Clasificadas por palabras clave; sin clasificar: {4}.', nf(DATA.preguntas.length), ys[0], ys.at(-1), nf(DATA.preguntas.filter(utilizable).length), pct(sc / Math.max(1, DATA.preguntas.length))))}</div>`
+    ? `<div class="okbox">${esc(t('Banco oficial: {0} preguntas de los MIR {1} a {2}. {3} se pueden usar en simulacros (con respuesta, sin imagen y no anuladas).', nf(DATA.preguntas.length), ys[0], ys.at(-1), nf(DATA.preguntas.filter(utilizable).length)))} ${esc(t('Asignatura asignada con IA: {0}; por palabras clave: el resto. Sin clasificar: {1}.', pct(DATA.preguntas.filter(q => q.metodo === 'ia').length / Math.max(1, DATA.preguntas.length)), pct(sc / Math.max(1, DATA.preguntas.length))))}</div>`
     : `<div class="aviso"><b>${esc(t('Modo demostración.'))}</b> ${esc(t('Aún no se han cargado los exámenes oficiales: los recuentos son ficticios y las 12 preguntas son ejemplos escritos para la demo. Los datos reales los trae el flujo «Datos MIR» del repositorio.'))}</div>`;
   $('inicioProj').innerHTML = S.sim && !S.sim.fin ? `${esc(t('Tienes un simulacro a medias.'))} <button class="btn btn-ghost btn-sm" id="btnCont" type="button">${esc(t('Seguir'))}</button>` : '';
 }

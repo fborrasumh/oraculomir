@@ -49,9 +49,10 @@ def parse_cuaderno(texto, nopt):
         if campo == 'enunciado': cur['enunciado'] = (cur['enunciado'] + ' ' + l.strip()).strip()
         elif campo == 'opcion': cur['opciones'][-1] = (cur['opciones'][-1] + ' ' + l.strip()).strip()
     if cur is not None: qs.append(cur)
+    une = lambda x: re.sub(r'(\w)- (?=[a-záéíóúñü])', r'\1', re.sub(r'\s+', ' ', x)).strip()   # «alér- gica» → «alérgica» (guion de fin de línea)
     for q in qs:
-        q['enunciado'] = re.sub(r'\s+', ' ', q['enunciado'])
-        q['opciones'] = [re.sub(r'\s+', ' ', o) for o in q['opciones']]
+        q['enunciado'] = une(q['enunciado'])
+        q['opciones'] = [une(o) for o in q['opciones']]
         q['imagen'] = bool(re.search(r'\bimagen(es)?\b|\bfigura\b', q['enunciado'], re.I))
     return [q for q in qs if len(q['opciones']) == nopt]
 
@@ -99,12 +100,16 @@ def parse_plantilla(texto, n_preg, nopt):
     return A if cubre(A) >= cubre(B) else B
 
 
-def parse_respuestas_json(filas, version=0):
-    """{n: correcta | 0 si anulada (respuesta en blanco)} para la versión indicada."""
+def parse_respuestas_json(filas):
+    """Hoja de respuestas de la API del portal (de la versión pedida, la 0): la tabla viene en columnas,
+    cada fila trae pares V_k (nº de pregunta) / RC_k (respuesta) para k = 0..4 → preguntas 1-42, 43-84, 85-126…
+    Devuelve {n: correcta | 0 si anulada (respuesta en blanco)}."""
     out = {}
     for f in filas:
-        q, rc = str(f.get(f'V_{version}', '')).strip(), str(f.get(f'RC_{version}', '')).strip()
-        if q.isdigit(): out[int(q)] = int(rc) if rc in ('1', '2', '3', '4', '5') else 0
+        for k in range(10):
+            if f'V_{k}' not in f: continue
+            q, rc = str(f.get(f'V_{k}', '')).strip(), str(f.get(f'RC_{k}', '')).strip()
+            if q.isdigit(): out[int(q)] = int(rc) if rc in ('1', '2', '3', '4', '5') else 0
     return out
 
 
@@ -124,7 +129,7 @@ def clasifica(q, asigs):
             k = norm(kw); w = len(k.split())
             rx = re.compile(r'(?<![a-z0-9])' + re.escape(k))
             s += 2 * w * len(rx.findall(en)) + w * len(rx.findall(op))
-        if s: pts[a['id']] = s
+        if s: pts[a['id']] = s * a.get('peso', 1)   # asignaturas con palabras muy generales (imagen, anatomía…) pesan menos
     if not pts: return 'otras', 0.0
     orden = sorted(pts.items(), key=lambda x: -x[1])
     total = sum(pts.values())
@@ -191,10 +196,13 @@ def main():
         try: qs, inf = procesa_anio(anio, d)
         except Exception as e: qs, inf = [], {'anio': anio, 'ok': False, 'error': f'{type(e).__name__}: {e}'}
         preg += qs; informes.append(inf)
-    for q in preg: q['asig'], q['conf'] = clasifica(q, asigs)
+    ia = json.loads((OUT / 'clasificacion_ia.json').read_text(encoding='utf-8')) if (OUT / 'clasificacion_ia.json').exists() else {}
+    for q in preg:
+        if q['id'] in ia: q['asig'], q['conf'], q['metodo'] = ia[q['id']], 1.0, 'ia'
+        else: q['asig'], q['conf'] = clasifica(q, asigs); q['metodo'] = 'palabras'
     datos = {'generado': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
              'fuente': 'Cuadernos de examen y plantillas definitivas de respuestas del Ministerio de Sanidad (fse.sanidad.gob.es)',
-             'clasificacion': 'automática por palabras clave (data/asignaturas.json); conf = peso de la asignatura ganadora sobre el total',
+             'clasificacion': 'IA (data/clasificacion_ia.json) cuando existe; si no, palabras clave (data/asignaturas.json)',
              'asignaturas': [{'id': x['id'], 'nombre': x['nombre']} for x in asigs] + [{'id': 'otras', 'nombre': 'Sin clasificar'}],
              'examenes': informes, 'preguntas': preg}
     (OUT / 'mir.json').write_text(json.dumps(datos, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
@@ -204,7 +212,8 @@ def main():
     for i in informes:
         L.append(f"| {i['anio']} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {len(i.get('huecos', []))} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
     sc = sum(1 for q in preg if q['asig'] == 'otras')
-    L += ['', f'Preguntas totales: {len(preg)} · sin clasificar: {sc} ({(sc / max(1, len(preg))):.0%})', '',
+    nia = sum(1 for q in preg if q.get('metodo') == 'ia')
+    L += ['', f'Preguntas totales: {len(preg)} · clasificadas con IA: {nia} · sin clasificar: {sc} ({(sc / max(1, len(preg))):.0%})', '',
           'Revisa a mano al menos 20 preguntas por año contra el PDF antes de fiarte de los datos.']
     (OUT / 'informe.md').write_text('\n'.join(L) + '\n', encoding='utf-8')
     print('\n'.join(L))

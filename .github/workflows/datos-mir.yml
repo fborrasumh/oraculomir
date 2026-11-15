@@ -39,6 +39,11 @@ jobs:
       - name: Extraer preguntas y clasificar
         if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
         run: python scripts/mir_datos.py || true
+      - name: Clasificar por asignatura con IA (solo si existe el secreto ANTHROPIC_API_KEY)
+        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/mir_clasifica_ia.py && python scripts/mir_datos.py || true
       - name: Informe en el resumen de la ejecución
         if: always()
         run: cat data/informe.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "Sin informe todavía" >> "$GITHUB_STEP_SUMMARY"
