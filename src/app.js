@@ -25,7 +25,7 @@ function calcula() {
   VAL = valida(c);
 }
 const preg = id => DATA.preguntas.find(q => q.id === id);
-const origenDe = q => q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n);
+const origenDe = q => q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
 
 /* ── compartir: menú nativo del móvil; si no hay, se copia al portapapeles ── */
 async function comparte(texto, url) {

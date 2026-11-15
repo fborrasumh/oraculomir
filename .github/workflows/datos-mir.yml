@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo (API del portal) | procesar | clasificar | sondear | descubrir | descargar'
+        description: 'todo | externos | procesar | clasificar | sondear | descubrir | descargar'
         default: 'todo'
         required: true
 permissions:
@@ -30,6 +30,9 @@ jobs:
       - name: Descargar por la API del portal FSE
         if: inputs.paso == 'todo'
         run: python scripts/mir_fetch.py --api
+      - name: MIR antiguos (2007-2021) desde copias de los PDF oficiales
+        if: inputs.paso == 'todo' || inputs.paso == 'externos'
+        run: python scripts/mir_externos.py
       - name: Descubrir enlaces en el portal FSE (método antiguo)
         if: inputs.paso == 'descubrir'
         run: python scripts/mir_fetch.py --descubrir

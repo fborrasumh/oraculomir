@@ -165,12 +165,13 @@ def procesa_anio(anio, d):
     tx = (d / 'cuaderno.txt').read_text(encoding='utf-8') if (d / 'cuaderno.txt').exists() else texto_pdf(cu)
     (d / 'cuaderno.txt').write_text(tx, encoding='utf-8')
     qs, nopt = mejor_cuaderno(tx)
-    inf.update(preguntas=len(qs), opciones=nopt)
+    fuente = 'tercero' if (d / 'origen.txt').exists() else 'portal'
+    inf.update(preguntas=len(qs), opciones=nopt, fuente=fuente)
     if not qs: inf['error'] = 'no se reconocieron preguntas en el cuaderno'; return [], inf
     resp = {}
     if (d / 'respuestas.json').exists():   # hoja de respuestas de la API del portal: filas {V_0: nº de pregunta en la versión 0, RC_0: respuesta}
         resp = parse_respuestas_json(json.loads((d / 'respuestas.json').read_text(encoding='utf-8')))
-    elif pl.exists():
+    elif pl.exists() or (d / 'plantilla.txt').exists():
         tp = (d / 'plantilla.txt').read_text(encoding='utf-8') if (d / 'plantilla.txt').exists() else texto_pdf(pl)
         (d / 'plantilla.txt').write_text(tp, encoding='utf-8')
         resp = parse_plantilla(tp, max(q['n'] for q in qs), nopt)
@@ -182,7 +183,7 @@ def procesa_anio(anio, d):
     for q in qs:
         r = resp.get(q['n'])
         out.append({'id': f"{anio}-{q['n']:03d}", 'anio': anio, 'n': q['n'], 'enunciado': q['enunciado'], 'opciones': q['opciones'],
-                    'correcta': r if r else None, 'anulada': r == 0, 'imagen': q['imagen']})
+                    'correcta': r if r else None, 'anulada': r == 0, 'imagen': q['imagen'], 'fuente': fuente})
     inf['ok'] = True
     return out, inf
 
@@ -210,7 +211,7 @@ def main():
     L = ['# Informe de extracción · OráculoMIR', '', f"Generado: {datos['generado']}", '',
          '| Año | Preguntas | Opciones | Con respuesta | Anuladas | Huecos | Estado |', '|---|---|---|---|---|---|---|']
     for i in informes:
-        L.append(f"| {i['anio']} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {len(i.get('huecos', []))} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
+        L.append(f"| {i['anio']}{' (copia)' if i.get('fuente') == 'tercero' else ''} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {len(i.get('huecos', []))} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
     sc = sum(1 for q in preg if q['asig'] == 'otras')
     nia = sum(1 for q in preg if q.get('metodo') == 'ia')
     L += ['', f'Preguntas totales: {len(preg)} · clasificadas con IA: {nia} · sin clasificar: {sc} ({(sc / max(1, len(preg))):.0%})', '',

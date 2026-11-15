@@ -80,6 +80,7 @@ T = [
  # ── textos del JS ──
  ('Pregunta de ejemplo (no oficial)', 'Example question (not official)', 'Pergunta de exemplo (não oficial)'),
  ('MIR {0} · pregunta {1}', 'MIR {0} · question {1}', 'MIR {0} · pergunta {1}'),
+ ('tomada de una copia del cuaderno oficial', 'taken from a copy of the official booklet', 'retirada de uma cópia do caderno oficial'),
  ('Copiado: pégalo en WhatsApp, Instagram o donde quieras', 'Copied: paste it into WhatsApp, Instagram or wherever you like', 'Copiado: cole-o no WhatsApp, Instagram ou onde quiser'),
  ('No se pudo copiar. Copia el enlace de la barra del navegador.', 'Could not copy. Copy the link from the browser bar.', 'Não foi possível copiar. Copie a ligação da barra do navegador.'),
  ('día para el MIR 2027', 'day to the MIR 2027', 'dia para o MIR 2027'), ('días para el MIR 2027', 'days to the MIR 2027', 'dias para o MIR 2027'),

@@ -1,0 +1,132 @@
+{
+ "_nota": "Copias de terceros de los cuadernos (versión 0) y plantillas definitivas oficiales para los años que el portal FSE ya no ofrece. Se prueban las URL en orden; el código comprueba que sea un PDF del MIR de ese año y que salgan las preguntas esperadas. Fuentes: miricinaparatodos.wordpress.com (Google Drive), consalud.es, examenesmir.com.",
+ "2007": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1bk5jUE93NGJTS0U"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1SHFZTFVIWHRYRU0"
+  ]
+ },
+ "2008": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1aTRFdnU1N3QyODQ"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1dDVqSDRKQUF5Zms"
+  ]
+ },
+ "2009": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1Zk55QjhEV19wU2M"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1bndVeUtKNE1JR1k"
+  ]
+ },
+ "2010": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1SGoyYkY2eXdjazQ"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1NVJ0VjgtM2VMZlE"
+  ]
+ },
+ "2011": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1SzhELU4xVmRWbk0"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1WWF2cFZvVHNGQ0E"
+  ]
+ },
+ "2012": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1dWNBMmhqbkEtQTg"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1cUFYdjNJeDBGMDg"
+  ]
+ },
+ "2013": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1SmZTMXpOUkpfeGc"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1cnVyRTVEWmNSVmM"
+  ]
+ },
+ "2014": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1bk43clEtV0dkT2s"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1RzhwLWVXeVNCbU0"
+  ]
+ },
+ "2015": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1SHhrZVNuYmIzSFU",
+   "https://examenesmir.com/descargas/examen-mir-2015-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1MW9DZDRYUzdLLTg",
+   "https://examenesmir.com/examenes-mir/2015"
+  ]
+ },
+ "2016": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1enpqODJfR1RBYlU",
+   "https://examenesmir.com/descargas/examen-mir-2016-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1dHhSWjVrb183LTA",
+   "https://examenesmir.com/examenes-mir/2016"
+  ]
+ },
+ "2017": {
+  "cuaderno": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1aDFGbUt1ZnRDQTA",
+   "https://examenesmir.com/descargas/examen-mir-2017-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1YkpxdGs2dEQtV2s",
+   "https://examenesmir.com/examenes-mir/2017"
+  ]
+ },
+ "2018": {
+  "cuaderno": [
+   "https://examenesmir.com/descargas/examen-mir-2018-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://examenesmir.com/examenes-mir/2018"
+  ]
+ },
+ "2019": {
+  "cuaderno": [
+   "https://examenesmir.com/descargas/examen-mir-2019-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://examenesmir.com/examenes-mir/2019"
+  ]
+ },
+ "2020": {
+  "cuaderno": [
+   "https://www.consalud.es/uploads/s1/12/19/67/4/version-0-medicina.pdf",
+   "https://examenesmir.com/descargas/examen-mir-2020-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://www.consalud.es/uploads/s1/12/21/12/6/version-0-examen-mir-2020-respuestas-correctas.pdf",
+   "https://examenesmir.com/examenes-mir/2020"
+  ]
+ },
+ "2021": {
+  "cuaderno": [
+   "https://examenesmir.com/descargas/examen-mir-2021-cuadernillo.pdf"
+  ],
+  "plantilla": [
+   "https://www.consalud.es/uploads/s1/15/67/49/5/mir-version-0-respuestas-correctas.pdf",
+   "https://examenesmir.com/examenes-mir/2021"
+  ]
+ }
+}

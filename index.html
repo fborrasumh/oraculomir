@@ -1424,6 +1424,7 @@ const I18N = {
 "Sin clasificar": "Unclassified",
 "Pregunta de ejemplo (no oficial)": "Example question (not official)",
 "MIR {0} · pregunta {1}": "MIR {0} · question {1}",
+"tomada de una copia del cuaderno oficial": "taken from a copy of the official booklet",
 "Copiado: pégalo en WhatsApp, Instagram o donde quieras": "Copied: paste it into WhatsApp, Instagram or wherever you like",
 "No se pudo copiar. Copia el enlace de la barra del navegador.": "Could not copy. Copy the link from the browser bar.",
 "día para el MIR 2027": "day to the MIR 2027",
@@ -1640,6 +1641,7 @@ const I18N = {
 "Sin clasificar": "Sem classificação",
 "Pregunta de ejemplo (no oficial)": "Pergunta de exemplo (não oficial)",
 "MIR {0} · pregunta {1}": "MIR {0} · pergunta {1}",
+"tomada de una copia del cuaderno oficial": "retirada de uma cópia do caderno oficial",
 "Copiado: pégalo en WhatsApp, Instagram o donde quieras": "Copiado: cole-o no WhatsApp, Instagram ou onde quiser",
 "No se pudo copiar. Copia el enlace de la barra del navegador.": "Não foi possível copiar. Copie a ligação da barra do navegador.",
 "día para el MIR 2027": "dia para o MIR 2027",
@@ -1988,7 +1990,7 @@ function calcula() {
   VAL = valida(c);
 }
 const preg = id => DATA.preguntas.find(q => q.id === id);
-const origenDe = q => q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n);
+const origenDe = q => q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
 
 /* ── compartir: menú nativo del móvil; si no hay, se copia al portapapeles ── */
 async function comparte(texto, url) {
