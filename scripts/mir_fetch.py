@@ -173,11 +173,44 @@ def descargar(imagenes=False):
     print('Descargados:', ', '.join(hechos) or 'ninguno'); print('Fallos:', *fallos, sep='\n  ')
 
 
+def sondear():
+    """Pulsa «Ver» (cuaderno y hoja de respuestas) y anota cada petición a la API, para conocer la URL de descarga."""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        b = p.chromium.launch(); ctx = b.new_context(locale='es-ES', accept_downloads=True); pg = ctx.new_page()
+        log = []
+        def on_req(r):
+            if '/hera/' in r.url and 'i18n' not in r.url:
+                h = {k: ('***' if k.lower() == 'authorization' else v) for k, v in r.headers.items() if k.lower() in ('authorization', 'accept', 'content-type')}
+                log.append(f'REQ {r.method} {r.url} {h} {(r.post_data or "")[:300]}')
+        def on_resp(r):
+            if '/hera/' in r.url and 'i18n' not in r.url:
+                log.append(f'RESP {r.status} {r.url} {r.headers.get("content-type")} {r.headers.get("content-disposition")}')
+        ctx.on('request', on_req); ctx.on('response', on_resp)
+        ctx.on('page', lambda np: log.append(f'POPUP {np.url}'))
+        pg.on('download', lambda d: log.append(f'DOWNLOAD {d.url} {d.suggested_filename}'))
+        pg.goto(PORTAL, wait_until='networkidle', timeout=90000); time.sleep(3)
+        log.append('---- pulsar Ver (cuaderno) ----')
+        for etiqueta in ('Cuaderno de texto', 'Hoja de respuestas'):
+            try:
+                pg.get_by_text(etiqueta, exact=True).first.click(); time.sleep(1)
+                with pg.expect_popup(timeout=8000) as pop:
+                    pg.get_by_role('button', name='Ver').click()
+                np = pop.value; time.sleep(3); log.append(f'POPUP URL {etiqueta}: {np.url}')
+            except Exception as e:
+                log.append(f'sin popup ({etiqueta}): {type(e).__name__}'); time.sleep(3)
+            log.append(f'---- tras {etiqueta} ----')
+        html = pg.inner_html('body')
+        i = html.find('Titulaci'); log.append('HTML del formulario: ' + re.sub(r'\s+', ' ', html[i - 200:i + 3000]) if i > 0 else 'sin formulario')
+        print('\n'.join(log)); b.close()
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('--descubrir', action='store_true'); ap.add_argument('--descargar', action='store_true')
+    ap.add_argument('--descubrir', action='store_true'); ap.add_argument('--descargar', action='store_true'); ap.add_argument('--sondear', action='store_true')
     ap.add_argument('--imagenes', action='store_true', help='baja también los cuadernillos de imágenes (pesan mucho)')
     a = ap.parse_args()
+    if a.sondear: sondear(); sys.exit(0)
     if not (a.descubrir or a.descargar): a.descubrir = a.descargar = True
     if a.descubrir: descubrir()
     if a.descargar: descargar(a.imagenes)

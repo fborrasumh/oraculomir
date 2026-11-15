@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo | descubrir | descargar | procesar'
+        description: 'todo | descubrir | descargar | procesar | sondear'
         default: 'todo'
         required: true
 permissions:
@@ -24,6 +24,9 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Pruebas del extractor
         run: python tests/test_datos.py
+      - name: Sondear la API del portal (diagnóstico)
+        if: inputs.paso == 'sondear'
+        run: python scripts/mir_fetch.py --sondear
       - name: Descubrir enlaces en el portal FSE
         if: inputs.paso == 'todo' || inputs.paso == 'descubrir'
         run: python scripts/mir_fetch.py --descubrir
@@ -31,7 +34,7 @@ jobs:
         if: inputs.paso == 'todo' || inputs.paso == 'descargar'
         run: python scripts/mir_fetch.py --descargar
       - name: Extraer preguntas y clasificar
-        if: inputs.paso != 'descubrir'
+        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
         run: python scripts/mir_datos.py || true
       - name: Informe en el resumen de la ejecución
         if: always()
