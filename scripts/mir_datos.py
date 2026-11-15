@@ -99,6 +99,15 @@ def parse_plantilla(texto, n_preg, nopt):
     return A if cubre(A) >= cubre(B) else B
 
 
+def parse_respuestas_json(filas, version=0):
+    """{n: correcta | 0 si anulada (respuesta en blanco)} para la versión indicada."""
+    out = {}
+    for f in filas:
+        q, rc = str(f.get(f'V_{version}', '')).strip(), str(f.get(f'RC_{version}', '')).strip()
+        if q.isdigit(): out[int(q)] = int(rc) if rc in ('1', '2', '3', '4', '5') else 0
+    return out
+
+
 # ── 3 · clasificación por palabras clave ─────────────────────────────────────────────────────────
 def carga_asignaturas():
     return json.loads((OUT / 'asignaturas.json').read_text(encoding='utf-8'))['asignaturas']
@@ -154,7 +163,9 @@ def procesa_anio(anio, d):
     inf.update(preguntas=len(qs), opciones=nopt)
     if not qs: inf['error'] = 'no se reconocieron preguntas en el cuaderno'; return [], inf
     resp = {}
-    if pl.exists():
+    if (d / 'respuestas.json').exists():   # hoja de respuestas de la API del portal: filas {V_0: nº de pregunta en la versión 0, RC_0: respuesta}
+        resp = parse_respuestas_json(json.loads((d / 'respuestas.json').read_text(encoding='utf-8')))
+    elif pl.exists():
         tp = (d / 'plantilla.txt').read_text(encoding='utf-8') if (d / 'plantilla.txt').exists() else texto_pdf(pl)
         (d / 'plantilla.txt').write_text(tp, encoding='utf-8')
         resp = parse_plantilla(tp, max(q['n'] for q in qs), nopt)

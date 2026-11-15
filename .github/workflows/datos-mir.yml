@@ -50,6 +50,6 @@ jobs:
         run: |
           git config user.name "oraculomir-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/raw/20*/ data/mir.json data/informe.md data/fuentes.json 2>/dev/null || true
+          git add -A data
           git diff --cached --quiet || git commit -m "Datos MIR: exámenes oficiales y extracción ($(date -u +%F))"
           git push

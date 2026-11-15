@@ -66,6 +66,8 @@ asigs = M.carga_asignaturas()
 lab = [M.clasifica(q, asigs)[0] for q in qs]
 check('clasificación por palabras clave', lab == ['cardio', 'pedia', 'estadistica', 'gine'], str(lab))
 check('sin palabras clave → «otras»', M.clasifica({'enunciado': 'zzz', 'opciones': ['a', 'b']}, asigs) == ('otras', 0.0))
+J = [{'V_0': '1', 'RC_0': '3', 'V_1': '43', 'RC_1': '2'}, {'V_0': '2', 'RC_0': ' ', 'V_1': '44', 'RC_1': ' '}, {'V_0': '3', 'RC_0': '4'}]
+check('hoja de respuestas JSON del portal: versión 0 y anulada en blanco', M.parse_respuestas_json(J) == {1: 3, 2: 0, 3: 4} and M.parse_respuestas_json(J, 1) == {43: 2, 44: 0})
 import mir_fetch as F
 check('año del examen: convocatoria 2025-2026 → 2026', F.anio_de('Convocatoria 2025-2026 Medicina') == 2026 and F.anio_de('MIR_2019_cuaderno.pdf') == 2019 and F.anio_de('conv 2014/15') == 2015)
 check('tipo de documento', F.tipo_de('Cuaderno de examen') == 'cuaderno' and F.tipo_de('Plantilla de respuestas correctas') == 'plantilla' and F.tipo_de('Cuaderno de imágenes') == 'imagenes')
