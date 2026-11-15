@@ -119,6 +119,11 @@ def descubrir():
                     if k >= len(ops): break
                     t = ops[k].inner_text(); ops[k].click(); time.sleep(0.8); _pulsa(pg); recoge(t)
             except Exception: pass
+        # volcado legible en el registro de Actions (los artefactos no siempre se pueden descargar)
+        print('== URL final:', pg.url, '| título:', pg.title())
+        print('== Texto visible (inicio):'); print((pg.inner_text('body') or '')[:4000])
+        print('== Controles:', [(e.evaluate('e=>e.tagName'), (e.inner_text() or '')[:60]) for e in pg.query_selector_all('button, select, mat-select, [role=combobox], [role=tab], a[href]')][:80])
+        print('== Respuestas JSON:'); [print('  ', j['url'], json.dumps(j['json'], ensure_ascii=False)[:600]) for j in jsons[:40]]
         pg.screenshot(path=str(DEBUG / 'portal.png'), full_page=True)
         (DEBUG / 'portal.html').write_text(pg.content(), encoding='utf-8')
         b.close()
