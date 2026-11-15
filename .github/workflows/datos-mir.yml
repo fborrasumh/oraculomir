@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo | descubrir | descargar | procesar | sondear'
+        description: 'todo (API del portal) | procesar | sondear | descubrir | descargar'
         default: 'todo'
         required: true
 permissions:
@@ -27,11 +27,14 @@ jobs:
       - name: Sondear la API del portal (diagnóstico)
         if: inputs.paso == 'sondear'
         run: python scripts/mir_fetch.py --sondear
-      - name: Descubrir enlaces en el portal FSE
-        if: inputs.paso == 'todo' || inputs.paso == 'descubrir'
+      - name: Descargar por la API del portal FSE
+        if: inputs.paso == 'todo'
+        run: python scripts/mir_fetch.py --api
+      - name: Descubrir enlaces en el portal FSE (método antiguo)
+        if: inputs.paso == 'descubrir'
         run: python scripts/mir_fetch.py --descubrir
       - name: Descargar cuadernos y plantillas definitivas
-        if: inputs.paso == 'todo' || inputs.paso == 'descargar'
+        if: inputs.paso == 'descargar'
         run: python scripts/mir_fetch.py --descargar
       - name: Extraer preguntas y clasificar
         if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
@@ -47,6 +50,6 @@ jobs:
         run: |
           git config user.name "oraculomir-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/fuentes.json data/raw/20*/ data/mir.json data/informe.md 2>/dev/null || true
+          git add data/raw/20*/ data/mir.json data/informe.md data/fuentes.json 2>/dev/null || true
           git diff --cached --quiet || git commit -m "Datos MIR: exámenes oficiales y extracción ($(date -u +%F))"
           git push

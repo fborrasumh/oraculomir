@@ -173,6 +173,58 @@ def descargar(imagenes=False):
     print('Descargados:', ', '.join(hechos) or 'ninguno'); print('Fallos:', *fallos, sep='\n  ')
 
 
+API = 'https://fse.sanidad.gob.es/hera/api/datos/convocatoria/'
+
+
+def _b64_pdf(o):
+    """Busca dentro de la respuesta JSON el PDF en base64 (empieza por «JVBER», que es «%PDF»)."""
+    if isinstance(o, str): return o if o.startswith('JVBER') else None
+    if isinstance(o, dict): o = list(o.values())
+    if isinstance(o, list):
+        for v in o:
+            r = _b64_pdf(v)
+            if r: return r
+    return None
+
+
+def api(titulacion='M', imagenes=False):
+    """Descarga por la API del portal FSE (la misma que usa su web, con su token anónimo):
+    getAnyos → para cada convocatoria: cuaderno versión 0 (PDF) y hoja de respuestas (JSON).
+    La «convocatoria N» se examina en enero de N+1: se guarda en data/raw/<N+1>/."""
+    import base64
+    from playwright.sync_api import sync_playwright
+    hecho, fallos = [], []
+    with sync_playwright() as p:
+        b = p.chromium.launch(); ctx = b.new_context(locale='es-ES'); pg = ctx.new_page(); auth = {}
+        pg.on('request', lambda r: auth.setdefault('h', r.headers.get('authorization')) if '/hera/api/' in r.url and r.headers.get('authorization') else None)
+        pg.goto(PORTAL, wait_until='networkidle', timeout=90000); time.sleep(3)
+        if not auth.get('h'): raise SystemExit('No se obtuvo el token anónimo del portal')
+        H = {'Authorization': auth['h'], 'Accept': 'application/json'}
+        get = lambda ruta: ctx.request.get(API + ruta, headers=H, timeout=180000)
+        anyos = get('getAnyos').json(); print('Convocatorias disponibles en el portal:', anyos)
+        for an in sorted(anyos):
+            d = RAW / str(an + 1); d.mkdir(parents=True, exist_ok=True)
+            (d / 'convocatoria.txt').write_text(f'convocatoria {an}/{an + 1} · titulación {titulacion}\n', encoding='utf-8')
+            for op, nombre in (('C', 'cuaderno'),) + ((('I', 'imagenes'),) if imagenes else ()):
+                dst = d / f'{nombre}.pdf'
+                if dst.exists() and dst.stat().st_size > 10_000: continue
+                try:
+                    r = get(f'getDatosCuadernosExamen?titulacion={titulacion}&anyo={an}&version=0&opcionSelect={op}')
+                    j = r.json(); b64 = _b64_pdf(j)
+                    if not b64: raise RuntimeError('sin PDF en la respuesta: ' + str(j)[:300])
+                    dst.write_bytes(base64.b64decode(b64)); hecho.append(f'{an + 1}/{nombre}')
+                except Exception as e: fallos.append(f'{an}/{nombre}: {e}')
+            try:
+                r = get(f'getHojaRespuestas?titulacion={titulacion}&anyo={an}&version=0')
+                j = r.json(); b64 = _b64_pdf(j)
+                if b64: (d / 'plantilla.pdf').write_bytes(base64.b64decode(b64)); hecho.append(f'{an + 1}/plantilla.pdf')
+                else: (d / 'respuestas.json').write_text(json.dumps(j, ensure_ascii=False), encoding='utf-8'); hecho.append(f'{an + 1}/respuestas.json')
+                print(f'  hoja de respuestas {an}:', json.dumps(j, ensure_ascii=False)[:500] if not b64 else 'PDF')
+            except Exception as e: fallos.append(f'{an}/respuestas: {e}')
+        b.close()
+    print('Descargados:', ', '.join(hecho) or 'ninguno'); print('Fallos:', *fallos, sep='\n  ')
+
+
 def sondear():
     """Pulsa «Ver» (cuaderno y hoja de respuestas) y anota cada petición a la API, para conocer la URL de descarga."""
     from playwright.sync_api import sync_playwright
@@ -207,10 +259,11 @@ def sondear():
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('--descubrir', action='store_true'); ap.add_argument('--descargar', action='store_true'); ap.add_argument('--sondear', action='store_true')
+    ap.add_argument('--descubrir', action='store_true'); ap.add_argument('--descargar', action='store_true'); ap.add_argument('--sondear', action='store_true'); ap.add_argument('--api', action='store_true', help='descarga por la API del portal (recomendado)')
     ap.add_argument('--imagenes', action='store_true', help='baja también los cuadernillos de imágenes (pesan mucho)')
     a = ap.parse_args()
     if a.sondear: sondear(); sys.exit(0)
+    if a.api: api(imagenes=a.imagenes); sys.exit(0)
     if not (a.descubrir or a.descargar): a.descubrir = a.descargar = True
     if a.descubrir: descubrir()
     if a.descargar: descargar(a.imagenes)
