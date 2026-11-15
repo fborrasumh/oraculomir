@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo (API del portal) | procesar | sondear | descubrir | descargar'
+        description: 'todo (API del portal) | procesar | clasificar | sondear | descubrir | descargar'
         default: 'todo'
         required: true
 permissions:
@@ -39,11 +39,13 @@ jobs:
       - name: Extraer preguntas y clasificar
         if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
         run: python scripts/mir_datos.py || true
-      - name: Clasificar por asignatura con IA (solo si existe el secreto ANTHROPIC_API_KEY)
+      - name: Clasificar por asignatura con IA (secreto OPENAI_API_KEY, modelo gpt-6-luna)
         if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/mir_clasifica_ia.py && python scripts/mir_datos.py || true
+          MODELO_IA: gpt-6-luna
+        run: python scripts/mir_clasifica_ia.py && python scripts/mir_datos.py
       - name: Informe en el resumen de la ejecución
         if: always()
         run: cat data/informe.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "Sin informe todavía" >> "$GITHUB_STEP_SUMMARY"
