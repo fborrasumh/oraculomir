@@ -51,3 +51,5 @@ table{border-collapse:collapse;width:100%;font-size:13.8px}th{background:var(--p
 .om-gen{border:1.5px solid var(--linea);border-radius:12px;padding:10px 14px;margin:10px 0}.om-gen summary{cursor:pointer;line-height:1.55}
 .om-ol{margin:10px 0;padding-left:22px}.om-ol li{margin:3px 0}.om-ok{font-weight:700;color:#0B5A4E}
 .om-bar.corto em{color:var(--tinta);text-shadow:none;padding-left:calc(var(--w,0%) + 6px)}
+.om-exp:empty{display:none}.om-expbox{margin-top:10px;padding:12px 14px;border-radius:12px;background:#F6F3FF;border:1px solid #DCD3FF}
+.om-res{padding:9px 0;border-bottom:1px solid var(--linea-2);font-size:14.5px;line-height:1.5}.om-res small{color:var(--acero)}

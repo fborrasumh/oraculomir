@@ -80,6 +80,41 @@
   <header class="sh" style="--c:#C98200"><div class="sh-ico"><svg class="i"><use href="#i-flame"/></svg></div><div><p class="sh-step" id="retoNum"></p><h2 data-i18n="s.reto">Reto de hoy</h2><p class="sh-lede" data-i18n="s.reto.lede">Diez preguntas oficiales, las mismas para todo el mundo hoy. Compara tu resultado con tus compañeros y mantén la racha hasta el 23 de enero.</p></div></header>
   <div id="retoBox"></div>
 </section>
+
+<!-- 5 · MI ESTUDIO -->
+<section class="screen" data-step="5">
+  <header class="sh" style="--c:#6B4FD8"><div class="sh-ico"><svg class="i"><use href="#i-calendar"/></svg></div><div><h2 data-i18n="s.est">Mi estudio</h2><p class="sh-lede" data-i18n="s.est.lede">Tus fallos vuelven cuando toca, y el plan te dice en qué asignaturas estás perdiendo más puntos según lo que se espera en el MIR 2027. Todo se calcula y se guarda en tu navegador.</p></div></header>
+  <div class="card"><h3 data-i18n="s.repaso">Repaso espaciado de tus fallos</h3><div id="repasoBox"></div></div>
+  <div id="pracBox"></div>
+  <div class="card"><h3 data-i18n="s.plan">Dónde ganas más puntos</h3><div id="planBox"></div></div>
+</section>
+
+<!-- 6 · BANCO Y EXÁMENES -->
+<section class="screen" data-step="6">
+  <header class="sh" style="--c:#E4572E"><div class="sh-ico"><svg class="i"><use href="#i-archive"/></svg></div><div><h2 data-i18n="s.banco">Banco y exámenes</h2><p class="sh-lede" data-i18n="s.banco.lede">Haz un MIR de un año concreto entero, con su respuesta oficial, o busca preguntas por palabras, asignatura y año.</p></div></header>
+  <div class="card"><h3 data-i18n="s.anio">Un MIR completo</h3>
+    <div class="grid3"><div class="field"><label for="bancoAnio" data-i18n="s.anioSel">Año</label><select id="bancoAnio"></select></div>
+      <div class="field"><label for="anioTiempo" data-i18n="s.tiempo">Tiempo</label><select id="anioTiempo"><option value="mir" data-i18n="s.tMir">Ritmo del MIR (≈ 77 s por pregunta)</option><option value="libre" data-i18n="s.tLibre">Sin límite</option></select></div></div>
+    <div class="actions"><button class="btn btn-primary" id="btnAnio" type="button"><svg class="i"><use href="#i-play"/></svg><span data-i18n="s.empAnio">Empezar ese MIR</span></button></div>
+    <p class="help" data-i18n="s.anio.help">Solo entran las preguntas con respuesta oficial y sin imagen; las anuladas no cuentan.</p></div>
+  <div class="card"><h3 data-i18n="s.buscar">Buscar en el banco</h3>
+    <div class="grid3"><div class="field"><label for="busTexto" data-i18n="s.palabras">Palabras</label><input id="busTexto" type="search" data-i18n-attr="placeholder:s.busPh" placeholder="p. ej. fibrilación auricular anticoagulación"></div>
+      <div class="field"><label for="busAsig" data-i18n="s.asig1">Asignatura</label><select id="busAsig"></select></div>
+      <div class="field"><label for="busAnio" data-i18n="s.anioSel">Año</label><select id="busAnio"></select></div></div>
+    <div class="actions"><button class="btn btn-primary btn-sm" id="btnBusPrac" type="button"><svg class="i"><use href="#i-quiz"/></svg><span data-i18n="s.busPrac">Practicar estos resultados (hasta 40)</span></button></div>
+    <div id="busRes"></div></div>
+</section>
+
+<!-- 7 · VALIDACIÓN -->
+<section class="screen" data-step="7">
+  <header class="sh" style="--c:#0E8C7A"><div class="sh-ico"><svg class="i"><use href="#i-shield"/></svg></div><div><h2 data-i18n="s.val">Cómo se valida</h2><p class="sh-lede" data-i18n="s.val.lede">Qué se ha comprobado de cada examen y cuánto acierta la predicción. Si algo falla, avisa desde la propia pregunta.</p></div></header>
+  <div class="card"><h3 data-i18n="s.valEx">Exámenes y respuestas</h3><div id="valTabla"></div>
+    <ul class="fa-ul" data-i18n="s.valLista">
+<li>2022-2026: descargados del portal del Ministerio de Sanidad, con su hoja de respuestas definitiva.</li><li>Años anteriores: copias de los documentos oficiales. El año se comprueba en el propio cuaderno, la plantilla debe ser del mismo año y cubrir al menos el 90 % de las preguntas, y un mismo fichero no puede servir para dos años.</li><li>Las anuladas y los cambios de respuesta se cotejan con lo publicado en prensa en su momento.</li><li>MIR 2010: sin respuestas, porque la única fuente choca con lo publicado. Sus preguntas solo cuentan para la predicción.</li></ul></div>
+  <div class="card"><h3 data-i18n="s.valPred">Predicción</h3><p id="valPred"></p></div>
+  <div class="card"><h3 data-i18n="s.valFuente">Código y datos</h3><p data-i18n="s.valFuente.txt">Todo es abierto: el código, los PDF y el informe de extracción año a año están en el repositorio de GitHub.</p>
+    <div class="actions"><a class="btn btn-ghost btn-sm" href="https://github.com/fborrasumh/oraculomir" target="_blank" rel="noopener"><svg class="i"><use href="#i-github"/></svg><span>GitHub</span></a><a class="btn btn-ghost btn-sm" href="https://github.com/fborrasumh/oraculomir/blob/main/data/informe.md" target="_blank" rel="noopener"><svg class="i"><use href="#i-doc"/></svg><span data-i18n="s.informe">Informe de extracción</span></a></div></div>
+</section>
 </main>
 
 <footer class="fa-foot"><hr><p><b>OráculoMIR</b> · Fernando Borrás Rocher y Antonio F. Compañ Rosique · Universidad Miguel Hernández de Elche. <span data-i18n="f.pie">Herramienta de estudio independiente, sin relación con el Ministerio de Sanidad. Las preguntas oficiales y sus respuestas proceden de sus cuadernos y plantillas definitivas publicados. La predicción es estadística: orienta el estudio, no adivina el examen.</span></p></footer>

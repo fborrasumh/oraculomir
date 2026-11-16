@@ -54,4 +54,19 @@ check('temas: cuenta por asignatura, sin tildes, con último año', tr.total ===
 check('temas olvidados: ≥3 preguntas y ≥4 años sin salir', tr.olvidados.map(x => x.tema).join() === 'endocarditis');
 check('el mismo tema con y sin tilde cuenta una vez', tr.frecuentes.filter(f => f.tema.startsWith('fibril')).length === 1);
 const ej = M.ejemplosRecientes(bq, 'cardio', 2, M.rng(1)); check('ejemplos: recientes primero', ej.every(q => q.anio >= 2021), JSON.stringify(ej.map(q => q.anio)));
+// repaso espaciado
+let e = M.registra(null, false, '2026-11-16'); check('fallo → caja 0, vuelve mañana', e.caja === 0 && e.prox === '2026-11-17' && e.ko === 1);
+e = M.registra(e, true, '2026-11-17'); check('acierto en repaso → caja 1, a los 1 día', e.caja === 1 && e.prox === '2026-11-18');
+e = M.registra(e, true, '2026-11-18'); check('caja 2 → 3 días', e.caja === 2 && e.prox === '2026-11-21');
+let d = M.registra(null, true, '2026-11-16'); check('acierto a la primera: no entra en repaso', d.caja === null && d.prox === null && d.ok === 1);
+let z = {caja: 4, prox: '2026-12-01', v: 5, ok: 4, ko: 1}; z = M.registra(z, true, '2026-12-01'); check('caja 5 = dominada: sale del repaso', z.caja === 5 && z.prox === null);
+check('pendientes de hoy, los más atrasados primero', M.pendientes({a: {prox: '2026-11-18', caja: 1}, b: {prox: '2026-11-15', caja: 0}, c: {prox: '2026-12-01', caja: 2}, d: {prox: null}}, '2026-11-18').join() === 'b,a');
+// plan
+const pq = [{id: 'x1', asig: 'A'}, {id: 'x2', asig: 'A'}, {id: 'y1', asig: 'B'}];
+const H = {x1: {ok: 2, ko: 6}, x2: {ok: 0, ko: 2}, y1: {ok: 1, ko: 0}};
+const pl = M.plan(H, pq, [{id: 'A', n: 10}, {id: 'B', n: 20}], 8);
+check('plan: esperadas × tasa de fallo, y «sin datos» si hay pocas respuestas', pl[0].id === 'A' && Math.abs(pl[0].enJuego - 8) < 1e-9 && pl[1].datos === false, JSON.stringify(pl));
+// búsqueda y aviso
+check('búsqueda sin tildes y por varias palabras', M.busca([{id: 1, anio: 2020, asig: 'c', enunciado: 'Fibrilación auricular paroxística', opciones: []}, {id: 2, anio: 2020, asig: 'c', enunciado: 'Asma', opciones: []}], 'fibrilacion paroxistica').length === 1);
+check('enlace para avisar de un error', M.urlAviso('a/b', {id: '2020-001', anio: 2020, n: 1, asig: 'c', enunciado: 'x', correcta: 2}).startsWith('https://github.com/a/b/issues/new?labels=error-pregunta&title=Error%20en%20MIR%202020'));
 console.log(ok ? '\nTODO OK' : '\nHAY FALLOS'); process.exit(ok ? 0 : 1);

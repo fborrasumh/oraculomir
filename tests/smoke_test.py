@@ -16,6 +16,7 @@ GEN = {'preguntas': [
     {'tema': 'dudosa', 'enunciado': LARGO + '¿cuál? (DUDOSA)', 'opciones': ['CORRECTA según el redactor', 'ALTERNATIVA', 'Otra', 'Otra más'], 'correcta': 1, 'explicacion': '', 'referencia': ''}]}
 
 async def reply(prov, system, user, info):
+    if 'profesor de una academia' in user: return ('j', {'clave': 'Idea clave de prueba', 'explicacion': 'Porque la oficial es la buena.', 'opciones': ['a', 'b', 'c', 'd'], 'aviso': '', 'repaso': 'Tema X'})
     if 'redactor experto' in user: return ('j', GEN)
     if 'Resuelve estas preguntas' in user:
         comision = 'comisión calificadora' in user; out = []
@@ -127,6 +128,39 @@ async def main():
         check('abrir el enlace reproduce el mismo examen', await p.evaluate('S.sim.qs') == a and await p.evaluate('step') == 2)
         await p.goto((ROOT / 'index.html').as_uri() + '?reto'); await p.wait_for_timeout(600)
         check('?reto abre el reto diario', await p.evaluate('step') == 4)
+        # repaso espaciado y plan
+        await p.goto((ROOT / 'index.html').as_uri()); await p.wait_for_timeout(700)
+        await p.evaluate("S.prac=null;S.hist={};creaSim('plan',30,'probable','libre');go(2)"); await p.wait_for_timeout(300)
+        for i in range(30):
+            await p.click('#simExamen .om-op[data-op="4"]'); await p.wait_for_timeout(25)
+        await p.click('#simExamen [data-fin]'); await p.wait_for_timeout(200)
+        if await p.locator('#simExamen [data-fin]').count(): await p.click('#simExamen [data-fin]'); await p.wait_for_timeout(200)
+        nh = await p.evaluate('Object.keys(S.hist).length'); nko = await p.evaluate('Object.values(S.hist).filter(e=>e.caja===0).length')
+        check('al corregir, cada respuesta entra en el historial y los fallos en el repaso', nh == 30 and nko == await p.evaluate("S.sim.qs.filter(id=>S.sim.resp[id]!==preg(id).correcta).length"), f'{nh} {nko}')
+        await p.evaluate("Object.values(S.hist).forEach(e=>{if(e.prox)e.prox='2020-01-01'});go(5)"); await p.wait_for_timeout(300)
+        check('«Mi estudio»: repaso pendiente y plan con preguntas en juego', 'Para hoy: ' + str(nko) in await p.inner_text('#repasoBox') and 'Preguntas en juego' in await p.inner_text('#planBox'))
+        await p.click('#btnRepaso'); await p.wait_for_timeout(200)
+        q0 = await p.evaluate('S.prac.qs[0]'); ok0 = await p.evaluate(f"preg('{q0}').correcta")
+        await p.click(f'#pracQ .om-op[data-op="{ok0}"]'); await p.wait_for_timeout(200)
+        check('acertar en el repaso sube de caja', await p.evaluate(f"S.hist['{q0}'].caja") == 1)
+        # «¿Por qué?» con IA simulada, anclado a la respuesta oficial y guardado
+        await p.evaluate("localStorage.setItem('ia_openai_key','sk-test-clave-larga-de-prueba-123');ENVIO_OK=true"); h.seen.clear()
+        await p.click('#pracQ [data-porque]'); await h.esp(f"!!S.explic['{q0}']")
+        check('«¿Por qué?»: explicación mostrada, con la respuesta oficial en el prompt', 'Idea clave de prueba' in await p.inner_text('#pracQ') and f'Respuesta oficial: {ok0}' in h.seen[-1]['user'])
+        await p.click('#pracQ [data-porque]'); await p.wait_for_timeout(150); await p.click('#pracQ [data-porque]'); await p.wait_for_timeout(150)
+        check('la explicación se guarda: no se vuelve a pagar', len(h.seen) == 1, str(len(h.seen)))
+        href = await p.get_attribute('#pracQ a[href*="issues/new"]', 'href'); check('«Avisar de un error» abre una incidencia rellenada', href and q0 in href)
+        # banco: examen de un año y buscador
+        await p.evaluate('go(6)'); await p.wait_for_timeout(300)
+        await p.select_option('#bancoAnio', '2024'); await p.click('#btnAnio'); await p.wait_for_timeout(300)
+        check('MIR de un año completo, en orden', await p.evaluate('step') == 2 and await p.evaluate('S.sim.anio') == 2024 and await p.evaluate('S.sim.qs.length') == await p.evaluate("DATA.preguntas.filter(q=>q.anio===2024&&utilizable(q)).length"))
+        await p.evaluate('go(6)'); await p.fill('#busTexto', 'oficial 2023'); await p.wait_for_timeout(500)
+        check('buscador', '210' in await p.inner_text('#busRes') or 'preguntas oficiales' in await p.inner_text('#busRes'), await p.inner_text('#busRes'))
+        await p.goto((ROOT / 'index.html').as_uri() + '?anio=2022'); await p.wait_for_timeout(700)
+        check('?anio=2022 abre ese MIR', await p.evaluate('S.sim.anio') == 2022 and await p.evaluate('step') == 2)
+        await p.evaluate('go(7)'); await p.wait_for_timeout(300)
+        check('página de validación', 'a ciegas' in await p.inner_text('#valPred'))
+        check('móvil sin desborde (mi estudio, banco, validación)', not await h.desborde_movil('go(5)') and not await h.desborde_movil('go(6)') and not await h.desborde_movil('go(7)'))
         check('sin errores de página (datos reales)', not h.errors, str(h.errors))
     print('\nTODO OK' if ok else '\nHAY FALLOS'); sys.exit(0 if ok else 1)
 

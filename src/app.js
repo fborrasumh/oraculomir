@@ -1,8 +1,9 @@
 /* ══ OráculoMIR · interfaz. La lógica pura está en nucleo.js (probada en Node) y los datos en datos.js ══ */
 const STEPS = ['Inicio', 'Predicción', 'Simulacro', 'Generador IA'];
-const HUBS = ['Reto diario'];
+const HUBS = ['Reto diario', 'Mi estudio', 'Banco y exámenes', 'Validación'];
 const NAV = [['Ver la predicción', 'Todo funciona sin clave, salvo el generador de preguntas nuevas.'], ['Siguiente: simulacro', 'Pulsa «Practicar» en una asignatura para un simulacro solo de ella.'], ['Siguiente: generador IA', 'Elige cuántas preguntas y empieza; puedes dejar el simulacro y volver.'], ['Volver al inicio', 'Descarga las preguntas aceptadas en Word, CSV o Moodle (GIFT).']];
-const RENDER = {0: pintaInicio, 1: pintaPred, 2: pintaSim, 3: pintaGen, 4: pintaReto};
+const RENDER = {0: pintaInicio, 1: pintaPred, 2: pintaSim, 3: pintaGen, 4: pintaReto, 5: pintaEstudio, 6: pintaBanco, 7: pintaValidacion};
+const REPO = 'fborrasumh/oraculomir';
 const GLOS = [
   ['¿De dónde salen las preguntas?', 'De los cuadernos de examen y las plantillas definitivas de respuestas que publica el Ministerio de Sanidad en su portal de Formación Sanitaria Especializada. Un proceso automático del repositorio los descarga, extrae el texto y lee la respuesta oficial de cada pregunta. Las preguntas anuladas y las que dependen de una imagen no entran en los simulacros.'],
   ['¿Cómo se clasifica cada pregunta?', 'Por palabras clave de cada asignatura (fichero data/asignaturas.json del repositorio). Es automático y se equivoca a veces, sobre todo en preguntas que tocan dos asignaturas. La parte sin clasificar se indica en la portada.'],
@@ -13,7 +14,7 @@ const GLOS = [
   ['Privacidad y coste', 'La predicción, los simulacros y el reto diario funcionan en tu navegador, sin clave y sin enviar nada. El generador envía al proveedor de IA que elijas la asignatura y unas preguntas oficiales de ejemplo; nunca datos tuyos. Cada tanda son tres llamadas a la IA y la pagas tú con tu clave: elige un modelo económico.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
-let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable'};
+let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null};
 let ENVIO_OK = false, PRED = {filas: [], anios: []}, VAL = null, relojT = null;
 const BASE_URL = () => location.origin + location.pathname;
 const pct = x => Math.round(x * 100) + ' %';
@@ -43,11 +44,13 @@ function pintaInicio() {
   $('estadoDatos').innerHTML = DATA.real
     ? `<div class="okbox">${esc(t('Banco oficial: {0} preguntas de los MIR {1} a {2}. {3} se pueden usar en simulacros (con respuesta, sin imagen y no anuladas).', nf(DATA.preguntas.length), ys[0], ys.at(-1), nf(DATA.preguntas.filter(utilizable).length)))} ${esc(t('Asignatura asignada con IA: {0}; por palabras clave: el resto. Sin clasificar: {1}.', pct(DATA.preguntas.filter(q => q.metodo === 'ia').length / Math.max(1, DATA.preguntas.length)), pct(sc / Math.max(1, DATA.preguntas.length))))}</div>`
     : `<div class="aviso"><b>${esc(t('Modo demostración.'))}</b> ${esc(t('Aún no se han cargado los exámenes oficiales: los recuentos son ficticios y las 12 preguntas son ejemplos escritos para la demo. Los datos reales los trae el flujo «Datos MIR» del repositorio.'))}</div>`;
-  $('inicioProj').innerHTML = S.sim && !S.sim.fin ? `${esc(t('Tienes un simulacro a medias.'))} <button class="btn btn-ghost btn-sm" id="btnCont" type="button">${esc(t('Seguir'))}</button>` : '';
+  const pend = pendientes(S.hist, fechaMadrid()).length;
+  $('inicioProj').innerHTML = (S.sim && !S.sim.fin ? `${esc(t('Tienes un simulacro a medias.'))} <button class="btn btn-ghost btn-sm" id="btnCont" type="button">${esc(t('Seguir'))}</button> ` : '')
+    + (pend ? `${esc(t('Tienes {0} preguntas para repasar hoy.', pend))} <button class="btn btn-ghost btn-sm" type="button" data-irpaso="5">${esc(t('Repasar'))}</button>` : '');
 }
 $('btnStart').onclick = () => go(1);
 $('btnEjemplo').onclick = () => go(4);
-document.addEventListener('click', e => { if (e.target.id === 'btnCont') go(2); });
+document.addEventListener('click', e => { if (e.target.id === 'btnCont') go(2); const b = e.target.closest('[data-irpaso]'); if (b) go(+b.dataset.irpaso); });
 
 /* ── 1 · predicción ── */
 function pintaPred() {
@@ -100,15 +103,17 @@ $('btnCompartePred').onclick = () => {
 function pintaPregunta(box, ex, modo) {
   const ids = ex.qs, i = Math.min(ex.idx || 0, ids.length - 1), q = preg(ids[i]);
   if (!q) { box.innerHTML = `<p class="empty">${esc(t('No se encontró la pregunta.'))}</p>`; return; }
-  const r = ex.resp[q.id], ver = ex.fin || (modo === 'reto' && r);
-  const rejilla = ids.map((id, k) => { const rr = ex.resp[id], qq = preg(id), est = !rr ? '' : (ex.fin || modo === 'reto') ? (qq && rr === qq.correcta ? 'ok' : 'ko') : 'resp'; return `<button type="button" class="om-cel ${est} ${k === i ? 'act' : ''}" data-ir="${k}" aria-label="${esc(t('Pregunta {0}', k + 1))}">${k + 1}</button>`; }).join('');
+  const inm = modo !== 'sim', r = ex.resp[q.id], ver = ex.fin || (inm && r);
+  const rejilla = ids.map((id, k) => { const rr = ex.resp[id], qq = preg(id), est = !rr ? '' : (ex.fin || inm) ? (qq && rr === qq.correcta ? 'ok' : 'ko') : 'resp'; return `<button type="button" class="om-cel ${est} ${k === i ? 'act' : ''}" data-ir="${k}" aria-label="${esc(t('Pregunta {0}', k + 1))}">${k + 1}</button>`; }).join('');
   box.innerHTML = `<div class="card om-preg">
     <div class="om-cab"><span class="fa-chip">${esc(t('Pregunta {0} de {1}', i + 1, ids.length))}</span><span class="fa-chip">${esc(nombreAsig(q.asig))}</span>${modo === 'sim' && !ex.fin && ex.limite ? `<span class="fa-chip aviso" id="reloj"></span>` : ''}</div>
     <p class="om-enun">${esc(q.enunciado)}</p>
     <div class="om-ops" role="radiogroup" aria-label="${esc(t('Opciones'))}">${q.opciones.map((o, k) => {
       const n = k + 1, cls = ver ? (n === q.correcta ? 'ok' : n === r ? 'ko' : '') : (n === r ? 'sel' : '');
       return `<button type="button" role="radio" aria-checked="${n === r}" class="om-op ${cls}" data-op="${n}" ${ver ? 'disabled' : ''}><b>${n}</b><span>${esc(o)}</span></button>`; }).join('')}</div>
-    ${ver ? `<p class="help">${esc(origenDe(q))}${r ? '' : ' · ' + esc(t('en blanco'))}. ${esc(t('Respuesta correcta: {0}.', q.correcta))}</p>` : ''}
+    ${ver ? `<p class="help">${esc(origenDe(q))}${r ? '' : ' · ' + esc(t('en blanco'))}. ${esc(t('Respuesta correcta: {0}.', q.correcta))}</p>
+      <div class="actions" style="margin-top:6px"><button class="btn btn-ghost btn-sm" type="button" data-porque="1">${ico('sparkles')} ${esc(t(S.explic[q.id] ? 'Ver la explicación' : '¿Por qué? (IA)'))}</button>${q.demo ? '' : `<a class="btn btn-ghost btn-sm" href="${esc(urlAviso(REPO, q))}" target="_blank" rel="noopener">${ico('github')} ${esc(t('Avisar de un error'))}</a>`}</div>
+      <div class="om-exp" data-exp="${esc(q.id)}">${S.explic[q.id] ? expHTML(S.explic[q.id]) : ''}</div>` : ''}
     <div class="actions"><button class="btn btn-ghost btn-sm" type="button" data-mov="-1" ${i === 0 ? 'disabled' : ''}>${ico('left')} ${esc(t('Anterior'))}</button>
       ${!ver && r && modo === 'sim' ? `<button class="btn btn-ghost btn-sm" type="button" data-blanco="1">${esc(t('Dejar en blanco'))}</button>` : ''}
       <button class="btn btn-ghost btn-sm" type="button" data-mov="1" ${i === ids.length - 1 ? 'disabled' : ''}>${esc(t('Siguiente'))} ${ico('right')}</button>
@@ -116,7 +121,13 @@ function pintaPregunta(box, ex, modo) {
     <div class="om-rejilla">${rejilla}</div></div>`;
   box.onclick = ev => {
     const b = ev.target.closest('button'); if (!b || b.disabled) return;
-    if (b.dataset.op) { ex.resp[q.id] = +b.dataset.op; if (modo === 'reto') { if (Object.keys(ex.resp).length === ids.length) cierraReto(); } else if (i < ids.length - 1) ex.idx = i + 1; guarda(); return RENDER[step](); }
+    if (b.dataset.op) {
+      ex.resp[q.id] = +b.dataset.op;
+      if (inm) { anota(q, ex.resp[q.id] === q.correcta); if (Object.keys(ex.resp).length === ids.length) (modo === 'reto' ? cierraReto : () => { ex.fin = true; })(); }
+      else if (i < ids.length - 1) ex.idx = i + 1;
+      guarda(); return RENDER[step]();
+    }
+    if (b.dataset.porque) return explica(q, box);
     if (b.dataset.blanco) { delete ex.resp[q.id]; guarda(); return RENDER[step](); }
     if (b.dataset.mov) { ex.idx = Math.max(0, Math.min(ids.length - 1, i + +b.dataset.mov)); guarda(); return RENDER[step](); }
     if (b.dataset.ir) { ex.idx = +b.dataset.ir; guarda(); return RENDER[step](); }
@@ -145,18 +156,20 @@ function pintaSim() {
   if (!qs.length) { S.sim = null; box.innerHTML = ''; return; }
   if (ex.fin) {
     const {p, html} = resumenHTML(qs, ex), url = enlaceSim(ex);
-    const txt = t('He sacado una neta de {0} en un simulacro probable del MIR 2027 de {1} preguntas en OráculoMIR. ¿Me superas con el mismo examen?', p.neta, qs.length);
-    box.innerHTML = `<div class="card"><h3>${esc(t('Resultado del simulacro'))}</h3>${html}<div class="actions"><button class="btn btn-primary" type="button" id="btnCompSim">${ico('ext')} ${esc(t('Compartir y retar'))}</button><a class="btn btn-ghost" href="${esc(enlaceWA(txt + '\n' + url))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn btn-ghost" type="button" id="btnOtraSim">${ico('refresh')} ${esc(t('Otro simulacro'))}</button></div></div><div id="simRev"></div>`;
+    const txt = ex.anio ? t('He hecho el MIR {0} completo en OráculoMIR y he sacado una neta de {1}. ¿Te atreves?', ex.anio, p.neta) : t('He sacado una neta de {0} en un simulacro probable del MIR 2027 de {1} preguntas en OráculoMIR. ¿Me superas con el mismo examen?', p.neta, qs.length);
+    box.innerHTML = `<div class="card"><h3>${esc(ex.anio ? t('Resultado del MIR {0}', ex.anio) : t('Resultado del simulacro'))}</h3>${html}<p class="help">${esc(t('Los fallos ya están en tu repaso espaciado («Mi estudio»).'))}</p><div class="actions"><button class="btn btn-primary" type="button" id="btnCompSim">${ico('ext')} ${esc(t('Compartir y retar'))}</button><a class="btn btn-ghost" href="${esc(enlaceWA(txt + '\n' + url))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn btn-ghost" type="button" id="btnOtraSim">${ico('refresh')} ${esc(t('Otro simulacro'))}</button></div></div><div id="simRev"></div>`;
     $('btnCompSim').onclick = () => comparte(txt, url); $('btnOtraSim').onclick = () => { S.sim = null; guarda(); pintaSim(); };
     pintaPregunta($('simRev'), ex, 'sim'); return;
   }
+  if (ex.anio) box.insertAdjacentHTML('afterbegin', '');
   pintaPregunta(box, ex, 'sim');
+  if (ex.anio) box.querySelector('.om-cab').insertAdjacentHTML('afterbegin', `<span class="fa-chip ok">${esc(t('MIR {0} completo', ex.anio))}</span>`);
   if (ex.limite) {
     const tic = () => { const quedan = Math.max(0, ex.limite - (Date.now() - ex.t0) / 1000), el = $('reloj'); if (el) el.textContent = '⏱ ' + mmss(quedan); if (quedan <= 0) { clearInterval(relojT); toast(t('Se acabó el tiempo')); terminaSim(); } };
     tic(); relojT = setInterval(tic, 1000);
   }
 }
-const enlaceSim = ex => `${BASE_URL()}?sim=${encodeURIComponent(ex.semilla)}&n=${ex.qs.length}&a=${encodeURIComponent(ex.asig)}`;
+const enlaceSim = ex => ex.anio ? `${BASE_URL()}?anio=${ex.anio}` : `${BASE_URL()}?sim=${encodeURIComponent(ex.semilla)}&n=${ex.qs.length}&a=${encodeURIComponent(ex.asig)}`;
 function creaSim(semilla, n, asig, tiempo) {
   const qs = simulacro(DATA.preguntas, PRED.filas, n, semilla, asig === 'probable' ? null : [asig]);
   if (!qs.length) { toast(t('No hay preguntas disponibles para esa asignatura')); return false; }
@@ -169,7 +182,13 @@ $('btnSimLink').onclick = () => {
   const ex = S.sim || {semilla: 's' + Date.now().toString(36), asig: $('simAsig').value, qs: Array(+$('simN').value)};
   comparte(t('Te reto a este simulacro del MIR 2027 en OráculoMIR: mismas preguntas para los dos. ¿Quién saca más neta?'), enlaceSim(ex));
 };
-function terminaSim() { clearInterval(relojT); if (S.sim) { S.sim.fin = true; S.sim.idx = 0; guarda(); } pintaSim(); window.scrollTo({top: 0}); }
+function terminaSim() {
+  clearInterval(relojT);
+  if (S.sim && !S.sim.fin) { S.sim.fin = true; S.sim.idx = 0; S.sim.qs.forEach(id => { const q = preg(id), r = S.sim.resp[id]; if (q && r) anota(q, r === q.correcta); }); guarda(); }
+  pintaSim(); window.scrollTo({top: 0});
+}
+/* historial personal (repaso espaciado y plan): solo preguntas con respuesta oficial */
+function anota(q, acierto) { if (q && q.correcta && !q.demo) S.hist[q.id] = registra(S.hist[q.id], acierto, fechaMadrid()); }
 
 /* ── 4 · reto diario (mismas 10 preguntas para todos hoy) ── */
 function retoDeHoy() {
@@ -197,6 +216,100 @@ function pintaReto() {
   $('retoBox').innerHTML = cab + '<div id="retoQ"></div>';
   if ($('btnCompReto')) $('btnCompReto').onclick = () => comparte($('btnCompReto').closest('.card').querySelector('pre').textContent);
   pintaPregunta($('retoQ'), ex, 'reto');
+}
+
+/* ── «¿Por qué?»: la IA explica la respuesta OFICIAL; no la puede cambiar. Si cree que hoy sería discutible, lo avisa aparte ── */
+const PROMPT_EXP = q => `Eres profesor de una academia de preparación del MIR. Explica a un estudiante esta pregunta OFICIAL del MIR ${q.anio}.
+La respuesta correcta es la ${q.correcta}, según la plantilla definitiva del Ministerio de Sanidad: NO la discutas ni la cambies; explica el razonamiento que lleva a ella.
+Si con las guías clínicas actuales esa respuesta te parece desfasada o discutible, dilo SOLO en el campo "aviso" (si no, déjalo vacío).
+Devuelve SOLO este JSON, en ${langIA()}:
+{"clave":"la idea que hay que saber, en una frase","explicacion":"por qué la ${q.correcta} es la correcta, en 3-5 frases","opciones":["por qué falla o acierta la opción 1, en una frase", "…una por opción, en orden…"],"aviso":"","repaso":"qué tema repasar"}
+
+${q.enunciado}
+${q.opciones.map((o, k) => `${k + 1}. ${o}`).join('\n')}
+Respuesta oficial: ${q.correcta}`;
+function expHTML(x) {
+  return `<div class="om-expbox"><p><b>${esc(t('Clave'))}:</b> ${esc(x.clave || '')}</p><p>${esc(x.explicacion || '')}</p>
+    ${(x.opciones || []).length ? `<ol class="om-ol">${x.opciones.map(o => `<li>${esc(o)}</li>`).join('')}</ol>` : ''}
+    ${x.aviso ? `<div class="aviso"><b>${esc(t('Ojo'))}:</b> ${esc(x.aviso)}</div>` : ''}
+    ${x.repaso ? `<p class="help"><b>${esc(t('Repasa'))}:</b> ${esc(x.repaso)}</p>` : ''}
+    <p class="help">${esc(t('Explicación generada por IA ({0}). La respuesta es la oficial; la explicación puede contener errores.', x.prov || ''))}</p></div>`;
+}
+async function explica(q, box) {
+  const cont = box.querySelector(`[data-exp="${CSS.escape(q.id)}"]`); if (!cont) return;
+  if (S.explic[q.id]) { cont.innerHTML = cont.innerHTML ? '' : expHTML(S.explic[q.id]); return; }
+  if (!pideClave()) return;
+  const pr = PROMPT_EXP(q);
+  if (!(await pideEnvio(pr, 0, t('Se enviarán unos {0} caracteres a {1}: solo esta pregunta oficial y su respuesta. Una llamada por pregunta; la explicación se guarda para no pagarla dos veces.', nf(pr.length), PROV[getProv()].n)))) return;
+  cont.innerHTML = '<p class="help"><span class="spin"></span> ' + esc(t('Pidiendo la explicación…')) + '</p>';
+  try {
+    const x = await llmJSON([{role: 'system', content: 'Eres un profesor de medicina riguroso. Respondes SOLO con JSON válido.'}, {role: 'user', content: pr}], {max: 1400});
+    S.explic[q.id] = {clave: String(x.clave || ''), explicacion: String(x.explicacion || ''), opciones: (x.opciones || []).map(String).slice(0, q.opciones.length), aviso: String(x.aviso || ''), repaso: String(x.repaso || ''), prov: PROV[getProv()].n};
+    await guardaYa(); cont.innerHTML = expHTML(S.explic[q.id]);
+  } catch (e) { cont.innerHTML = `<p class="help">${esc(e.message)}</p>`; }
+}
+
+/* ── 5 · mi estudio: repaso espaciado de fallos + plan «dónde ganas más puntos» ── */
+function pintaEstudio() {
+  const hoy = fechaMadrid(), pend = pendientes(S.hist, hoy).filter(id => preg(id)), resp = Object.keys(S.hist).length;
+  const pl = plan(S.hist, DATA.preguntas, PRED.filas), conDatos = pl.filter(f => f.datos), total = conDatos.reduce((a, f) => a + f.enJuego, 0);
+  $('repasoBox').innerHTML = `<p>${esc(t('Preguntas en tu repaso: {0}. Para hoy: {1}.', enRepaso(S.hist), pend.length))}</p>
+    <div class="actions"><button class="btn btn-primary" type="button" id="btnRepaso" ${pend.length ? '' : 'disabled'}>${ico('refresh')} ${esc(pend.length ? t('Repasar {0} ahora', Math.min(30, pend.length)) : t('Nada pendiente hoy'))}</button></div>
+    <p class="help">${esc(t('Cada fallo vuelve a salir al día siguiente; si lo aciertas, a los 1, 3, 7, 21 y 60 días. Tras cinco aciertos seguidos se da por dominado.'))}</p>`;
+  $('btnRepaso').onclick = () => { S.prac = {tipo: 'repaso', qs: pend.slice(0, 30), resp: {}, idx: 0, fin: false}; guarda(); pintaEstudio(); };
+  $('planBox').innerHTML = !resp ? `<p class="empty">${esc(t('Todavía no has respondido preguntas. Haz el reto diario o un simulacro y aquí verás dónde estás perdiendo más puntos.'))}</p>` : `
+    ${conDatos.length ? `<p>${esc(t('Con tu nivel actual, fallarías unas {0} de las 200 preguntas del MIR 2027 en las asignaturas con datos. Empieza por arriba: ahí es donde más puntos ganas.', Math.round(total)))}</p>` : ''}
+    <div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Asignatura'))}</th><th>${esc(t('Esperadas 2027'))}</th><th>${esc(t('Respondidas'))}</th><th>${esc(t('Fallo'))}</th><th>${esc(t('Preguntas en juego'))}</th><th></th></tr></thead><tbody>
+    ${pl.map(f => `<tr><td><b>${esc(nombreAsig(f.id))}</b></td><td>${Math.round(f.esperadas)}</td><td>${f.respondidas}</td><td>${f.tasa === null ? '–' : pct(f.tasa)}</td>
+      <td>${f.datos ? `<b>${f.enJuego.toFixed(1)}</b>` : `<small class="muted">${esc(t('sin datos (mín. 8)'))}</small>`}</td>
+      <td><button class="btn btn-ghost btn-sm" type="button" data-practica="${esc(f.id)}">${esc(t('Practicar'))}</button></td></tr>`).join('')}</tbody></table></div>
+    <p class="help">${esc(t('«Preguntas en juego» = preguntas esperadas × tu porcentaje de fallo. Cada pregunta que pasa de fallo a acierto vale 4 puntos (+3 en vez de −1).'))}</p>`;
+  const box = $('pracBox');
+  if (!S.prac) { box.innerHTML = ''; return; }
+  const p = S.prac;
+  if (p.fin) {
+    const ok = p.qs.filter(id => p.resp[id] === (preg(id) || {}).correcta).length;
+    box.innerHTML = `<div class="card"><h3>${esc(t('Repaso terminado: {0} de {1}', ok, p.qs.length))}</h3><div class="actions"><button class="btn btn-ghost" type="button" id="btnFinPrac">${esc(t('Cerrar'))}</button></div></div><div id="pracQ"></div>`;
+    $('btnFinPrac').onclick = () => { S.prac = null; guarda(); pintaEstudio(); };
+    return pintaPregunta($('pracQ'), p, 'practica');
+  }
+  box.innerHTML = '<div id="pracQ"></div>'; pintaPregunta($('pracQ'), p, 'practica');
+}
+
+/* ── 6 · banco y exámenes: un MIR completo de un año, y buscador ── */
+function pintaBanco() {
+  const ys = [...new Set(DATA.preguntas.filter(utilizable).map(q => q.anio))].sort((a, b) => b - a);
+  const sel = $('bancoAnio'), v = sel.value; sel.innerHTML = ys.map(y => `<option value="${y}">MIR ${y} · ${DATA.preguntas.filter(q => q.anio === y && utilizable(q)).length} ${esc(t('preguntas'))}</option>`).join(''); if (v) sel.value = v;
+  const fa = $('busAsig'), va = fa.value; fa.innerHTML = `<option value="">${esc(t('Todas'))}</option>` + DATA.asignaturas.filter(a => a.id !== 'otras').map(a => `<option value="${a.id}">${esc(nombreAsig(a.id))}</option>`).join(''); fa.value = va;
+  const fy = $('busAnio'), vy = fy.value; fy.innerHTML = `<option value="">${esc(t('Todos'))}</option>` + aniosDe(DATA.conteos).reverse().map(y => `<option>${y}</option>`).join(''); fy.value = vy;
+  buscaPinta();
+}
+let ULTIMA_BUSQUEDA = [];
+function buscaPinta() {
+  const tx = $('busTexto').value, r = busca(DATA.preguntas, tx, {asig: $('busAsig').value, anio: $('busAnio').value, solo: true});
+  ULTIMA_BUSQUEDA = r.map(q => q.id);
+  $('busRes').innerHTML = `<p class="help">${esc(t('{0} preguntas oficiales con respuesta.', nf(r.length)))}</p>${r.slice(0, 25).map(q => `<div class="om-res"><small>${esc(origenDe(q))} · ${esc(nombreAsig(q.asig))}</small><br>${esc(q.enunciado.slice(0, 220))}${q.enunciado.length > 220 ? '…' : ''}</div>`).join('')}`;
+  $('btnBusPrac').disabled = !r.length;
+}
+$('busTexto').oninput = () => { clearTimeout(buscaPinta.t); buscaPinta.t = setTimeout(buscaPinta, 250); };
+$('busAsig').onchange = buscaPinta; $('busAnio').onchange = buscaPinta;
+$('btnBusPrac').onclick = () => { const ids = baraja(ULTIMA_BUSQUEDA, rng('b' + Date.now())).slice(0, 40); if (!ids.length) return; S.prac = {tipo: 'banco', qs: ids, resp: {}, idx: 0, fin: false}; guarda(); go(5); };
+function creaExamenAnio(y, tiempo) {
+  const qs = DATA.preguntas.filter(q => q.anio === +y && utilizable(q)).sort((a, b) => a.n - b.n);
+  if (!qs.length) return false;
+  S.sim = {semilla: 'anio-' + y, asig: 'probable', anio: +y, qs: qs.map(q => q.id), resp: {}, idx: 0, fin: false, t0: Date.now(), limite: tiempo === 'mir' ? Math.round(qs.length * 270 * 60 / 210) : 0};
+  guarda(); return true;
+}
+$('btnAnio').onclick = () => { if (creaExamenAnio($('bancoAnio').value, $('anioTiempo').value)) go(2); };
+
+/* ── 7 · validación: qué se ha comprobado de cada examen ── */
+function pintaValidacion() {
+  const ex = (DATA.examenes || []).filter(e => e.ok).sort((a, b) => b.anio - a.anio);
+  $('valTabla').innerHTML = !ex.length ? `<p class="empty">${esc(t('Disponible cuando estén cargados los exámenes oficiales.'))}</p>` : `<div class="table-wrap"><table class="om-tabla"><thead><tr><th>MIR</th><th>${esc(t('Origen'))}</th><th>${esc(t('Preguntas'))}</th><th>${esc(t('Con respuesta'))}</th><th>${esc(t('Anuladas'))}</th><th>${esc(t('Cotejo con lo publicado'))}</th></tr></thead><tbody>
+    ${ex.map(e => `<tr><td><b>${e.anio}</b></td><td>${esc(t(e.fuente === 'tercero' ? 'Copia del documento oficial' : 'Portal del Ministerio'))}</td><td>${e.preguntas}</td><td>${e.con_respuesta || 0}</td><td>${e.anuladas || 0}</td>
+      <td>${e.cotejo ? (e.cotejo.coincide ? `<span class="fa-chip ok">✓ ${esc(t('coincide'))}</span>` : `<span class="fa-chip aviso">${esc(t('difiere'))}</span>`) + ` <a href="${esc(e.cotejo.fuente)}" target="_blank" rel="noopener">${esc(t('fuente'))}</a>` : '–'}</td></tr>`).join('')}</tbody></table></div>`;
+  const v = VAL;
+  $('valPred').textContent = v ? t('Predicción probada a ciegas en los MIR {0}: se desvía de media {1} preguntas por asignatura (repetir el año anterior: {2}; media de todos los años: {3}) y acierta {4} de las 10 asignaturas con más peso.', v.porAnio.map(o => o.anio).join(', '), v.mae.toFixed(1), v.maeAnterior.toFixed(1), v.maeMedia.toFixed(1), v.aciertoTop10.toFixed(1)) : '';
 }
 
 /* ── 3 · generador con agentes ── */
@@ -304,9 +417,9 @@ function genCsv() { const a = S.gen.filter(g => g.estado === 'aceptada'); if (!a
 
 /* aviso previo al envío (una vez por sesión) */
 let envioRes = null;
-function pideEnvio(textoEnviado, masks) {
+function pideEnvio(textoEnviado, masks, mensaje) {
   if (ENVIO_OK) return Promise.resolve(true);
-  $('envioInfo').innerHTML = `<p class="sub" style="margin-top:0">${esc(t('Se enviarán unos {0} caracteres a {1}. No incluye datos tuyos: solo la asignatura y preguntas oficiales de ejemplo. Son tres llamadas (redactor y dos resolutores).', nf(textoEnviado.length), PROV[getProv()].n))}</p><p class="help">${esc(t('Muestra del envío:'))}</p>`;
+  $('envioInfo').innerHTML = `<p class="sub" style="margin-top:0">${esc(mensaje || t('Se enviarán unos {0} caracteres a {1}. No incluye datos tuyos: solo la asignatura y preguntas oficiales de ejemplo. Son tres llamadas (redactor y dos resolutores).', nf(textoEnviado.length), PROV[getProv()].n))}</p><p class="help">${esc(t('Muestra del envío:'))}</p>`;
   $('envioTxt').textContent = textoEnviado.slice(0, 3000) + (textoEnviado.length > 3000 ? '\n…' : '');
   $('envioOk').checked = false; $('envioSi').disabled = true; $('mEnvio').classList.add('on');
   return new Promise(r => { envioRes = r; });
@@ -322,6 +435,7 @@ $('envioSi').onclick = () => cierraEnvio(true); $('envioNo').onclick = () => cie
   await cargaDatos(); calcula(); iniciaUI();
   const q = new URLSearchParams(location.search);
   if (q.has('reto')) return go(4);
+  if (q.get('anio') && creaExamenAnio(q.get('anio'), 'mir')) return go(2);
   if (q.get('sim')) { const a = q.get('a') || 'probable'; S.asigSim = a; if (creaSim(q.get('sim'), Math.min(200, Math.max(1, +q.get('n') || 25)), a, 'mir')) toast(t('Mismo examen que quien te ha retado. ¡Suerte!')); return go(2); }
   go(0);
 })();
