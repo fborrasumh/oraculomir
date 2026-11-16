@@ -68,6 +68,8 @@ check('clasificación por palabras clave', lab == ['cardio', 'pedia', 'estadisti
 check('sin palabras clave → «otras»', M.clasifica({'enunciado': 'zzz', 'opciones': ['a', 'b']}, asigs) == ('otras', 0.0))
 J = [{'V_0': '1', 'RC_0': '3', 'V_1': '43', 'RC_1': '2'}, {'V_0': '2', 'RC_0': ' ', 'V_1': '44', 'RC_1': '1'}]
 check('hoja de respuestas JSON del portal: tabla en columnas y anulada en blanco', M.parse_respuestas_json(J) == {1: 3, 43: 2, 2: 0, 44: 1})
+H = 'Preguntas de reserva ( 176 - 185 )  176 2 : pregunta 176, respuesta 2\n 10 Anulada : pregunta 10, anulada\n' + ''.join(f' {i} 1 : pregunta {i}, respuesta 1\n' for i in range(1, 120) if i != 10)
+r = M.parse_plantilla(H, 185, 4); check('plantilla web con «pregunta N, respuesta R»: el rango «176 - 185» no anula nada', r.get(176) == 2 and r.get(10) == 0 and r.get(11) == 1, str({k: r.get(k) for k in (10, 11, 176)}))
 import mir_fetch as F
 check('año del examen: convocatoria 2025-2026 → 2026', F.anio_de('Convocatoria 2025-2026 Medicina') == 2026 and F.anio_de('MIR_2019_cuaderno.pdf') == 2019 and F.anio_de('conv 2014/15') == 2015)
 check('tipo de documento', F.tipo_de('Cuaderno de examen') == 'cuaderno' and F.tipo_de('Plantilla de respuestas correctas') == 'plantilla' and F.tipo_de('Cuaderno de imágenes') == 'imagenes')

@@ -72,11 +72,11 @@ def mejor_cuaderno(texto):
 
 
 # ── 2 · plantilla ──────────────────────────────────────────────────────────────────────────────
-TOK = re.compile(r'ANULADA|ANUL\.?|\d{1,3}|-', re.I)
+TOK = re.compile(r'ANULADA|ANUL\.?|\d{1,3}', re.I)   # un guion NO es anulada: «reserva (176 - 185)» lo confundía
 
 
 def _val(tk, nopt):
-    if tk.upper().startswith('ANUL') or tk == '-': return 0          # 0 = anulada
+    if tk.upper().startswith('ANUL'): return 0          # 0 = anulada
     v = int(tk); return v if 1 <= v <= nopt else None
 
 
@@ -84,6 +84,9 @@ def parse_plantilla(texto, n_preg, nopt):
     """Devuelve {n: correcta (1..nopt) | 0 (anulada)} con la estrategia que cubre más números 1..n_preg.
     A) parejas «número respuesta» seguidas (tablas a varias columnas);
     B) una fila por pregunta con una columna por versión: se toma la primera (versión 0)."""
+    expl = re.findall(r'pregunta\s+(\d{1,3})\s*,\s*(?:respuesta\s+(\d)|(anulada))', texto, re.I)   # «pregunta 176, respuesta 2» / «pregunta 10, anulada»
+    if len(expl) >= 0.5 * n_preg:
+        return {int(q): (0 if an else int(r)) for q, r, an in expl if 1 <= int(q) <= n_preg and (an or 1 <= int(r) <= nopt)}
     lineas = [TOK.findall(l) for l in texto.split('\n')]
     A, B = {}, {}
     for tks in lineas:

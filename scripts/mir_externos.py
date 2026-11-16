@@ -15,14 +15,10 @@ cj = http.cookiejar.CookieJar(); OP = urllib.request.build_opener(urllib.request
 
 
 def baja(url):
-    r = OP.open(urllib.request.Request(url, headers=UA), timeout=120); b = r.read()
-    if b[:4] != b'%PDF' and 'drive.google' in url:   # aviso de «no se pudo analizar el virus» de Drive: seguir el enlace de confirmación
-        t = b.decode('utf-8', 'ignore'); m = re.search(r'href="(/uc\?export=download[^"]+)"', t) or re.search(r'action="([^"]+)"', t)
-        if m:
-            u2 = html.unescape(m.group(1)); u2 = u2 if u2.startswith('http') else 'https://drive.google.com' + u2
-            if 'confirm=' not in u2: u2 += '&confirm=t'
-            b = OP.open(urllib.request.Request(u2, headers=UA), timeout=120).read()
-    return b
+    m = re.search(r'[?&]id=([\w-]+)', url) if 'drive.google' in url else None
+    if m:   # Google Drive: descarga directa con confirmación (sin la página de aviso de virus)
+        url = f'https://drive.usercontent.google.com/download?id={m.group(1)}&export=download&confirm=t'
+    return OP.open(urllib.request.Request(url, headers=UA), timeout=120).read()
 
 
 def texto_de(b, url):
