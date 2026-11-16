@@ -444,7 +444,8 @@ function calibHTML(c) {
     <div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Método'))}</th><th>${esc(t('Acepta la pregunta con la respuesta buena'))}</th><th>${esc(t('Deja pasar una respuesta errónea'))}</th></tr></thead><tbody>
       <tr><td>${esc(t('Solo los dos resolutores'))}</td><td>${p(c.A.ta)}</td><td>${p(c.A.fa)}</td></tr>
       <tr><td>${esc(t('+ Contradictor'))}</td><td>${p(c.B.ta)}</td><td>${p(c.B.fa)}</td></tr>
-      <tr><td><b>${esc(t('Panel completo (+ Lista de control y estilo)'))}</b></td><td><b>${p(c.C.ta)}</b></td><td><b>${p(c.C.fa)}</b></td></tr></tbody></table></div>
+      <tr><td><b>${esc(t('Panel completo (+ Lista de control y estilo)'))}</b></td><td><b>${p(c.C.ta)}</b></td><td><b>${p(c.C.fa)}</b></td></tr>
+      ${c.D ? `<tr><td>${esc(t('Panel completo, contando también las dudosas'))}</td><td>${p(c.D.ta)}</td><td>${p(c.D.fa)}</td></tr>` : ''}</tbody></table></div>
     <p class="help">${esc(t('Cuando los dos resolutores coinciden, aciertan el {0} de las veces. Lo importante es la última columna: de cada 100 preguntas en las que el redactor se equivoca de respuesta, cuántas se colarían. Medido con preguntas oficiales; las generadas pueden comportarse algo distinto.', p(c.precisionAcuerdo)))}</p>`;
 }
 

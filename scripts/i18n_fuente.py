@@ -227,6 +227,7 @@ T = [
  ('s.valGen', 'Reliability of AI-generated questions', 'Fiabilidade das perguntas geradas com IA'),
  ('s.valGen.txt', 'It is measured with official questions, whose answer we know. Each goes through the panel twice: with its official answer and with a deliberately wrong answer, as if the writer had made a mistake. This shows how many right ones it accepts and how many wrong ones it lets through.', 'Mede-se com perguntas oficiais, cuja resposta conhecemos. Cada uma passa pelo painel duas vezes: com a resposta oficial e com uma resposta errada posta de propósito, como se o redator se tivesse enganado. Assim sabe-se quantas certas aceita e quantas erradas deixa passar.'),
  ('s.calibMia', 'Measure it with my key (50 questions, about 25 calls)', 'Medir com a minha chave (50 perguntas, cerca de 25 chamadas)'),
+ ('Panel completo, contando también las dudosas', 'Full panel, also counting doubtful ones', 'Painel completo, contando também as duvidosas'),
  ('sube', 'rising', 'sobe'), ('baja', 'falling', 'desce'), ('estable', 'stable', 'estável'),
  ('enunciado demasiado corto', 'stem too short', 'enunciado demasiado curto'), ('no tiene 4 opciones', 'does not have 4 options', 'não tem 4 opções'), ('opciones repetidas', 'repeated options', 'opções repetidas'),
  ('respuesta correcta fuera de 1-4', 'correct answer outside 1-4', 'resposta correta fora de 1-4'), ('usa «todas/ninguna de las anteriores»', 'uses “all/none of the above”', 'usa «todas/nenhuma das anteriores»'),

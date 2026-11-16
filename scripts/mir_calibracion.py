@@ -34,7 +34,7 @@ async def main():
     pc = lambda x: '–' if x is None else f'{round(x * 100)} %'
     resumen = (f"## Medición del panel ({r['n']} preguntas oficiales, {r['prov']} {r.get('modelo', '')})\n\n"
                "| Método | Acepta con la respuesta buena | Deja pasar una respuesta errónea |\n|---|---|---|\n"
-               + ''.join(f"| {nom} | {pc(r[k]['ta'])} | {pc(r[k]['fa'])} |\n" for k, nom in (('A', 'Solo 2 resolutores'), ('B', '+ Contradictor'), ('C', 'Panel completo'))) +
+               + ''.join(f"| {nom} | {pc(r[k]['ta'])} | {pc(r[k]['fa'])} |\n" for k, nom in (('A', 'Solo 2 resolutores'), ('B', '+ Contradictor'), ('C', 'Panel completo'), ('D', 'Panel completo + dudosas')) if k in r) +
                f"\nAcierto resolutor 1: {pc(r['acierto1'])} · resolutor 2: {pc(r['acierto2'])} · acuerdo: {pc(r['acuerdo'])} · acierto cuando coinciden: {pc(r['precisionAcuerdo'])}\n")
     print(resumen)
     if os.environ.get('GITHUB_STEP_SUMMARY'): open(os.environ['GITHUB_STEP_SUMMARY'], 'a').write(resumen)

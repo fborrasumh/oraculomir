@@ -225,8 +225,8 @@ function revisaEstilo(g) {
 function veredictoPanel(clave, respuestas, {contra, lista, estilo = []} = {}) {
   const ok = respuestas.filter(x => x === clave).length;
   if (ok === 0) return 'descartada';
-  if ((contra && contra.veredicto === 'mala') || (lista && lista.veredicto === 'mala')) return 'descartada';
-  if (ok < respuestas.length || (contra && contra.veredicto === 'dudosa') || (lista && lista.veredicto === 'corregir') || estilo.length) return 'dudosa';
+  if (contra && contra.veredicto === 'mala') return 'descartada';   // la Lista de control no descarta: con preguntas oficiales marcaba «mala» el 14 % de las buenas
+  if (ok < respuestas.length || (contra && contra.veredicto === 'dudosa') || (lista && lista.veredicto !== 'ok') || estilo.length) return 'dudosa';
   return 'aceptada';
 }
 /* métricas de la medición: con la clave buena, % aceptado (TA); con una clave errónea, % que se cuela (FA) */
@@ -235,7 +235,8 @@ function metricas(filas) {
   const conf = {
     A: (r, v) => r.res.every(x => x === v.clave),
     B: (r, v) => r.res.every(x => x === v.clave) && v.contra === 'ok',
-    C: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) === 'aceptada'
+    C: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) === 'aceptada',
+    D: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) !== 'descartada'   // aceptada o dudosa (se conserva para revisar)
   };
   const out = {n: filas.length};
   for (const [k, f] of Object.entries(conf)) out[k] = {ta: pct(filas, r => f(r, r.buena)), fa: pct(filas, r => f(r, r.mala))};

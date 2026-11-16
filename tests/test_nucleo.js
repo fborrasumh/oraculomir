@@ -75,7 +75,7 @@ check('estilo: absolutos solo en distractores', M.revisaEstilo({opciones: ['Siem
 check('estilo: pregunta equilibrada sin avisos', M.revisaEstilo({opciones: ['Angioplastia primaria', 'Fibrinólisis inmediata', 'Tratamiento conservador', 'Cirugía urgente'], correcta: 1}).length === 0);
 check('panel: aceptada solo si todo cuadra', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'ok'}}) === 'aceptada');
 check('panel: el Contradictor «dudosa» la deja en dudosa aunque coincidan', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'dudosa'}, lista: {veredicto: 'ok'}}) === 'dudosa');
-check('panel: «mala» descarta', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'mala'}}) === 'descartada' && M.veredictoPanel(2, [1, 3]) === 'descartada');
+check('panel: «mala» del Contradictor descarta; «mala» de la Lista deja dudosa', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'mala'}, lista: {veredicto: 'ok'}}) === 'descartada' && M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'mala'}}) === 'dudosa' && M.veredictoPanel(2, [1, 3]) === 'descartada');
 check('panel: aviso de estilo → dudosa', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'ok'}, estilo: ['x']}) === 'dudosa');
 const fil = [{res: [1, 1], buena: {clave: 1, contra: 'ok', lista: 'ok', estilo: []}, mala: {clave: 3, contra: 'mala', lista: 'ok', estilo: []}},
              {res: [2, 2], buena: {clave: 2, contra: 'dudosa', lista: 'ok', estilo: []}, mala: {clave: 2, contra: 'ok', lista: 'ok', estilo: []}}];

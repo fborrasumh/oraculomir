@@ -1726,6 +1726,7 @@ const I18N = {
 "s.valGen": "Reliability of AI-generated questions",
 "s.valGen.txt": "It is measured with official questions, whose answer we know. Each goes through the panel twice: with its official answer and with a deliberately wrong answer, as if the writer had made a mistake. This shows how many right ones it accepts and how many wrong ones it lets through.",
 "s.calibMia": "Measure it with my key (50 questions, about 25 calls)",
+"Panel completo, contando también las dudosas": "Full panel, also counting doubtful ones",
 "sube": "rising",
 "baja": "falling",
 "estable": "stable",
@@ -2084,6 +2085,7 @@ const I18N = {
 "s.valGen": "Fiabilidade das perguntas geradas com IA",
 "s.valGen.txt": "Mede-se com perguntas oficiais, cuja resposta conhecemos. Cada uma passa pelo painel duas vezes: com a resposta oficial e com uma resposta errada posta de propósito, como se o redator se tivesse enganado. Assim sabe-se quantas certas aceita e quantas erradas deixa passar.",
 "s.calibMia": "Medir com a minha chave (50 perguntas, cerca de 25 chamadas)",
+"Panel completo, contando también las dudosas": "Painel completo, contando também as duvidosas",
 "sube": "sobe",
 "baja": "desce",
 "estable": "estável",
@@ -2330,8 +2332,8 @@ function revisaEstilo(g) {
 function veredictoPanel(clave, respuestas, {contra, lista, estilo = []} = {}) {
   const ok = respuestas.filter(x => x === clave).length;
   if (ok === 0) return 'descartada';
-  if ((contra && contra.veredicto === 'mala') || (lista && lista.veredicto === 'mala')) return 'descartada';
-  if (ok < respuestas.length || (contra && contra.veredicto === 'dudosa') || (lista && lista.veredicto === 'corregir') || estilo.length) return 'dudosa';
+  if (contra && contra.veredicto === 'mala') return 'descartada';   // la Lista de control no descarta: con preguntas oficiales marcaba «mala» el 14 % de las buenas
+  if (ok < respuestas.length || (contra && contra.veredicto === 'dudosa') || (lista && lista.veredicto !== 'ok') || estilo.length) return 'dudosa';
   return 'aceptada';
 }
 /* métricas de la medición: con la clave buena, % aceptado (TA); con una clave errónea, % que se cuela (FA) */
@@ -2340,7 +2342,8 @@ function metricas(filas) {
   const conf = {
     A: (r, v) => r.res.every(x => x === v.clave),
     B: (r, v) => r.res.every(x => x === v.clave) && v.contra === 'ok',
-    C: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) === 'aceptada'
+    C: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) === 'aceptada',
+    D: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) !== 'descartada'   // aceptada o dudosa (se conserva para revisar)
   };
   const out = {n: filas.length};
   for (const [k, f] of Object.entries(conf)) out[k] = {ta: pct(filas, r => f(r, r.buena)), fa: pct(filas, r => f(r, r.mala))};
@@ -2855,7 +2858,8 @@ function calibHTML(c) {
     <div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Método'))}</th><th>${esc(t('Acepta la pregunta con la respuesta buena'))}</th><th>${esc(t('Deja pasar una respuesta errónea'))}</th></tr></thead><tbody>
       <tr><td>${esc(t('Solo los dos resolutores'))}</td><td>${p(c.A.ta)}</td><td>${p(c.A.fa)}</td></tr>
       <tr><td>${esc(t('+ Contradictor'))}</td><td>${p(c.B.ta)}</td><td>${p(c.B.fa)}</td></tr>
-      <tr><td><b>${esc(t('Panel completo (+ Lista de control y estilo)'))}</b></td><td><b>${p(c.C.ta)}</b></td><td><b>${p(c.C.fa)}</b></td></tr></tbody></table></div>
+      <tr><td><b>${esc(t('Panel completo (+ Lista de control y estilo)'))}</b></td><td><b>${p(c.C.ta)}</b></td><td><b>${p(c.C.fa)}</b></td></tr>
+      ${c.D ? `<tr><td>${esc(t('Panel completo, contando también las dudosas'))}</td><td>${p(c.D.ta)}</td><td>${p(c.D.fa)}</td></tr>` : ''}</tbody></table></div>
     <p class="help">${esc(t('Cuando los dos resolutores coinciden, aciertan el {0} de las veces. Lo importante es la última columna: de cada 100 preguntas en las que el redactor se equivoca de respuesta, cuántas se colarían. Medido con preguntas oficiales; las generadas pueden comportarse algo distinto.', p(c.precisionAcuerdo)))}</p>`;
 }
 
