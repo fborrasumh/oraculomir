@@ -26,6 +26,16 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
    - Una pregunta solo se **acepta** si los dos resolutores eligen la misma respuesta que el redactor. Si discrepa uno queda **dudosa**; si discrepan los dos se **descarta**.
    - Las preguntas aceptadas se exportan a Word, CSV y Moodle (GIFT).
 
+6. **«¿Por qué?» en cada pregunta corregida**, con la clave de IA de cada persona. La IA explica la respuesta **oficial** y no puede cambiarla; si con las guías actuales le parece discutible, lo dice aparte. La explicación se guarda para no pagarla dos veces.
+7. **Mi estudio:**
+   - **Repaso espaciado de fallos:** cada fallo vuelve a salir al día siguiente y, si se acierta, a los 1, 3, 7, 21 y 60 días.
+   - **Plan «dónde ganas más puntos»:** preguntas esperadas en 2027 × tu porcentaje de fallo en cada asignatura.
+8. **Banco y exámenes:** el MIR de un año concreto completo (también con enlace `?anio=2019`) y un buscador por palabras, asignatura y año.
+9. **Imágenes:** 154 preguntas con su imagen (2012, 2013, 2022, 2023, 2024 y 2026). Cada imagen se asigna por su rótulo, sea de texto o leído dentro de la imagen; los años cuyo orden no se puede confirmar quedan sin imágenes.
+10. **Avisar de un error** desde cada pregunta: abre una incidencia de GitHub ya rellenada.
+11. **Instalable y sin conexión** (manifest + service worker): una vez abierta, funciona sin internet.
+12. **Página «Cómo se valida»**, con el cotejo de cada examen frente a lo publicado.
+
 ## Lo que no hace (límites reales)
 
 - **No predice preguntas concretas**, solo cuántas tendrá cada asignatura. El simulacro entrena el formato y el ritmo; no adivina el examen.
@@ -41,7 +51,8 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
 | 2022-2026 | Portal FSE del Ministerio (API de su web: cuaderno versión 0 y hoja de respuestas definitiva) | Oficiales |
 | 2016-2021 | Copias de terceros de los PDF oficiales (examenesmir.com, consalud.es) | Plantilla definitiva copiada |
 | 2009, 2011-2013, 2015 | Cuadernos e impresiones de la consulta oficial de respuestas correctas del Ministerio, guardados en una carpeta pública de Google Drive | Plantilla definitiva copiada |
-| 2010, 2014 | Cuaderno sí; la plantilla no se ha podido leer con seguridad (escaneada o del año equivocado) | Sin respuestas: cuentan para la predicción, no entran en simulacros |
+| 2014 | Cuaderno + respuestas cruzadas por texto con una transcripción de terceros (oposicionesgratis.com) | Validadas con las 8 anuladas y los 2 cambios publicados; 4 preguntas dudosas quedan sin respuesta |
+| 2010 | Cuaderno sí; la única transcripción de la plantilla choca con lo publicado (da respuesta a la 52, anulada) | Sin respuestas: cuenta para la predicción, no entra en simulacros |
 | 2007-2008 | No encontrados en ninguna fuente accesible | — |
 
 Todo lo que no viene del portal se marca en la app como «tomada de una copia del cuaderno oficial».
@@ -56,7 +67,7 @@ Comprobaciones antes de aceptar un año copiado:
 
 Las anuladas coinciden con lo publicado en prensa en los años contrastados (2016-2021 y 2023).
 
-En total hay 4.027 preguntas de 18 exámenes; 3.018 se pueden usar en simulacros. La asignatura de cada pregunta la asigna `gpt-6-luna` (`scripts/mir_clasifica_ia.py`, secreto `OPENAI_API_KEY`); si no hay clave, se usan palabras clave.
+En total hay 4.027 preguntas de 18 exámenes; 3.358 se pueden usar en simulacros. El informe (`data/informe.md`) coteja automáticamente las anuladas y los cambios de respuesta publicados de 9 años (`data/verificacion.json`). La asignatura de cada pregunta la asigna `gpt-6-luna` (`scripts/mir_clasifica_ia.py`, secreto `OPENAI_API_KEY`); si no hay clave, se usan palabras clave.
 
 ## Datos: cómo se traen los exámenes al repositorio
 

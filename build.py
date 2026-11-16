@@ -46,7 +46,7 @@ html = f'''<!DOCTYPE html>
 <meta http-equiv="Content-Security-Policy" content="{csp}">
 <meta name="author" content="{authors}">
 <meta name="description" content="{desc.replace('"','&quot;')}">
-<title>{cfg['name']} · {cfg.get('tagline','')}</title>{links}
+<title>{cfg['name']} · {cfg.get('tagline','')}</title>{links}{cfg.get('head_extra','')}
 <style>{css}</style></head>
 <body>
 {icons}

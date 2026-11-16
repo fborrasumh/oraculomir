@@ -72,5 +72,10 @@
   ],
   "img_extra": [
     "'self'"
-  ]
+  ],
+  "csp_extra": [
+    "manifest-src 'self'",
+    "worker-src 'self'"
+  ],
+  "head_extra": "<link rel=\"manifest\" href=\"manifest.webmanifest\"><link rel=\"apple-touch-icon\" href=\"icons/icon-192.png\"><meta name=\"apple-mobile-web-app-capable\" content=\"yes\">"
 }

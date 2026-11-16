@@ -12,6 +12,7 @@ const GLOS = [
   ['¿Predice preguntas concretas?', 'No. Predice cuántas preguntas tendrá cada asignatura. El simulacro usa preguntas oficiales de años anteriores en esa proporción: sirve para entrenar el formato y el ritmo, no para adivinar el examen.'],
   ['Generador con agentes', 'Un agente redacta, con el contexto de años anteriores (temas que más se repiten, temas que llevan tiempo sin salir y seis preguntas oficiales recientes), dos agentes resuelven a ciegas con las opciones barajadas y el código comprueba el formato y que no sea una copia del banco oficial. Solo se aceptan las preguntas que los tres responden igual. Eso reduce mucho los errores, pero no los elimina. Si tienes claves de dos proveedores, usa el otro para el segundo resolutor: modelos distintos se equivocan menos a la vez.'],
   ['Privacidad y coste', 'La predicción, los simulacros y el reto diario funcionan en tu navegador, sin clave y sin enviar nada. El generador envía al proveedor de IA que elijas la asignatura y unas preguntas oficiales de ejemplo; nunca datos tuyos. Cada tanda son tres llamadas a la IA y la pagas tú con tu clave: elige un modelo económico.'],
+  ['Instalable y sin conexión', 'En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
 let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null};
@@ -429,6 +430,12 @@ function cierraEnvio(v) { $('mEnvio').classList.remove('on'); if (envioRes) { co
 _cierres.mEnvio = () => cierraEnvio(false);
 $('envioOk').onchange = () => { $('envioSi').disabled = !$('envioOk').checked; };
 $('envioSi').onclick = () => cierraEnvio(true); $('envioNo').onclick = () => cierraEnvio(false);
+
+/* ── instalable y sin conexión (solo en https: GitHub Pages) ── */
+let INSTALAR = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALAR = e; $('btnInstalar').hidden = false; });
+$('btnInstalar').onclick = async () => { if (!INSTALAR) return; INSTALAR.prompt(); try { await INSTALAR.userChoice; } catch {} INSTALAR = null; $('btnInstalar').hidden = true; };
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {} }
 
 /* ── arranque: datos → predicción → enlaces compartidos (?reto, ?sim=…) ── */
 (async () => {

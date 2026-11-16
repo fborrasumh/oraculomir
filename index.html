@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0F2237">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob: 'self'; media-src blob: data:; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob: 'self'; media-src blob: data:; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="author" content="Fernando Borrás Rocher; Antonio F. Compañ Rosique">
 <meta name="description" content="Qué asignaturas caerán en el MIR 2027, con simulacros de preguntas oficiales">
 <title>OráculoMIR · Qué asignaturas caerán en el MIR 2027, con simulacros de preguntas oficiales</title><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
 <style>
 :root{
   --tinta:#0F2237; --acero:#2E4B6B; --acero-claro:#7C93AC; --gris:#5D7691;
@@ -493,7 +493,7 @@ table{border-collapse:collapse;width:100%;font-size:13.8px}th{background:var(--p
     <h1 data-i18n="hero.h1">Lo que dicen 18 exámenes MIR, de 2009 a 2026, <em>sobre tu examen de 2027</em></h1>
     <p class="lede" data-i18n="hero.lede">OráculoMIR cuenta cuántas preguntas ha puesto cada asignatura en los exámenes MIR oficiales, estima cuántas caerán el 23 de enero de 2027 y te dice cuánto fiarte de esa estimación. Practica gratis con preguntas oficiales y su respuesta de la plantilla definitiva.</p>
     <div class="om-cuenta" id="cuenta" role="status"></div>
-    <div class="actions"><button class="btn btn-primary btn-big" id="btnStart" type="button"><svg class="i"><use href="#i-target"/></svg><span data-i18n="s.empezar">Ver la predicción</span></button><button class="btn btn-ghost btn-big" id="btnEjemplo" type="button"><svg class="i"><use href="#i-flame"/></svg><span data-i18n="s.ejemplo">Reto de hoy</span></button></div>
+    <div class="actions"><button class="btn btn-primary btn-big" id="btnStart" type="button"><svg class="i"><use href="#i-target"/></svg><span data-i18n="s.empezar">Ver la predicción</span></button><button class="btn btn-ghost btn-big" id="btnInstalar" type="button" hidden><svg class="i"><use href="#i-phone"/></svg><span data-i18n="s.instalar">Instalar la app</span></button><button class="btn btn-ghost btn-big" id="btnEjemplo" type="button"><svg class="i"><use href="#i-flame"/></svg><span data-i18n="s.ejemplo">Reto de hoy</span></button></div>
     <p class="fa-inicio" id="inicioProj"></p>
     <div class="fa-autores"><span class="fa-autores-cap" data-i18n="Realizada por">Realizada por</span>
       <div class="fa-autor"><span class="fa-av" style="--c:#E4572E">FB</span><div><b>Fernando Borrás Rocher</b><small>Universidad Miguel Hernández de Elche</small><a class="fa-orcid" href="https://orcid.org/0000-0002-5519-4573" target="_blank" rel="noopener">ORCID 0000-0002-5519-4573</a></div></div><span class="fa-x" aria-hidden="true">×</span>
@@ -1636,6 +1636,9 @@ const I18N = {
 "s.informe": "Extraction report",
 "Abrir la imagen a tamaño completo": "Open the image at full size",
 "Imagen de la pregunta {0} del MIR {1}": "Image for question {0} of the MIR {1}",
+"s.instalar": "Install the app",
+"Instalable y sin conexión": "Installable and offline",
+"En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.": "On Android or a computer, press “Install the app” (or “Add to home screen” in the browser menu). On iPhone: Share button → “Add to Home Screen”. Once opened online, the forecast, mock exams, challenge, review and images already seen work without internet.",
 "sube": "rising",
 "baja": "falling",
 "estable": "stable",
@@ -1929,6 +1932,9 @@ const I18N = {
 "s.informe": "Relatório de extração",
 "Abrir la imagen a tamaño completo": "Abrir a imagem em tamanho completo",
 "Imagen de la pregunta {0} del MIR {1}": "Imagem da pergunta {0} do MIR {1}",
+"s.instalar": "Instalar a app",
+"Instalable y sin conexión": "Instalável e sem ligação",
+"En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.": "Em Android ou no computador, carregue em «Instalar a app» (ou «Adicionar ao ecrã principal» no menu do navegador). No iPhone: botão Partilhar → «Adicionar ao ecrã principal». Depois de aberta com ligação, a previsão, os simulados, o desafio, a revisão e as imagens já vistas funcionam sem internet.",
 "sube": "sobe",
 "baja": "desce",
 "estable": "estável",
@@ -2228,6 +2234,7 @@ const GLOS = [
   ['¿Predice preguntas concretas?', 'No. Predice cuántas preguntas tendrá cada asignatura. El simulacro usa preguntas oficiales de años anteriores en esa proporción: sirve para entrenar el formato y el ritmo, no para adivinar el examen.'],
   ['Generador con agentes', 'Un agente redacta, con el contexto de años anteriores (temas que más se repiten, temas que llevan tiempo sin salir y seis preguntas oficiales recientes), dos agentes resuelven a ciegas con las opciones barajadas y el código comprueba el formato y que no sea una copia del banco oficial. Solo se aceptan las preguntas que los tres responden igual. Eso reduce mucho los errores, pero no los elimina. Si tienes claves de dos proveedores, usa el otro para el segundo resolutor: modelos distintos se equivocan menos a la vez.'],
   ['Privacidad y coste', 'La predicción, los simulacros y el reto diario funcionan en tu navegador, sin clave y sin enviar nada. El generador envía al proveedor de IA que elijas la asignatura y unas preguntas oficiales de ejemplo; nunca datos tuyos. Cada tanda son tres llamadas a la IA y la pagas tú con tu clave: elige un modelo económico.'],
+  ['Instalable y sin conexión', 'En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
 let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null};
@@ -2645,6 +2652,12 @@ function cierraEnvio(v) { $('mEnvio').classList.remove('on'); if (envioRes) { co
 _cierres.mEnvio = () => cierraEnvio(false);
 $('envioOk').onchange = () => { $('envioSi').disabled = !$('envioOk').checked; };
 $('envioSi').onclick = () => cierraEnvio(true); $('envioNo').onclick = () => cierraEnvio(false);
+
+/* ── instalable y sin conexión (solo en https: GitHub Pages) ── */
+let INSTALAR = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALAR = e; $('btnInstalar').hidden = false; });
+$('btnInstalar').onclick = async () => { if (!INSTALAR) return; INSTALAR.prompt(); try { await INSTALAR.userChoice; } catch {} INSTALAR = null; $('btnInstalar').hidden = true; };
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {} }
 
 /* ── arranque: datos → predicción → enlaces compartidos (?reto, ?sim=…) ── */
 (async () => {
