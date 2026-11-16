@@ -5,19 +5,23 @@
  "prov2": "OpenAI",
  "n": 100,
  "A": {
-  "ta": 0.94,
+  "ta": 0.93,
   "fa": 0
  },
  "B": {
-  "ta": 0.87,
+  "ta": 0.85,
   "fa": 0
  },
  "C": {
-  "ta": 0.78,
+  "ta": 0.74,
   "fa": 0
  },
- "acierto1": 0.97,
- "acierto2": 0.94,
+ "D": {
+  "ta": 0.91,
+  "fa": 0
+ },
+ "acierto1": 0.96,
+ "acierto2": 0.95,
  "acuerdo": 0.94,
- "precisionAcuerdo": 1
+ "precisionAcuerdo": 0.9893617021276596
 }
