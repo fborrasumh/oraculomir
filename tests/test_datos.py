@@ -77,4 +77,19 @@ check('año del examen: convocatoria 2025-2026 → 2026', F.anio_de('Convocatori
 check('tipo de documento', F.tipo_de('Cuaderno de examen') == 'cuaderno' and F.tipo_de('Plantilla de respuestas correctas') == 'plantilla' and F.tipo_de('Cuaderno de imágenes') == 'imagenes')
 check('titulación: Medicina sí, Farmacia no', F.es_medicina('MEDICINA cuaderno 2020') and not F.es_medicina('FARMACIA cuaderno 2020'))
 c = []; F.anota(c, 'https://x/a.pdf', 'Plantilla provisional de respuestas MEDICINA 2024'); check('plantilla provisional se distingue de la definitiva', c and c[0]['tipo'] == 'plantilla_provisional')
+# imágenes reales del banco publicado: cada pregunta con imagen apunta a un JPEG válido y con el mismo nº que cita su enunciado
+import json, re
+from PIL import Image
+RAIZ = pathlib.Path(__file__).resolve().parent.parent
+_d = json.loads((RAIZ / 'data' / 'mir.json').read_text(encoding='utf-8')); _P = _d['preguntas'] if isinstance(_d, dict) else _d
+_mal = []
+for q in [q for q in _P if q.get('img')]:
+    f = RAIZ / q['img']; m = re.search(r'imagen\s*(?:n[ºo°.]*\s*)?(\d+)', q['enunciado'], re.I)
+    try:
+        with Image.open(f) as I: I.verify()
+        with Image.open(f) as I: w, h = I.size
+    except Exception as e: _mal.append((q['id'], 'no se abre: ' + str(e))); continue
+    if w < 200 or h < 120: _mal.append((q['id'], f'demasiado pequeña {w}x{h}'))
+    if not m or int(m.group(1)) != int(re.search(r'/(\d+)\.jpg$', q['img']).group(1)): _mal.append((q['id'], 'el nº de imagen no coincide con el enunciado'))
+check(f'imágenes del banco ({sum(1 for q in _P if q.get("img"))}): existen, se abren y corresponden a su pregunta', not _mal, str(_mal[:5]))
 print('\nTODO OK' if ok else '\nHAY FALLOS'); sys.exit(0 if ok else 1)
