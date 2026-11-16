@@ -193,6 +193,7 @@ async def main():
         check('corrección del examen generado (todas acertadas)', await p.evaluate('puntua(S.sim.qs.map(preg), S.sim.resp).ac') == 25)
         check('las preguntas generadas no entran en el historial oficial', not await p.evaluate("S.sim.qs.some(id=>S.hist[id])"))
         await p.click('#simRev [data-porque]'); await p.wait_for_timeout(200)
+        check('«Ver la explicación» muestra la del redactor sin nueva llamada', 'Explicación del redactor' in await p.inner_text('#simRev'))
         # medición con preguntas oficiales (respuesta conocida): clave buena y clave errónea
         EXAMEN['activo'] = False; h.seen.clear()
         C = await p.evaluate("""(async () => { const viejas = DATA.preguntas;
@@ -202,10 +203,40 @@ async def main():
         check('medición: 2 tandas × (2 resolutores + 2 × panel) = 12 llamadas', len(h.seen) == 12, str(len(h.seen)))
         await p.evaluate("CALIB = " + json.dumps(C) + "; go(8)"); await p.wait_for_timeout(200)
         check('la medición se ve en «Cómo se valida»', 'Panel completo' in await p.inner_text('#valCalib'))
-        check('«Ver la explicación» muestra la del redactor sin nueva llamada', 'Explicación del redactor' in await p.inner_text('#simRev'))
+        # Mis generadas: todo lo generado queda en IndexedDB; un examen nuevo no borra el anterior
+        check('el examen generado está en el archivo', await p.evaluate('S.archivo.length') == 1 and await p.evaluate('S.archivo[0] === S.examenIA'))
+        # dos preguntas sueltas con el id antiguo (g1, g2, repetibles entre tandas): al recargar se les da uno único
+        await p.evaluate("S.gen = [1, 2].map(k => ({...S.archivo[0].preguntas[k], id: 'g' + k, estado: k === 1 ? 'aceptada' : 'dudosa', ia: undefined})); guardaYa()")
+        await p.reload(); await p.wait_for_timeout(800)
+        ids = await p.evaluate('S.gen.map(g => g.id)')
+        check('las preguntas sueltas tienen id único', len(ids) == 2 and len(set(ids)) == 2 and all(i.startswith('g-') for i in ids), str(ids))
+        EXAMEN['activo'] = True
+        await p.evaluate("ENVIO_OK=true;go(4)"); await p.select_option('#exN', '25'); await p.click('#btnExGen'); await h.esp("S.archivo.length===2 && S.examenIA.estado==='listo'", n=240)
+        check('generar otro examen guarda el anterior', await p.evaluate('S.archivo.length') == 2)
+        await p.click('#btnExBorra'); await p.wait_for_timeout(100)
+        check('«Cerrar» no borra del archivo', await p.evaluate('S.examenIA') is None and await p.evaluate('S.archivo.length') == 2)
+        await p.reload(); await p.wait_for_timeout(800)
+        check('tras recargar siguen los 2 exámenes y las preguntas sueltas', await p.evaluate('S.archivo.length') == 2 and await p.evaluate('S.gen.length') == len(ids))
+        await p.evaluate('go(9)'); await p.wait_for_timeout(200)
+        check('«Mis generadas» lista los exámenes y las preguntas', await p.locator('#miasEx [data-exsim]').count() == 2 and await p.locator('#miasGen details').count() == len(ids))
+        await h.shot(str(OUT / '9_mias.png'))
+        await p.click('#miasEx [data-exsim] >> nth=1'); await p.wait_for_timeout(300)
+        check('simulacro con un examen antiguo', await p.evaluate('step') == 2 and await p.evaluate('S.sim.qs.length') == 25 and await p.evaluate('S.sim.qs.every(id => !!preg(id))'))
+        await p.evaluate('go(9)'); await p.wait_for_timeout(200)
+        await p.click('#btnMiasSim'); await p.wait_for_timeout(300)
+        check('simulacro con las preguntas sueltas aprobadas', await p.evaluate('S.sim.qs.length') >= 1 and await p.evaluate("S.sim.qs.every(id => preg(id) && preg(id).estado === 'aceptada')"))
+        await p.evaluate('go(9)'); await p.wait_for_timeout(200)
+        fn = await h.descarga('#btnMiasCopia', str(OUT / 'mias.json')); cop = json.loads((OUT / 'mias.json').read_text())
+        check('copia JSON con exámenes y preguntas', len(cop['archivo']) == 2 and len(cop['gen']) == len(ids))
+        await p.evaluate("S.archivo=[];S.gen=[];guarda()"); await p.set_input_files('#miasImporta', str(OUT / 'mias.json')); await p.wait_for_timeout(400)
+        check('recuperar la copia', await p.evaluate('S.archivo.length') == 2 and await p.evaluate('S.gen.length') == len(ids))
+        # guía de la clave
+        await p.click('#btnIA'); await p.wait_for_selector('#mIA.on'); await p.click('#mIA [data-clave]'); await p.wait_for_timeout(200)
+        check('guía para conseguir la clave', await p.evaluate('step') == 10 and 'platform.openai.com' in await p.inner_text('#clavePasos') and 'cinco llamadas' in await p.inner_text('#claveCoste'))
+        await h.shot(str(OUT / '10_clave.png'))
         # si los agentes lo descartan todo: se completa con oficiales, marcadas
         EXAMEN['mal'] = True
-        await p.evaluate("S.examenIA=null;go(4)"); await p.select_option('#exN', '25'); await p.click('#btnExGen'); await h.esp("S.examenIA && S.examenIA.estado==='listo'", n=240)
+        await p.evaluate("S.examenIA=null;ENVIO_OK=true;go(4)"); await p.select_option('#exN', '25'); await p.check('#exRelleno'); await p.click('#btnExGen'); await h.esp("S.examenIA && S.examenIA.estado==='listo'", n=240)
         Y = await p.evaluate("({n:S.examenIA.preguntas.length, ia:S.examenIA.preguntas.filter(q=>q.ia).length, desc:S.examenIA.motivos.length})")
         check('si los agentes discrepan, nada entra y se completa con oficiales', Y['n'] == 25 and Y['ia'] == 0 and Y['desc'] > 0, str(Y))
         EXAMEN['activo'] = False; EXAMEN['mal'] = False

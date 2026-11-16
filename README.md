@@ -34,6 +34,8 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
    - Se puede continuar si se corta. Lo que los agentes descartan se completa, si se quiere, con preguntas oficiales marcadas.
    - Se hace como simulacro con reloj y puntuación MIR, y se descarga en Word o Moodle (GIFT).
    - 200 preguntas cuestan unas 150 llamadas con la clave de cada persona; la app lo estima antes de empezar.
+   - **Mis generadas:** todos los exámenes y las preguntas sueltas generados se guardan en el navegador (IndexedDB), sin servidor. Se pueden volver a hacer como simulacro, continuar, exportar a Word o Moodle, borrar, y guardar o recuperar en una copia JSON.
+   - **Tu clave de IA:** guía paso a paso para conseguir la clave con límite de gasto (OpenAI, Gemini o Claude), qué cuesta y en qué se diferencia de una suscripción al chatbot.
 7. **«¿Por qué?» en cada pregunta corregida**, con la clave de IA de cada persona. La IA explica la respuesta **oficial** y no puede cambiarla; si con las guías actuales le parece discutible, lo dice aparte. La explicación se guarda para no pagarla dos veces.
 8. **Mi estudio:**
    - **Repaso espaciado de fallos:** cada fallo vuelve a salir al día siguiente y, si se acierta, a los 1, 3, 7, 21 y 60 días.

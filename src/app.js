@@ -1,8 +1,8 @@
 /* ══ OráculoMIR · interfaz. La lógica pura está en nucleo.js (probada en Node) y los datos en datos.js ══ */
 const STEPS = ['Inicio', 'Predicción', 'Simulacro', 'Generador IA', 'Examen 2027'];
-const HUBS = ['Reto diario', 'Mi estudio', 'Banco y exámenes', 'Validación'];
+const HUBS = ['Reto diario', 'Mi estudio', 'Banco y exámenes', 'Validación', 'Mis generadas', 'Tu clave de IA'];
 const NAV = [['Ver la predicción', 'Todo funciona sin clave, salvo el generador de preguntas nuevas.'], ['Siguiente: simulacro', 'Pulsa «Practicar» en una asignatura para un simulacro solo de ella.'], ['Siguiente: generador IA', 'Elige cuántas preguntas y empieza; puedes dejar el simulacro y volver.'], ['Siguiente: examen 2027', 'Descarga las preguntas aceptadas en Word, CSV o Moodle (GIFT).'], ['Volver al inicio', 'Si se corta, pulsa «Continuar»: no se repite lo ya generado.']];
-const RENDER = {0: pintaInicio, 1: pintaPred, 2: pintaSim, 3: pintaGen, 4: pintaExamenIA, 5: pintaReto, 6: pintaEstudio, 7: pintaBanco, 8: pintaValidacion};
+const RENDER = {0: pintaInicio, 1: pintaPred, 2: pintaSim, 3: pintaGen, 4: pintaExamenIA, 5: pintaReto, 6: pintaEstudio, 7: pintaBanco, 8: pintaValidacion, 9: pintaMias, 10: pintaClave};
 const REPO = 'fborrasumh/oraculomir';
 const GLOS = [
   ['¿De dónde salen las preguntas?', 'De los cuadernos de examen y las plantillas definitivas de respuestas que publica el Ministerio de Sanidad en su portal de Formación Sanitaria Especializada. Un proceso automático del repositorio los descarga, extrae el texto y lee la respuesta oficial de cada pregunta. Las preguntas anuladas y las que dependen de una imagen no entran en los simulacros.'],
@@ -15,7 +15,7 @@ const GLOS = [
   ['Instalable y sin conexión', 'En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
-let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null, examenIA: null};
+let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null, examenIA: null, archivo: []};
 let ENVIO_OK = false, PRED = {filas: [], anios: []}, VAL = null, relojT = null;
 const BASE_URL = () => location.origin + location.pathname;
 const pct = x => Math.round(x * 100) + ' %';
@@ -26,7 +26,8 @@ function calcula() {
   PRED = predice(c, ANIO_OBJ, {asigs: DATA.asignaturas.map(a => a.id).filter(id => id !== 'otras' && aniosDe(c).some(y => c[y][id]))});
   VAL = valida(c);
 }
-const preg = id => DATA.preguntas.find(q => q.id === id) || ((S.examenIA && S.examenIA.preguntas) || []).find(q => q.id === id);
+const preg = id => DATA.preguntas.find(q => q.id === id) || ((S.examenIA && S.examenIA.preguntas) || []).find(q => q.id === id)
+  || S.gen.find(q => q.id === id) || (S.archivo || []).reduce((r, X) => r || X.preguntas.find(q => q.id === id), null);
 const origenDe = q => q.ia ? t('Pregunta generada por IA y aprobada por un panel de cinco agentes (no oficial)') : q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
 
 /* ── compartir: menú nativo del móvil; si no hay, se copia al portapapeles ── */
@@ -340,7 +341,8 @@ function pintaExamenIA() {
     <div class="om-bar" role="img" aria-label="${esc(pct(X.preguntas.length / X.n))}"><span style="width:${(100 * X.preguntas.length / X.n).toFixed(1)}%"></span><em>${X.preguntas.length}/${X.n}</em></div>
     <div class="actions"><button class="btn btn-primary" type="button" id="btnExSim" ${X.preguntas.length ? '' : 'disabled'}>${ico('play')} ${esc(t('Hacer el simulacro'))}</button>
       <button class="btn btn-word" type="button" id="btnExWord" ${tot ? '' : 'disabled'}>${ico('doc')} Word</button><button class="btn btn-ghost" type="button" id="btnExGift" ${tot ? '' : 'disabled'}>Moodle (GIFT)</button>
-      <button class="btn btn-ghost" type="button" id="btnExBorra">${ico('trash')} ${esc(t('Borrar'))}</button></div>
+      <button class="btn btn-ghost" type="button" id="btnExBorra">${ico('x')} ${esc(t('Cerrar'))}</button></div>
+    <p class="help">${esc(t('Todo lo que generas se guarda en este navegador. Los exámenes anteriores y las preguntas sueltas están en «Mis generadas».'))} <a href="#" data-mias>${esc(t('Ver mis generadas'))}</a></p>
     <details class="om-gen"><summary><b>${esc(t('Reparto por asignatura'))}</b></summary><div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Asignatura'))}</th><th>${esc(t('Pedidas'))}</th><th>${esc(t('IA verificadas'))}</th><th>${esc(t('Oficiales'))}</th></tr></thead><tbody>
       ${filas.map(([a, k]) => `<tr><td>${esc(nombreAsig(a))}</td><td>${k}</td><td>${hechas(a)}</td><td>${rel(a) || ''}</td></tr>`).join('')}</tbody></table></div></details>
     ${X.motivos.length ? `<details class="om-gen"><summary>${esc(t('Descartes del código y de los agentes ({0})', X.motivos.length))}</summary><ul class="fa-ul">${X.motivos.slice(-60).map(m => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
@@ -348,11 +350,11 @@ function pintaExamenIA() {
   $('btnExSim').onclick = () => { creaExamenIA($('exTiempo').value); go(2); };
   $('btnExWord').onclick = async () => { try { dl('oraculomir_examen_2027.docx', await wordDeMarkdown(mdPreguntas(X.preguntas.filter(q => q.ia)), {titulo: APP_NAME + ' · ' + t('Examen MIR 2027 generado'), subtitulo: t('Preguntas generadas y revisadas por un panel de agentes de IA'), pie: t('Generado con {0}. Preguntas no oficiales: compruébalas en tu manual.', APP_NAME)})); } catch (e) { toast(e.message, 7000); } };
   $('btnExGift').onclick = () => dl('oraculomir_examen_2027.gift.txt', aGIFT(X.preguntas.filter(q => q.ia)), 'text/plain;charset=utf-8');
-  $('btnExBorra').onclick = () => { if (S.sim && S.sim.ia) S.sim = null; S.examenIA = null; guarda(); pintaExamenIA(); };
+  $('btnExBorra').onclick = () => { S.examenIA = null; guarda(); pintaExamenIA(); };
 }
 function mdPreguntas(qs) { return qs.map((g, i) => `## ${i + 1}. ${nombreAsig(g.asig)} · ${g.tema || ''}\n${g.enunciado}\n\n${g.opciones.map((o, k) => `${k + 1}. ${o}`).join('\n')}\n\n**${t('Respuesta')}:** ${g.correcta}. ${g.explicacion || ''}${g.referencia ? `\n\n*${t('Referencia que cita el redactor (compruébala)')}: ${g.referencia}*` : ''}`).join('\n\n'); }
-function creaExamenIA(tiempo) {
-  const X = S.examenIA; if (!X || !X.preguntas.length) return false;
+function creaExamenIA(tiempo, X = S.examenIA) {
+  if (!X || !X.preguntas.length) return false;
   const ids = baraja(X.preguntas.map(q => q.id), rng(X.id));
   S.sim = {semilla: X.id, asig: 'probable', ia: true, qs: ids, resp: {}, idx: 0, fin: false, t0: Date.now(), limite: tiempo === 'mir' ? Math.round(ids.length * 270 * 60 / 210) : 0};
   guarda(); return true;
@@ -364,8 +366,8 @@ $('btnExGen').onclick = async () => {
   if (busy) return; if (!pideClave()) return;
   let X = S.examenIA;
   if (!X || X.estado === 'listo') {
-    if (X && X.estado === 'listo' && !confirm(t('¿Generar un examen nuevo? El actual se borrará.'))) return;
     const n = +$('exN').value; X = S.examenIA = {id: uid('ex-'), n, plan: planExamen(n), preguntas: [], motivos: [], estado: 'generando', relleno: $('exRelleno').checked, rev: $('exRev').value || '', intentos: {}, creado: new Date().toISOString()};
+    S.archivo.unshift(X);   // todo lo generado queda en «Mis generadas» (IndexedDB de este navegador)
   }
   const e = estimaExamen(X.n), muestra = PROMPT_GEN(nombreAsig(Object.keys(X.plan)[0]), LOTE_IA, [], {total: 0});
   if (!(await pideEnvio(muestra, 0, t('Se van a generar {0} preguntas: unas {1} llamadas a {2} con tu clave (el panel de cinco agentes por cada tanda). Se envían la asignatura, el contexto de años anteriores y preguntas oficiales de ejemplo; nunca datos tuyos.', X.n, e.llamadas, PROV[getProv()].n)))) return;
@@ -591,7 +593,7 @@ $('btnGen').onclick = async () => {
   busy = true; $('btnGen').disabled = true; const st = $('genEstado');
   try {
     const r = await generaTanda(asig, n, rev, m => { st.innerHTML = '<span class="spin"></span> ' + esc(m); });
-    S.gen.push(...r.aceptadas, ...r.dudosas);
+    const fecha = new Date().toISOString(); S.gen.push(...[...r.aceptadas, ...r.dudosas].map(c => ({...c, id: uid('g-'), fecha})));
     S.genStats = {total: n, aceptadas: r.aceptadas.length, dudosas: r.dudosas.length, descartadas: r.descartadas, motivos: r.motivos, contexto: {asig, total: r.ctx.total, frecuentes: r.ctx.frecuentes.slice(0, 8), olvidados: r.ctx.olvidados, ejemplos: r.ejemplos.map(q => q.id)}};
     await guardaYa(); st.textContent = t('Hecho: {0} aceptadas de {1}.', r.aceptadas.length, n); pintaGen();
   } catch (e) { st.textContent = e.message; toast(e.message, 8000); }
@@ -621,9 +623,86 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTAL
 $('btnInstalar').onclick = async () => { if (!INSTALAR) return; INSTALAR.prompt(); try { await INSTALAR.userChoice; } catch {} INSTALAR = null; $('btnInstalar').hidden = true; };
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {} }
 
+/* ── Mis generadas: todo lo generado con IA, guardado en IndexedDB (solo en este navegador) ── */
+const fechaCorta = iso => { try { return new Date(iso).toLocaleDateString(LANG === 'en' ? 'en-GB' : LANG, {day: 'numeric', month: 'short', year: 'numeric'}); } catch { return (iso || '').slice(0, 10); } };
+let MIAS_N = 30;
+function pintaMias() {
+  const ex = S.archivo || [], nIA = ex.reduce((a, X) => a + X.preguntas.filter(q => q.ia).length, 0);
+  $('miasResumen').textContent = t('{0} exámenes generados ({1} preguntas) y {2} preguntas sueltas del generador. Se guardan solo en este navegador: haz una copia si cambias de ordenador o borras los datos del navegador.', ex.length, nIA, S.gen.length);
+  $('miasEx').innerHTML = ex.length ? ex.map(X => { const ia = X.preguntas.filter(q => q.ia).length;
+    return `<div class="om-fila"><div><b>${esc(t('Examen de {0} preguntas', X.n))}</b> · ${esc(fechaCorta(X.creado))} <span class="fa-chip ${X.estado === 'listo' ? 'ok' : 'aviso'}">${esc(t(X.estado === 'listo' ? 'listo' : 'a medias'))}</span><br><small class="sub">${esc(t('{0} generadas por IA · {1} oficiales', ia, X.preguntas.length - ia))}</small></div>
+      <div class="actions" style="margin:0"><button class="btn btn-primary btn-sm" type="button" data-exsim="${X.id}" ${X.preguntas.length ? '' : 'disabled'}>${ico('play')} ${esc(t('Simulacro'))}</button>${X.estado !== 'listo' ? `<button class="btn btn-ghost btn-sm" type="button" data-exsigue="${X.id}">${esc(t('Continuar'))}</button>` : ''}
+      <button class="btn btn-word btn-sm" type="button" data-exword="${X.id}" ${ia ? '' : 'disabled'}>Word</button><button class="btn btn-ghost btn-sm" type="button" data-exgift="${X.id}" ${ia ? '' : 'disabled'}>GIFT</button><button class="btn btn-ghost btn-sm" type="button" data-exborra="${X.id}" aria-label="${esc(t('Borrar'))}">${ico('trash')}</button></div></div>`; }).join('')
+    : `<p class="empty">${esc(t('Todavía no has generado ningún examen. Hazlo en el paso 4.'))}</p>`;
+  const asigs = [...new Set(S.gen.map(g => g.asig))], fa = $('miasAsig'), fv = fa.value, fe = $('miasEstado').value;
+  fa.innerHTML = `<option value="">${esc(t('Todas las asignaturas'))}</option>` + asigs.map(a => `<option value="${a}">${esc(nombreAsig(a))} (${S.gen.filter(g => g.asig === a).length})</option>`).join(''); fa.value = asigs.includes(fv) ? fv : '';
+  const lista = S.gen.filter(g => (!fa.value || g.asig === fa.value) && (!fe || g.estado === fe)).slice().reverse();
+  $('miasGen').innerHTML = lista.length ? lista.slice(0, MIAS_N).map(g => `<p class="help" style="margin:10px 0 2px">${esc(fechaCorta(g.fecha))}</p>` + cartaGen(g)).join('')
+    + (lista.length > MIAS_N ? `<div class="actions"><button class="btn btn-ghost btn-sm" type="button" id="btnMiasMas">${esc(t('Ver más ({0})', lista.length - MIAS_N))}</button></div>` : '')
+    : `<p class="empty">${esc(t('No hay preguntas sueltas. Genéralas en el paso 3.'))}</p>`;
+  $('btnMiasSim').disabled = !lista.some(g => g.estado === 'aceptada');
+  if ($('btnMiasMas')) $('btnMiasMas').onclick = () => { MIAS_N += 30; pintaMias(); };
+  $('btnMiasSim').onclick = () => { const ids = baraja(lista.filter(g => g.estado === 'aceptada').map(g => g.id), rng('mias' + Date.now())).slice(0, 210); if (!ids.length) return;
+    S.sim = {semilla: 'mias', asig: 'probable', ia: true, qs: ids, resp: {}, idx: 0, fin: false, t0: Date.now(), limite: 0}; guarda(); go(2); };
+}
+$('miasAsig').onchange = () => { MIAS_N = 30; pintaMias(); }; $('miasEstado').onchange = () => { MIAS_N = 30; pintaMias(); };
+$('miasEx').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return; const id = Object.values(b.dataset)[0], X = (S.archivo || []).find(x => x.id === id); if (!X) return;
+  if (b.dataset.exsim) { creaExamenIA('mir', X); go(2); }
+  else if (b.dataset.exsigue) { S.examenIA = X; guarda(); go(4); }
+  else if (b.dataset.exword) { try { dl('oraculomir_examen_' + X.creado.slice(0, 10) + '.docx', await wordDeMarkdown(mdPreguntas(X.preguntas.filter(q => q.ia)), {titulo: APP_NAME + ' · ' + t('Examen MIR 2027 generado'), subtitulo: t('Preguntas generadas y revisadas por un panel de agentes de IA')})); } catch (err) { toast(err.message); } }
+  else if (b.dataset.exgift) dl('oraculomir_examen_' + X.creado.slice(0, 10) + '.gift.txt', aGIFT(X.preguntas.filter(q => q.ia)), 'text/plain;charset=utf-8');
+  else if (b.dataset.exborra) { if (!confirm(t('¿Borrar este examen de este navegador? No se puede deshacer.'))) return; S.archivo = S.archivo.filter(x => x !== X); if (S.examenIA === X) S.examenIA = null; if (S.sim && S.sim.semilla === X.id) S.sim = null; await guardaYa(); pintaMias(); }
+};
+$('btnMiasCopia').onclick = () => dl('oraculomir_mis_generadas_' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({app: APP_NAME, version: 1, fecha: new Date().toISOString(), archivo: S.archivo, gen: S.gen}), 'application/json');
+$('miasImporta').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text()); if (!Array.isArray(d.archivo) || !Array.isArray(d.gen)) throw new Error(t('El fichero no es una copia de «Mis generadas».'));
+    const exIds = new Set(S.archivo.map(X => X.id)), gIds = new Set(S.gen.map(g => g.id));
+    const nx = d.archivo.filter(X => X && X.id && Array.isArray(X.preguntas) && !exIds.has(X.id)), ng = d.gen.filter(g => g && g.id && Array.isArray(g.opciones) && !gIds.has(g.id));
+    S.archivo.push(...nx); S.gen.push(...ng); await guardaYa(); pintaMias(); toast(t('Recuperados {0} exámenes y {1} preguntas.', nx.length, ng.length));
+  } catch (err) { toast(err.message, 6000); }
+};
+document.addEventListener('click', e => { if (e.target.closest('[data-mias]')) { e.preventDefault(); go(9); } if (e.target.closest('[data-clave]')) { e.preventDefault(); $('mIA').classList.remove('on'); go(10); } });
+
+/* ── Tu clave de IA: cómo conseguirla y lo que cuesta (como en PAUsible, para estudiantes del MIR) ── */
+const listaT = (tit, items, tag = 'ul') => `<h3>${esc(t(tit))}</h3><${tag}>${items.map(x => `<li>${esc(t(x))}</li>`).join('')}</${tag}>`;
+function pintaClave() {
+  $('clavePasos').innerHTML = listaT('Crear la clave con límite de gasto (OpenAI)', [
+    'Entra en platform.openai.com y crea una cuenta. Es distinta de la de ChatGPT, aunque puedes usar el mismo correo.',
+    'En Billing, añade un método de pago y compra un crédito pequeño (por ejemplo, 5 €). Fija un límite de gasto mensual bajo antes de crear la clave.',
+    'En API keys, pulsa Create new secret key. Cópiala y guárdala en un lugar seguro: no se vuelve a mostrar.',
+    'En OráculoMIR, pulsa IA arriba a la derecha, elige OpenAI, pega la clave, pulsa «Ver los modelos de mi clave» y elige uno económico.',
+    'No la compartas ni la pegues en chats o redes. Si se expone, revócala en la plataforma y crea otra.'], 'ol')
+    + `<p class="help">${esc(t('También valen Google Gemini (aistudio.google.com, con una capa gratuita limitada) y Anthropic Claude (console.anthropic.com). Con claves de dos proveedores distintos, el segundo resuelve y revisa: modelos distintos se equivocan menos a la vez.'))}</p>`
+    + `<div class="actions"><a class="btn btn-ghost btn-sm" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI</a><a class="btn btn-ghost btn-sm" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google Gemini</a><a class="btn btn-ghost btn-sm" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Anthropic Claude</a></div>`;
+  $('claveCoste').innerHTML = listaT('¿Cuánto cuesta?', [
+    'Se paga por uso, por tokens (trozos de texto). Con un modelo económico, cada tanda de preguntas cuesta céntimos.',
+    'Cada tanda hace cinco llamadas: el redactor, dos resolutores a ciegas, el Contradictor y la Lista de control. Un examen de 200 preguntas son unas 150 llamadas; la app te lo estima antes de empezar.',
+    'Con el límite de gasto que fijas, nunca pagarás más de lo que hayas decidido.',
+    'La clave se guarda solo en este navegador y solo se envía a tu proveedor. OráculoMIR no la ve ni la guarda en ningún servidor.']);
+  $('claveChat').innerHTML = listaT('Suscripción mensual al chatbot (ChatGPT, Claude…)', [
+    'Cuota fija cada mes, la uses mucho o poco.',
+    'Conversación libre: el resultado depende de cómo preguntes y cambia de una vez a otra.',
+    'Las respuestas que te da las tienes que comprobar tú.',
+    'Un examen completo se hace pregunta a pregunta, copiando y pegando.',
+    'No sirve para OráculoMIR: la suscripción no incluye la clave de API, que se paga aparte.']);
+  $('claveApi').innerHTML = listaT('Clave de API en OráculoMIR', [
+    'Pagas solo lo que usas, con un límite que fijas tú.',
+    'OráculoMIR organiza el trabajo: redacta con el contexto de los MIR anteriores, en la proporción que predice para 2027.',
+    'Cada pregunta pasa por un panel de cinco agentes; solo se queda lo que lo supera.',
+    'Todo lo que generas queda guardado en este navegador, en «Mis generadas».',
+    'Por API, OpenAI no usa tus datos para entrenar sus modelos por defecto.']);
+  $('claveNota').textContent = t('Son complementarios: el chatbot va bien para preguntar dudas; la clave en OráculoMIR, para generar preguntas y exámenes revisados por el panel. Y recuerda: no hace falta ninguna de las dos para la predicción, los simulacros con preguntas oficiales ni el reto diario.');
+}
+
 /* ── arranque: datos → predicción → enlaces compartidos (?reto, ?sim=…) ── */
 (async () => {
   const p = await cargaEstado(); if (p) S = {...S, ...p};
+  S.archivo = S.archivo || []; S.gen = S.gen || [];
+  if (S.examenIA) { const a = S.archivo.find(X => X.id === S.examenIA.id); if (a) S.examenIA = a; else S.archivo.unshift(S.examenIA); }
+  S.gen.forEach(g => { if (!/^g-/.test(g.id || '')) g.id = uid('g-'); });
   await cargaDatos(); await cargaCalibracion(); calcula(); iniciaUI();
   const q = new URLSearchParams(location.search);
   if (q.has('reto')) return go(5);
