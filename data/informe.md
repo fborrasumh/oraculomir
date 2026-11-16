@@ -1,17 +1,9 @@
 # Informe de extracción · OráculoMIR
 
-Generado: 2026-11-16T00:04:32+00:00
+Generado: 2026-11-16T00:06:06+00:00
 
 | Año | Preguntas | Opciones | Con respuesta | Anuladas | Huecos | Estado |
 |---|---|---|---|---|---|---|
-| 2007 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2008 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2009 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2010 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2011 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2012 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2013 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
-| 2014 | 0 |  | 0 | 0 | 0 | ✕ falta cuaderno.pdf |
 | 2015 (copia) | 235 | 4 | 0 | 0 | 0 | ✓ |
 | 2016 (copia) | 235 | 4 | 231 | 4 | 0 | ✓ |
 | 2017 (copia) | 235 | 4 | 232 | 3 | 0 | ✓ |
