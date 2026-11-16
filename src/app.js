@@ -1,8 +1,8 @@
 /* ══ OráculoMIR · interfaz. La lógica pura está en nucleo.js (probada en Node) y los datos en datos.js ══ */
-const STEPS = ['Inicio', 'Predicción', 'Simulacro', 'Generador IA'];
+const STEPS = ['Inicio', 'Predicción', 'Simulacro', 'Generador IA', 'Examen 2027'];
 const HUBS = ['Reto diario', 'Mi estudio', 'Banco y exámenes', 'Validación'];
-const NAV = [['Ver la predicción', 'Todo funciona sin clave, salvo el generador de preguntas nuevas.'], ['Siguiente: simulacro', 'Pulsa «Practicar» en una asignatura para un simulacro solo de ella.'], ['Siguiente: generador IA', 'Elige cuántas preguntas y empieza; puedes dejar el simulacro y volver.'], ['Volver al inicio', 'Descarga las preguntas aceptadas en Word, CSV o Moodle (GIFT).']];
-const RENDER = {0: pintaInicio, 1: pintaPred, 2: pintaSim, 3: pintaGen, 4: pintaReto, 5: pintaEstudio, 6: pintaBanco, 7: pintaValidacion};
+const NAV = [['Ver la predicción', 'Todo funciona sin clave, salvo el generador de preguntas nuevas.'], ['Siguiente: simulacro', 'Pulsa «Practicar» en una asignatura para un simulacro solo de ella.'], ['Siguiente: generador IA', 'Elige cuántas preguntas y empieza; puedes dejar el simulacro y volver.'], ['Siguiente: examen 2027', 'Descarga las preguntas aceptadas en Word, CSV o Moodle (GIFT).'], ['Volver al inicio', 'Si se corta, pulsa «Continuar»: no se repite lo ya generado.']];
+const RENDER = {0: pintaInicio, 1: pintaPred, 2: pintaSim, 3: pintaGen, 4: pintaExamenIA, 5: pintaReto, 6: pintaEstudio, 7: pintaBanco, 8: pintaValidacion};
 const REPO = 'fborrasumh/oraculomir';
 const GLOS = [
   ['¿De dónde salen las preguntas?', 'De los cuadernos de examen y las plantillas definitivas de respuestas que publica el Ministerio de Sanidad en su portal de Formación Sanitaria Especializada. Un proceso automático del repositorio los descarga, extrae el texto y lee la respuesta oficial de cada pregunta. Las preguntas anuladas y las que dependen de una imagen no entran en los simulacros.'],
@@ -15,7 +15,7 @@ const GLOS = [
   ['Instalable y sin conexión', 'En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
-let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null};
+let S = {sim: null, reto: null, racha: {ultima: null, n: 0}, gen: [], genStats: null, asigSim: 'probable', hist: {}, explic: {}, prac: null, examenIA: null};
 let ENVIO_OK = false, PRED = {filas: [], anios: []}, VAL = null, relojT = null;
 const BASE_URL = () => location.origin + location.pathname;
 const pct = x => Math.round(x * 100) + ' %';
@@ -26,8 +26,8 @@ function calcula() {
   PRED = predice(c, ANIO_OBJ, {asigs: DATA.asignaturas.map(a => a.id).filter(id => id !== 'otras' && aniosDe(c).some(y => c[y][id]))});
   VAL = valida(c);
 }
-const preg = id => DATA.preguntas.find(q => q.id === id);
-const origenDe = q => q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
+const preg = id => DATA.preguntas.find(q => q.id === id) || ((S.examenIA && S.examenIA.preguntas) || []).find(q => q.id === id);
+const origenDe = q => q.ia ? t('Pregunta generada por IA y verificada por tres agentes (no oficial)') : q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
 
 /* ── compartir: menú nativo del móvil; si no hay, se copia al portapapeles ── */
 async function comparte(texto, url) {
@@ -47,10 +47,10 @@ function pintaInicio() {
     : `<div class="aviso"><b>${esc(t('Modo demostración.'))}</b> ${esc(t('Aún no se han cargado los exámenes oficiales: los recuentos son ficticios y las 12 preguntas son ejemplos escritos para la demo. Los datos reales los trae el flujo «Datos MIR» del repositorio.'))}</div>`;
   const pend = pendientes(S.hist, fechaMadrid()).length;
   $('inicioProj').innerHTML = (S.sim && !S.sim.fin ? `${esc(t('Tienes un simulacro a medias.'))} <button class="btn btn-ghost btn-sm" id="btnCont" type="button">${esc(t('Seguir'))}</button> ` : '')
-    + (pend ? `${esc(t('Tienes {0} preguntas para repasar hoy.', pend))} <button class="btn btn-ghost btn-sm" type="button" data-irpaso="5">${esc(t('Repasar'))}</button>` : '');
+    + (pend ? `${esc(t('Tienes {0} preguntas para repasar hoy.', pend))} <button class="btn btn-ghost btn-sm" type="button" data-irpaso="6">${esc(t('Repasar'))}</button>` : '');
 }
 $('btnStart').onclick = () => go(1);
-$('btnEjemplo').onclick = () => go(4);
+$('btnEjemplo').onclick = () => go(5);
 document.addEventListener('click', e => { if (e.target.id === 'btnCont') go(2); const b = e.target.closest('[data-irpaso]'); if (b) go(+b.dataset.irpaso); });
 
 /* ── 1 · predicción ── */
@@ -114,7 +114,7 @@ function pintaPregunta(box, ex, modo) {
       const n = k + 1, cls = ver ? (n === q.correcta ? 'ok' : n === r ? 'ko' : '') : (n === r ? 'sel' : '');
       return `<button type="button" role="radio" aria-checked="${n === r}" class="om-op ${cls}" data-op="${n}" ${ver ? 'disabled' : ''}><b>${n}</b><span>${esc(o)}</span></button>`; }).join('')}</div>
     ${ver ? `<p class="help">${esc(origenDe(q))}${r ? '' : ' · ' + esc(t('en blanco'))}. ${esc(t('Respuesta correcta: {0}.', q.correcta))}</p>
-      <div class="actions" style="margin-top:6px"><button class="btn btn-ghost btn-sm" type="button" data-porque="1">${ico('sparkles')} ${esc(t(S.explic[q.id] ? 'Ver la explicación' : '¿Por qué? (IA)'))}</button>${q.demo ? '' : `<a class="btn btn-ghost btn-sm" href="${esc(urlAviso(REPO, q))}" target="_blank" rel="noopener">${ico('github')} ${esc(t('Avisar de un error'))}</a>`}</div>
+      <div class="actions" style="margin-top:6px"><button class="btn btn-ghost btn-sm" type="button" data-porque="1">${ico('sparkles')} ${esc(t(S.explic[q.id] || q.ia ? 'Ver la explicación' : '¿Por qué? (IA)'))}</button>${q.demo || q.ia ? '' : `<a class="btn btn-ghost btn-sm" href="${esc(urlAviso(REPO, q))}" target="_blank" rel="noopener">${ico('github')} ${esc(t('Avisar de un error'))}</a>`}</div>
       <div class="om-exp" data-exp="${esc(q.id)}">${S.explic[q.id] ? expHTML(S.explic[q.id]) : ''}</div>` : ''}
     <div class="actions"><button class="btn btn-ghost btn-sm" type="button" data-mov="-1" ${i === 0 ? 'disabled' : ''}>${ico('left')} ${esc(t('Anterior'))}</button>
       ${!ver && r && modo === 'sim' ? `<button class="btn btn-ghost btn-sm" type="button" data-blanco="1">${esc(t('Dejar en blanco'))}</button>` : ''}
@@ -158,20 +158,21 @@ function pintaSim() {
   if (!qs.length) { S.sim = null; box.innerHTML = ''; return; }
   if (ex.fin) {
     const {p, html} = resumenHTML(qs, ex), url = enlaceSim(ex);
-    const txt = ex.anio ? t('He hecho el MIR {0} completo en OráculoMIR y he sacado una neta de {1}. ¿Te atreves?', ex.anio, p.neta) : t('He sacado una neta de {0} en un simulacro probable del MIR 2027 de {1} preguntas en OráculoMIR. ¿Me superas con el mismo examen?', p.neta, qs.length);
-    box.innerHTML = `<div class="card"><h3>${esc(ex.anio ? t('Resultado del MIR {0}', ex.anio) : t('Resultado del simulacro'))}</h3>${html}<p class="help">${esc(t('Los fallos ya están en tu repaso espaciado («Mi estudio»).'))}</p><div class="actions"><button class="btn btn-primary" type="button" id="btnCompSim">${ico('ext')} ${esc(t('Compartir y retar'))}</button><a class="btn btn-ghost" href="${esc(enlaceWA(txt + '\n' + url))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn btn-ghost" type="button" id="btnOtraSim">${ico('refresh')} ${esc(t('Otro simulacro'))}</button></div></div><div id="simRev"></div>`;
+    const txt = ex.ia ? t('He hecho un examen MIR 2027 de {0} preguntas generado por OráculoMIR y he sacado una neta de {1}. ¿Te animas?', qs.length, p.neta) : ex.anio ? t('He hecho el MIR {0} completo en OráculoMIR y he sacado una neta de {1}. ¿Te atreves?', ex.anio, p.neta) : t('He sacado una neta de {0} en un simulacro probable del MIR 2027 de {1} preguntas en OráculoMIR. ¿Me superas con el mismo examen?', p.neta, qs.length);
+    box.innerHTML = `<div class="card"><h3>${esc(ex.ia ? t('Resultado del examen MIR 2027 generado') : ex.anio ? t('Resultado del MIR {0}', ex.anio) : t('Resultado del simulacro'))}</h3>${html}<p class="help">${esc(t('Los fallos ya están en tu repaso espaciado («Mi estudio»).'))}</p><div class="actions"><button class="btn btn-primary" type="button" id="btnCompSim">${ico('ext')} ${esc(t('Compartir y retar'))}</button><a class="btn btn-ghost" href="${esc(enlaceWA(txt + '\n' + url))}" target="_blank" rel="noopener">WhatsApp</a><button class="btn btn-ghost" type="button" id="btnOtraSim">${ico('refresh')} ${esc(t('Otro simulacro'))}</button></div></div><div id="simRev"></div>`;
     $('btnCompSim').onclick = () => comparte(txt, url); $('btnOtraSim').onclick = () => { S.sim = null; guarda(); pintaSim(); };
     pintaPregunta($('simRev'), ex, 'sim'); return;
   }
   if (ex.anio) box.insertAdjacentHTML('afterbegin', '');
   pintaPregunta(box, ex, 'sim');
   if (ex.anio) box.querySelector('.om-cab').insertAdjacentHTML('afterbegin', `<span class="fa-chip ok">${esc(t('MIR {0} completo', ex.anio))}</span>`);
+  if (ex.ia) box.querySelector('.om-cab').insertAdjacentHTML('afterbegin', `<span class="fa-chip ok">${esc(t('Examen MIR 2027 generado'))}</span>`);
   if (ex.limite) {
     const tic = () => { const quedan = Math.max(0, ex.limite - (Date.now() - ex.t0) / 1000), el = $('reloj'); if (el) el.textContent = '⏱ ' + mmss(quedan); if (quedan <= 0) { clearInterval(relojT); toast(t('Se acabó el tiempo')); terminaSim(); } };
     tic(); relojT = setInterval(tic, 1000);
   }
 }
-const enlaceSim = ex => ex.anio ? `${BASE_URL()}?anio=${ex.anio}` : `${BASE_URL()}?sim=${encodeURIComponent(ex.semilla)}&n=${ex.qs.length}&a=${encodeURIComponent(ex.asig)}`;
+const enlaceSim = ex => ex.ia ? BASE_URL() : ex.anio ? `${BASE_URL()}?anio=${ex.anio}` : `${BASE_URL()}?sim=${encodeURIComponent(ex.semilla)}&n=${ex.qs.length}&a=${encodeURIComponent(ex.asig)}`;
 function creaSim(semilla, n, asig, tiempo) {
   const qs = simulacro(DATA.preguntas, PRED.filas, n, semilla, asig === 'probable' ? null : [asig]);
   if (!qs.length) { toast(t('No hay preguntas disponibles para esa asignatura')); return false; }
@@ -190,7 +191,7 @@ function terminaSim() {
   pintaSim(); window.scrollTo({top: 0});
 }
 /* historial personal (repaso espaciado y plan): solo preguntas con respuesta oficial */
-function anota(q, acierto) { if (q && q.correcta && !q.demo) S.hist[q.id] = registra(S.hist[q.id], acierto, fechaMadrid()); }
+function anota(q, acierto) { if (q && q.correcta && !q.demo && !q.ia) S.hist[q.id] = registra(S.hist[q.id], acierto, fechaMadrid()); }
 
 /* ── 4 · reto diario (mismas 10 preguntas para todos hoy) ── */
 function retoDeHoy() {
@@ -239,6 +240,7 @@ function expHTML(x) {
 }
 async function explica(q, box) {
   const cont = box.querySelector(`[data-exp="${CSS.escape(q.id)}"]`); if (!cont) return;
+  if (q.ia) { cont.innerHTML = cont.innerHTML ? '' : expHTML({clave: q.tema, explicacion: q.explicacion, repaso: q.referencia ? t('Referencia que cita el redactor (compruébala)') + ': ' + q.referencia : '', prov: t('redactor del examen')}); return; }
   if (S.explic[q.id]) { cont.innerHTML = cont.innerHTML ? '' : expHTML(S.explic[q.id]); return; }
   if (!pideClave()) return;
   const pr = PROMPT_EXP(q);
@@ -295,7 +297,7 @@ function buscaPinta() {
 }
 $('busTexto').oninput = () => { clearTimeout(buscaPinta.t); buscaPinta.t = setTimeout(buscaPinta, 250); };
 $('busAsig').onchange = buscaPinta; $('busAnio').onchange = buscaPinta;
-$('btnBusPrac').onclick = () => { const ids = baraja(ULTIMA_BUSQUEDA, rng('b' + Date.now())).slice(0, 40); if (!ids.length) return; S.prac = {tipo: 'banco', qs: ids, resp: {}, idx: 0, fin: false}; guarda(); go(5); };
+$('btnBusPrac').onclick = () => { const ids = baraja(ULTIMA_BUSQUEDA, rng('b' + Date.now())).slice(0, 40); if (!ids.length) return; S.prac = {tipo: 'banco', qs: ids, resp: {}, idx: 0, fin: false}; guarda(); go(6); };
 function creaExamenAnio(y, tiempo) {
   const qs = DATA.preguntas.filter(q => q.anio === +y && utilizable(q)).sort((a, b) => a.n - b.n);
   if (!qs.length) return false;
@@ -313,6 +315,95 @@ function pintaValidacion() {
   const v = VAL;
   $('valPred').textContent = v ? t('Predicción probada a ciegas en los MIR {0}: se desvía de media {1} preguntas por asignatura (repetir el año anterior: {2}; media de todos los años: {3}) y acierta {4} de las 10 asignaturas con más peso.', v.porAnio.map(o => o.anio).join(', '), v.mae.toFixed(1), v.maeAnterior.toFixed(1), v.maeMedia.toFixed(1), v.aciertoTop10.toFixed(1)) : '';
 }
+
+/* ── 4 · examen MIR 2027 completo generado con IA, en la proporción predicha, y simulacro ── */
+let busy = false;
+const LOTE_IA = 8;
+function planExamen(n) { return Object.fromEntries(Object.entries(reparto(PRED.filas, n)).filter(([, k]) => k > 0)); }
+function estimaExamen(n) { const pl = planExamen(n); const lotes = Object.values(pl).reduce((a, k) => a + Math.ceil(k / LOTE_IA), 0); return {asigs: Object.keys(pl).length, llamadas: 3 * lotes, minutos: Math.max(1, Math.round(lotes * 3 * 18 / 60 / (($('exRev') || {}).value ? 1 : 3)))}; }
+function pintaExamenIA() {
+  const pv = getProv(), otros = Object.keys(PROV).filter(p => p !== pv && getKey(p)), sel = $('exRev'), v = sel.value;
+  sel.innerHTML = `<option value="">${esc(t('Mismo proveedor ({0})', PROV[pv].n))}</option>` + otros.map(p => `<option value="${p}">${esc(PROV[p].n)}</option>`).join(''); sel.value = otros.includes(v) ? v : '';
+  const e = estimaExamen(+$('exN').value);
+  $('exEstima').textContent = t('Reparto en {0} asignaturas según la predicción. Coste aproximado: {1} llamadas a la IA con tu clave y unos {2} minutos. Si se corta, puedes continuar sin repetir lo hecho.', e.asigs, e.llamadas, e.minutos);
+  const X = S.examenIA, box = $('exRes');
+  if (!X) { box.innerHTML = ''; $('btnExGen').querySelector('span').textContent = t('Generar el examen'); return; }
+  const filas = Object.entries(X.plan).sort((a, b) => b[1] - a[1]);
+  const hechas = asig => X.preguntas.filter(q => q.asig === asig && q.ia).length, rel = asig => X.preguntas.filter(q => q.asig === asig && !q.ia).length;
+  const tot = X.preguntas.filter(q => q.ia).length, totRel = X.preguntas.length - tot;
+  $('btnExGen').querySelector('span').textContent = X.estado === 'listo' ? t('Generar otro examen') : t('Continuar la generación');
+  box.innerHTML = `<div class="card"><h3>${esc(t('Examen de {0} preguntas', X.n))} · <span class="fa-chip ${X.estado === 'listo' ? 'ok' : 'aviso'}">${esc(t(X.estado === 'listo' ? 'listo' : 'a medias'))}</span></h3>
+    <p>${esc(t('Generadas y verificadas por tres agentes: {0}. Completadas con preguntas oficiales: {1}. Faltan: {2}.', tot, totRel, Math.max(0, X.n - X.preguntas.length)))}</p>
+    <div class="om-bar" role="img" aria-label="${esc(pct(X.preguntas.length / X.n))}"><span style="width:${(100 * X.preguntas.length / X.n).toFixed(1)}%"></span><em>${X.preguntas.length}/${X.n}</em></div>
+    <div class="actions"><button class="btn btn-primary" type="button" id="btnExSim" ${X.preguntas.length ? '' : 'disabled'}>${ico('play')} ${esc(t('Hacer el simulacro'))}</button>
+      <button class="btn btn-word" type="button" id="btnExWord" ${tot ? '' : 'disabled'}>${ico('doc')} Word</button><button class="btn btn-ghost" type="button" id="btnExGift" ${tot ? '' : 'disabled'}>Moodle (GIFT)</button>
+      <button class="btn btn-ghost" type="button" id="btnExBorra">${ico('trash')} ${esc(t('Borrar'))}</button></div>
+    <details class="om-gen"><summary><b>${esc(t('Reparto por asignatura'))}</b></summary><div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Asignatura'))}</th><th>${esc(t('Pedidas'))}</th><th>${esc(t('IA verificadas'))}</th><th>${esc(t('Oficiales'))}</th></tr></thead><tbody>
+      ${filas.map(([a, k]) => `<tr><td>${esc(nombreAsig(a))}</td><td>${k}</td><td>${hechas(a)}</td><td>${rel(a) || ''}</td></tr>`).join('')}</tbody></table></div></details>
+    ${X.motivos.length ? `<details class="om-gen"><summary>${esc(t('Descartes del código y de los agentes ({0})', X.motivos.length))}</summary><ul class="fa-ul">${X.motivos.slice(-60).map(m => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
+    <p class="help">${esc(t('Las preguntas generadas no son oficiales: tres agentes coinciden en la respuesta, pero pueden equivocarse a la vez. Cada una trae su explicación y la referencia que cita el redactor.'))}</p></div>`;
+  $('btnExSim').onclick = () => { creaExamenIA($('exTiempo').value); go(2); };
+  $('btnExWord').onclick = async () => { try { dl('oraculomir_examen_2027.docx', await wordDeMarkdown(mdPreguntas(X.preguntas.filter(q => q.ia)), {titulo: APP_NAME + ' · ' + t('Examen MIR 2027 generado'), subtitulo: t('Preguntas generadas y verificadas por tres agentes de IA'), pie: t('Generado con {0}. Preguntas no oficiales: compruébalas en tu manual.', APP_NAME)})); } catch (e) { toast(e.message, 7000); } };
+  $('btnExGift').onclick = () => dl('oraculomir_examen_2027.gift.txt', aGIFT(X.preguntas.filter(q => q.ia)), 'text/plain;charset=utf-8');
+  $('btnExBorra').onclick = () => { if (S.sim && S.sim.ia) S.sim = null; S.examenIA = null; guarda(); pintaExamenIA(); };
+}
+function mdPreguntas(qs) { return qs.map((g, i) => `## ${i + 1}. ${nombreAsig(g.asig)} · ${g.tema || ''}\n${g.enunciado}\n\n${g.opciones.map((o, k) => `${k + 1}. ${o}`).join('\n')}\n\n**${t('Respuesta')}:** ${g.correcta}. ${g.explicacion || ''}${g.referencia ? `\n\n*${t('Referencia que cita el redactor (compruébala)')}: ${g.referencia}*` : ''}`).join('\n\n'); }
+function creaExamenIA(tiempo) {
+  const X = S.examenIA; if (!X || !X.preguntas.length) return false;
+  const ids = baraja(X.preguntas.map(q => q.id), rng(X.id));
+  S.sim = {semilla: X.id, asig: 'probable', ia: true, qs: ids, resp: {}, idx: 0, fin: false, t0: Date.now(), limite: tiempo === 'mir' ? Math.round(ids.length * 270 * 60 / 210) : 0};
+  guarda(); return true;
+}
+async function enParalelo(tareas, k) { const res = []; let i = 0; await Promise.all(Array.from({length: Math.min(k, tareas.length)}, async () => { while (i < tareas.length) { const j = i++; res[j] = await tareas[j](); } })); return res; }
+$('exN').onchange = () => pintaExamenIA(); $('exRev').onchange = () => pintaExamenIA();
+$('btnExGen').onclick = async () => {
+  if (busy) return; if (!pideClave()) return;
+  let X = S.examenIA;
+  if (!X || X.estado === 'listo') {
+    if (X && X.estado === 'listo' && !confirm(t('¿Generar un examen nuevo? El actual se borrará.'))) return;
+    const n = +$('exN').value; X = S.examenIA = {id: uid('ex-'), n, plan: planExamen(n), preguntas: [], motivos: [], estado: 'generando', relleno: $('exRelleno').checked, rev: $('exRev').value || '', intentos: {}, creado: new Date().toISOString()};
+  }
+  const e = estimaExamen(X.n), muestra = PROMPT_GEN(nombreAsig(Object.keys(X.plan)[0]), LOTE_IA, [], {total: 0});
+  if (!(await pideEnvio(muestra, 0, t('Se van a generar {0} preguntas: unas {1} llamadas a {2} con tu clave (redactor y dos resolutores por cada tanda). Se envían la asignatura, el contexto de años anteriores y preguntas oficiales de ejemplo; nunca datos tuyos.', X.n, e.llamadas, PROV[getProv()].n)))) return;
+  busy = true; $('btnExGen').disabled = true; const st = $('exEstado'); await guardaYa();
+  try {
+    for (let ronda = 0; ronda < 2; ronda++) {   // 2.ª ronda: reintenta lo que falte por los descartes
+      const tareas = [];
+      for (const [asig, k] of Object.entries(X.plan)) {
+        let falta = k - X.preguntas.filter(q => q.asig === asig && q.ia).length;
+        if (falta <= 0 || (X.intentos[asig] || 0) >= 3) continue;
+        while (falta > 0) {
+          const m = Math.min(LOTE_IA, falta + (ronda ? 1 : 0)); falta -= Math.min(LOTE_IA, falta);
+          tareas.push(async () => {
+            if (S.examenIA !== X) return;
+            X.intentos[asig] = (X.intentos[asig] || 0) + 1;
+            st.innerHTML = '<span class="spin"></span> ' + esc(t('Generando {0}… ({1} de {2} preguntas listas)', nombreAsig(asig), X.preguntas.filter(q => q.ia).length, X.n));
+            try {
+              const r = await generaTanda(asig, m, X.rev, () => {}, X.preguntas.filter(q => q.asig === asig).map(q => q.enunciado));
+              const sitio = X.plan[asig] - X.preguntas.filter(q => q.asig === asig && q.ia).length;
+              r.aceptadas.slice(0, Math.max(0, sitio)).forEach(c => X.preguntas.push({...c, id: uid('ia-'), ia: true, anio: 2027, n: X.preguntas.length + 1}));
+              X.motivos.push(...r.motivos.map(mm => nombreAsig(asig) + ': ' + mm));
+            } catch (err) { X.motivos.push(nombreAsig(asig) + ': ' + err.message); if (/401|403|clave|key|quota|saldo/i.test(err.message)) throw err; }
+            await guardaYa(); pintaExamenIA();
+          });
+        }
+      }
+      if (!tareas.length) break;
+      await enParalelo(tareas, X.rev ? 1 : 3);   // con un segundo proveedor, de una en una (comparten el selector de proveedor)
+    }
+    // completar con oficiales lo que falte (marcadas como oficiales)
+    if (X.relleno) {
+      const r = rng(X.id + 'rel'), usadas = new Set(X.preguntas.map(q => q.id));
+      for (const [asig, k] of Object.entries(X.plan)) {
+        const falta = k - X.preguntas.filter(q => q.asig === asig).length; if (falta <= 0) continue;
+        baraja(DATA.preguntas.filter(q => q.asig === asig && utilizable(q) && !usadas.has(q.id)), r).slice(0, falta).forEach(q => { X.preguntas.push({...q}); usadas.add(q.id); });
+      }
+    }
+    X.estado = X.preguntas.length >= X.n || X.relleno ? 'listo' : 'generando';
+    await guardaYa(); st.textContent = t('Examen listo: {0} preguntas.', X.preguntas.length); pintaExamenIA();
+  } catch (err) { st.textContent = err.message; toast(err.message, 8000); await guardaYa(); pintaExamenIA(); }
+  finally { busy = false; $('btnExGen').disabled = false; }
+};
 
 /* ── 3 · generador con agentes ── */
 function pintaGen() {
@@ -371,45 +462,53 @@ async function conProveedor(pv, fn) {
   const prev = localStorage.getItem(APP + '_prov'); localStorage.setItem(APP + '_prov', pv);
   try { return await fn(); } finally { if (prev === null) localStorage.removeItem(APP + '_prov'); else localStorage.setItem(APP + '_prov', prev); }
 }
-let busy = false;
-$('btnGen').onclick = async () => {
-  if (busy) return; if (!pideClave()) return;
-  const asig = $('genAsig').value, n = +$('genN').value, rev = $('genRev').value || '', pv1 = getProv();
-  const r = rng('gen' + Date.now()), banco = DATA.preguntas.filter(q => q.asig === asig), todo = DATA.preguntas;
+/* Una tanda del generador: redactor + 2 resolutores a ciegas + comprobaciones del código.
+   «evitar»: enunciados ya generados en este examen, para no repetir. Devuelve {aceptadas, dudosas, descartadas, motivos, ctx, ejemplos}. */
+async function generaTanda(asig, n, rev, paso = () => {}, evitar = []) {
+  const pv1 = getProv(), r = rng('gen' + asig + Date.now()), todo = DATA.preguntas;
   const ejemplos = ejemplosRecientes(DATA.preguntas, asig, 6, r), ys = aniosDe(DATA.conteos);
   const ctx = {...temasRecurrentes(DATA.preguntas, asig, (DATA.kws || {})[asig], ys.at(-1)), desde: ys[0], hasta: ys.at(-1)};
-  const prompt = PROMPT_GEN(nombreAsig(asig), n, ejemplos, ctx);
-  if (!(await pideEnvio(prompt, 0))) return;
-  busy = true; $('btnGen').disabled = true; const st = $('genEstado'), motivos = [];
-  const paso = m => { st.innerHTML = '<span class="spin"></span> ' + esc(m); };
+  const prompt = PROMPT_GEN(nombreAsig(asig), n, ejemplos, ctx) + (evitar.length ? `\n\nYA REDACTADAS EN ESTE EXAMEN (no repitas su tema ni su planteamiento):\n${evitar.slice(-12).map(e => '- ' + e.slice(0, 140)).join('\n')}` : '');
+  const motivos = [];
+  paso(t('Agente 1 de 3: redactando {0} preguntas…', n));
+  const raw = await llmJSON([{role: 'system', content: 'Eres un redactor riguroso de preguntas de examen médico. Respondes SOLO con JSON válido.'}, {role: 'user', content: prompt}], {max: 900 * n + 800});
+  const cands = [];
+  (raw.preguntas || []).slice(0, n).forEach((g, i) => {
+    const x = {id: 'g' + (i + 1), asig, tema: String(g.tema || ''), enunciado: String(g.enunciado || '').trim(), opciones: (g.opciones || []).map(o => String(o).trim()), correcta: Number(g.correcta), explicacion: String(g.explicacion || ''), referencia: String(g.referencia || '')};
+    const f = revisaFormato(x); if (f.length) return motivos.push(t('Pregunta {0} descartada por el código: {1}.', i + 1, f.map(m => t(m)).join(', ')));
+    const pb = parecidoBanco(x, todo); if (pb) return motivos.push(t('Pregunta {0} descartada: se parece demasiado a la oficial {1} ({2}).', i + 1, pb.id, pct(pb.s)));
+    if (evitar.some(e => jaccard(e, x.enunciado) >= 0.55)) return motivos.push(t('Pregunta {0} descartada: repite otra de este examen.', i + 1));
+    cands.push(x);
+  });
+  const res = [];
+  for (const k of [0, 1]) {
+    const pv = k === 1 && rev ? rev : pv1;
+    paso(t('Agente {0} de 3: resolviendo a ciegas con {1}…', k + 2, PROV[pv].n));
+    if (!cands.length) break;
+    const perm = cands.map(c => permuta(c, rng(c.id + k + Date.now())));
+    const out = await conProveedor(pv, () => llmJSON([{role: 'system', content: 'Eres un médico especialista que resuelve preguntas tipo MIR. Respondes SOLO con JSON válido.'}, {role: 'user', content: PROMPT_RES(k, cands.map((c, j) => ({id: c.id, enunciado: c.enunciado, opciones: perm[j].opciones})))}], {max: 220 * cands.length + 400}));
+    const mapa = Object.fromEntries((out.respuestas || []).map(a => [String(a.id), a]));
+    res.push(cands.map((c, j) => { const a = mapa[c.id] || {}, o = Number(a.opcion); return {prov: PROV[pv].n, opcion: o >= 1 && o <= 4 ? perm[j].aOriginal(o) : 0, seguridad: a.seguridad, motivo: String(a.motivo || '')}; }));
+  }
+  const aceptadas = [], dudosas = []; let descartadas = motivos.length + Math.max(0, n - (raw.preguntas || []).slice(0, n).length);
+  cands.forEach((c, j) => {
+    c.resolutores = res.map(rr => rr[j]); c.estado = veredicto(c.correcta, c.resolutores.map(x => x.opcion));
+    if (c.estado === 'descartada') { descartadas++; motivos.push(t('Pregunta «{0}…» descartada: ninguno de los dos resolutores eligió la respuesta del redactor.', c.enunciado.slice(0, 50))); return; }
+    c.id = uid('gen-'); c.fecha = new Date().toISOString(); (c.estado === 'aceptada' ? aceptadas : dudosas).push(c);
+  });
+  return {aceptadas, dudosas, descartadas, motivos, ctx, ejemplos, prompt};
+}
+$('btnGen').onclick = async () => {
+  if (busy) return; if (!pideClave()) return;
+  const asig = $('genAsig').value, n = +$('genN').value, rev = $('genRev').value || '';
+  const ys = aniosDe(DATA.conteos), muestra = PROMPT_GEN(nombreAsig(asig), n, ejemplosRecientes(DATA.preguntas, asig, 6, rng(1)), {...temasRecurrentes(DATA.preguntas, asig, (DATA.kws || {})[asig], ys.at(-1)), desde: ys[0], hasta: ys.at(-1)});
+  if (!(await pideEnvio(muestra, 0))) return;
+  busy = true; $('btnGen').disabled = true; const st = $('genEstado');
   try {
-    paso(t('Agente 1 de 3: redactando {0} preguntas…', n));
-    const raw = await llmJSON([{role: 'system', content: 'Eres un redactor riguroso de preguntas de examen médico. Respondes SOLO con JSON válido.'}, {role: 'user', content: prompt}], {max: 900 * n + 800});
-    const cands = [];
-    (raw.preguntas || []).slice(0, n).forEach((g, i) => {
-      const x = {id: 'g' + (i + 1), asig, tema: String(g.tema || ''), enunciado: String(g.enunciado || '').trim(), opciones: (g.opciones || []).map(o => String(o).trim()), correcta: Number(g.correcta), explicacion: String(g.explicacion || ''), referencia: String(g.referencia || '')};
-      const f = revisaFormato(x); if (f.length) return motivos.push(t('Pregunta {0} descartada por el código: {1}.', i + 1, f.map(m => t(m)).join(', ')));
-      const pb = parecidoBanco(x, todo); if (pb) return motivos.push(t('Pregunta {0} descartada: se parece demasiado a la oficial {1} ({2}).', i + 1, pb.id, pct(pb.s)));
-      cands.push(x);
-    });
-    const res = [];
-    for (const k of [0, 1]) {
-      const pv = k === 1 && rev ? rev : pv1;
-      paso(t('Agente {0} de 3: resolviendo a ciegas con {1}…', k + 2, PROV[pv].n));
-      if (!cands.length) break;
-      const perm = cands.map(c => permuta(c, rng(c.id + k + Date.now())));
-      const out = await conProveedor(pv, () => llmJSON([{role: 'system', content: 'Eres un médico especialista que resuelve preguntas tipo MIR. Respondes SOLO con JSON válido.'}, {role: 'user', content: PROMPT_RES(k, cands.map((c, j) => ({id: c.id, enunciado: c.enunciado, opciones: perm[j].opciones})))}], {max: 220 * cands.length + 400}));
-      const mapa = Object.fromEntries((out.respuestas || []).map(a => [String(a.id), a]));
-      res.push(cands.map((c, j) => { const a = mapa[c.id] || {}, o = Number(a.opcion); return {prov: PROV[pv].n, opcion: o >= 1 && o <= 4 ? perm[j].aOriginal(o) : 0, seguridad: a.seguridad, motivo: String(a.motivo || '')}; }));
-    }
-    let ac = 0, du = 0, de = motivos.length + Math.max(0, n - (raw.preguntas || []).slice(0, n).length);
-    cands.forEach((c, j) => {
-      c.resolutores = res.map(rr => rr[j]); c.estado = veredicto(c.correcta, c.resolutores.map(x => x.opcion));
-      if (c.estado === 'descartada') { de++; motivos.push(t('Pregunta «{0}…» descartada: ninguno de los dos resolutores eligió la respuesta del redactor.', c.enunciado.slice(0, 50))); return; }
-      c.id = uid('gen-'); c.fecha = new Date().toISOString(); S.gen.push(c); c.estado === 'aceptada' ? ac++ : du++;
-    });
-    S.genStats = {total: n, aceptadas: ac, dudosas: du, descartadas: de, motivos, contexto: {asig, total: ctx.total, frecuentes: ctx.frecuentes.slice(0, 8), olvidados: ctx.olvidados, ejemplos: ejemplos.map(q => q.id)}};
-    await guardaYa(); st.textContent = t('Hecho: {0} aceptadas de {1}.', ac, n); pintaGen();
+    const r = await generaTanda(asig, n, rev, m => { st.innerHTML = '<span class="spin"></span> ' + esc(m); });
+    S.gen.push(...r.aceptadas, ...r.dudosas);
+    S.genStats = {total: n, aceptadas: r.aceptadas.length, dudosas: r.dudosas.length, descartadas: r.descartadas, motivos: r.motivos, contexto: {asig, total: r.ctx.total, frecuentes: r.ctx.frecuentes.slice(0, 8), olvidados: r.ctx.olvidados, ejemplos: r.ejemplos.map(q => q.id)}};
+    await guardaYa(); st.textContent = t('Hecho: {0} aceptadas de {1}.', r.aceptadas.length, n); pintaGen();
   } catch (e) { st.textContent = e.message; toast(e.message, 8000); }
   finally { busy = false; $('btnGen').disabled = false; }
 };
@@ -442,7 +541,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   const p = await cargaEstado(); if (p) S = {...S, ...p};
   await cargaDatos(); calcula(); iniciaUI();
   const q = new URLSearchParams(location.search);
-  if (q.has('reto')) return go(4);
+  if (q.has('reto')) return go(5);
   if (q.get('anio') && creaExamenAnio(q.get('anio'), 'mir')) return go(2);
   if (q.get('sim')) { const a = q.get('a') || 'probable'; S.asigSim = a; if (creaSim(q.get('sim'), Math.min(200, Math.max(1, +q.get('n') || 25)), a, 'mir')) toast(t('Mismo examen que quien te ha retado. ¡Suerte!')); return go(2); }
   go(0);

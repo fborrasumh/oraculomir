@@ -15,14 +15,22 @@ GEN = {'preguntas': [
     {'tema': 'clave mal', 'enunciado': LARGO + '¿cuál? (CLAVE MAL)', 'opciones': ['Opción que el redactor da por buena', 'Otra', 'CORRECTA de verdad', 'Otra más'], 'correcta': 1, 'explicacion': '', 'referencia': ''},
     {'tema': 'dudosa', 'enunciado': LARGO + '¿cuál? (DUDOSA)', 'opciones': ['CORRECTA según el redactor', 'ALTERNATIVA', 'Otra', 'Otra más'], 'correcta': 1, 'explicacion': '', 'referencia': ''}]}
 
+EXAMEN = {'activo': False, 'k': 0, 'mal': False}
+
 async def reply(prov, system, user, info):
     if 'profesor de una academia' in user: return ('j', {'clave': 'Idea clave de prueba', 'explicacion': 'Porque la oficial es la buena.', 'opciones': ['a', 'b', 'c', 'd'], 'aviso': '', 'repaso': 'Tema X'})
+    if 'redactor experto' in user and 'YA REDACTADAS' not in user and '(BUENA)' not in str(GEN) or False: pass
+    m = re.search(r'Redacta (\d+) preguntas NUEVAS de «([^»]+)»', user)
+    if m and info.get('examen'): pass
+    if m and EXAMEN['activo']:
+        n = int(m.group(1)); EXAMEN['k'] += 1
+        return ('j', {'preguntas': [{'tema': f'tema {EXAMEN["k"]}-{i}', 'enunciado': f'Caso clínico inventado número {EXAMEN["k"]} {i} de {m.group(2)} con datos suficientes para resolver la pregunta planteada aquí {"xyz" * (EXAMEN["k"] + i)} palabra{EXAMEN["k"]}{i}', 'opciones': [f'Distractor A{EXAMEN["k"]}{i}', f'CORRECTA {EXAMEN["k"]}{i}', f'Distractor B{EXAMEN["k"]}{i}', f'Distractor C{EXAMEN["k"]}{i}'], 'correcta': 2, 'explicacion': 'Explicación del redactor.', 'referencia': 'Guía X'} for i in range(n)]})
     if 'redactor experto' in user: return ('j', GEN)
     if 'Resuelve estas preguntas' in user:
         comision = 'comisión calificadora' in user; out = []
         for bloque in user.split('id: ')[1:]:
             ls = bloque.strip().split('\n'); qid = ls[0].strip(); ops = [l for l in ls if re.match(r'^[1-4]\. ', l)]
-            marca = 'ALTERNATIVA' if (comision and 'DUDOSA' in bloque) else 'CORRECTA'
+            marca = 'ALTERNATIVA' if (comision and 'DUDOSA' in bloque) else 'Distractor A' if EXAMEN['mal'] else 'CORRECTA'
             k = next((i + 1 for i, l in enumerate(ops) if marca in l), 0)
             out.append({'id': qid, 'opcion': k, 'seguridad': 90, 'motivo': 'ok'})
         return ('j', {'respuestas': out})
@@ -71,7 +79,7 @@ async def main():
         check('puntuación coherente (+3/−1)', sc['puntos'] == 3 * sc['ac'] - sc['fa'] and sc['ac'] + sc['fa'] + sc['bl'] == 10, str(sc))
         await h.shot(str(OUT / '2_simulacro.png'))
         # reto diario
-        await p.evaluate('go(4)'); await p.wait_for_timeout(300)
+        await p.evaluate('go(5)'); await p.wait_for_timeout(300)
         n = await p.evaluate('S.reto.qs.length'); check('reto con 10 preguntas (o las que haya)', n == 10, str(n))
         for i in range(n):
             await p.click('#retoQ .om-op[data-op="2"]'); await p.wait_for_timeout(60)
@@ -105,7 +113,7 @@ async def main():
         check('no faltan traducciones', await h.faltan_traducciones() == [], str(await h.faltan_traducciones()))
         await h.idioma('en'); await p.evaluate('go(1)'); await p.wait_for_timeout(300)
         th = await p.inner_text('#tablaPred thead'); check('en inglés: tabla y asignaturas traducidas', 'subject' in th.lower() and 'Cardiology' in await p.inner_text('#tablaPred'))
-        await h.idioma('pt'); await p.evaluate('go(4)'); await p.wait_for_timeout(300); check('en portugués: reto traducido', 'Desafio' in await p.inner_text('section[data-step="4"]'))
+        await h.idioma('pt'); await p.evaluate('go(5)'); await p.wait_for_timeout(300); check('en portugués: reto traducido', 'Desafio' in await p.inner_text('section[data-step="5"]'))
         await h.idioma('es')
         check('sin errores de página', not h.errors, str(h.errors))
         check('móvil sin desborde (portada)', not await h.desborde_movil())
@@ -127,7 +135,7 @@ async def main():
         await p.goto((ROOT / 'index.html').as_uri() + '?sim=reto-amigo&n=50&a=probable'); await p.wait_for_timeout(700)
         check('abrir el enlace reproduce el mismo examen', await p.evaluate('S.sim.qs') == a and await p.evaluate('step') == 2)
         await p.goto((ROOT / 'index.html').as_uri() + '?reto'); await p.wait_for_timeout(600)
-        check('?reto abre el reto diario', await p.evaluate('step') == 4)
+        check('?reto abre el reto diario', await p.evaluate('step') == 5)
         # repaso espaciado y plan
         await p.goto((ROOT / 'index.html').as_uri()); await p.wait_for_timeout(700)
         await p.evaluate("S.prac=null;S.hist={};creaSim('plan',30,'probable','libre');go(2)"); await p.wait_for_timeout(300)
@@ -137,7 +145,7 @@ async def main():
         if await p.locator('#simExamen [data-fin]').count(): await p.click('#simExamen [data-fin]'); await p.wait_for_timeout(200)
         nh = await p.evaluate('Object.keys(S.hist).length'); nko = await p.evaluate('Object.values(S.hist).filter(e=>e.caja===0).length')
         check('al corregir, cada respuesta entra en el historial y los fallos en el repaso', nh == 30 and nko == await p.evaluate("S.sim.qs.filter(id=>S.sim.resp[id]!==preg(id).correcta).length"), f'{nh} {nko}')
-        await p.evaluate("Object.values(S.hist).forEach(e=>{if(e.prox)e.prox='2020-01-01'});go(5)"); await p.wait_for_timeout(300)
+        await p.evaluate("Object.values(S.hist).forEach(e=>{if(e.prox)e.prox='2020-01-01'});go(6)"); await p.wait_for_timeout(300)
         check('«Mi estudio»: repaso pendiente y plan con preguntas en juego', 'Para hoy: ' + str(nko) in await p.inner_text('#repasoBox') and 'Preguntas en juego' in await p.inner_text('#planBox'))
         await p.click('#btnRepaso'); await p.wait_for_timeout(200)
         q0 = await p.evaluate('S.prac.qs[0]'); ok0 = await p.evaluate(f"preg('{q0}').correcta")
@@ -151,16 +159,40 @@ async def main():
         check('la explicación se guarda: no se vuelve a pagar', len(h.seen) == 1, str(len(h.seen)))
         href = await p.get_attribute('#pracQ a[href*="issues/new"]', 'href'); check('«Avisar de un error» abre una incidencia rellenada', href and q0 in href)
         # banco: examen de un año y buscador
-        await p.evaluate('go(6)'); await p.wait_for_timeout(300)
+        await p.evaluate('go(7)'); await p.wait_for_timeout(300)
         await p.select_option('#bancoAnio', '2024'); await p.click('#btnAnio'); await p.wait_for_timeout(300)
         check('MIR de un año completo, en orden', await p.evaluate('step') == 2 and await p.evaluate('S.sim.anio') == 2024 and await p.evaluate('S.sim.qs.length') == await p.evaluate("DATA.preguntas.filter(q=>q.anio===2024&&utilizable(q)).length"))
-        await p.evaluate('go(6)'); await p.fill('#busTexto', 'oficial 2023'); await p.wait_for_timeout(500)
+        await p.evaluate('go(7)'); await p.fill('#busTexto', 'oficial 2023'); await p.wait_for_timeout(500)
         check('buscador', '210' in await p.inner_text('#busRes') or 'preguntas oficiales' in await p.inner_text('#busRes'), await p.inner_text('#busRes'))
         await p.goto((ROOT / 'index.html').as_uri() + '?anio=2022'); await p.wait_for_timeout(700)
         check('?anio=2022 abre ese MIR', await p.evaluate('S.sim.anio') == 2022 and await p.evaluate('step') == 2)
-        await p.evaluate('go(7)'); await p.wait_for_timeout(300)
+        # paso 4: examen MIR 2027 generado (25 preguntas, IA simulada) y simulacro
+        EXAMEN['activo'] = True; h.seen.clear()
+        await p.evaluate("S.examenIA=null;ENVIO_OK=true;go(4)"); await p.wait_for_timeout(300)
+        await p.select_option('#exN', '25'); await p.wait_for_timeout(100)
+        check('paso 4: estimación de coste antes de empezar', 'llamadas' in await p.inner_text('#exEstima'))
+        await p.click('#btnExGen'); await h.esp("S.examenIA && S.examenIA.estado==='listo'", n=240)
+        X = await p.evaluate("({n:S.examenIA.preguntas.length, ia:S.examenIA.preguntas.filter(q=>q.ia).length, plan:Object.values(S.examenIA.plan).reduce((a,b)=>a+b,0), porAsig: Object.entries(S.examenIA.plan).every(([a,k])=>S.examenIA.preguntas.filter(q=>q.asig===a).length===k)})")
+        check('examen de 25: todas generadas y verificadas, en la proporción predicha', X['n'] == 25 and X['ia'] == 25 and X['plan'] == 25 and X['porAsig'], str(X))
+        check('cada tanda = redactor + 2 resolutores', len(h.seen) % 3 == 0 and len(h.seen) >= 3, str(len(h.seen)))
+        await p.click('#btnExSim'); await p.wait_for_timeout(400)
+        check('el examen generado se hace como simulacro', await p.evaluate('step') == 2 and await p.evaluate('S.sim.ia') and await p.evaluate('S.sim.qs.length') == 25)
+        for i in range(25):
+            await p.click('#simExamen .om-op[data-op="2"]'); await p.wait_for_timeout(20)
+        await p.click('#simExamen [data-fin]'); await p.wait_for_timeout(300)
+        check('corrección del examen generado (todas acertadas)', await p.evaluate('puntua(S.sim.qs.map(preg), S.sim.resp).ac') == 25)
+        check('las preguntas generadas no entran en el historial oficial', not await p.evaluate("S.sim.qs.some(id=>S.hist[id])"))
+        await p.click('#simRev [data-porque]'); await p.wait_for_timeout(200)
+        check('«Ver la explicación» muestra la del redactor sin nueva llamada', 'Explicación del redactor' in await p.inner_text('#simRev'))
+        # si los agentes lo descartan todo: se completa con oficiales, marcadas
+        EXAMEN['mal'] = True
+        await p.evaluate("S.examenIA=null;go(4)"); await p.select_option('#exN', '25'); await p.click('#btnExGen'); await h.esp("S.examenIA && S.examenIA.estado==='listo'", n=240)
+        Y = await p.evaluate("({n:S.examenIA.preguntas.length, ia:S.examenIA.preguntas.filter(q=>q.ia).length, desc:S.examenIA.motivos.length})")
+        check('si los agentes discrepan, nada entra y se completa con oficiales', Y['n'] == 25 and Y['ia'] == 0 and Y['desc'] > 0, str(Y))
+        EXAMEN['activo'] = False; EXAMEN['mal'] = False
+        await p.evaluate('go(8)'); await p.wait_for_timeout(300)
         check('página de validación', 'a ciegas' in await p.inner_text('#valPred'))
-        check('móvil sin desborde (mi estudio, banco, validación)', not await h.desborde_movil('go(5)') and not await h.desborde_movil('go(6)') and not await h.desborde_movil('go(7)'))
+        check('móvil sin desborde (mi estudio, banco, validación)', not await h.desborde_movil('go(6)') and not await h.desborde_movil('go(7)') and not await h.desborde_movil('go(8)'))
         check('sin errores de página (datos reales)', not h.errors, str(h.errors))
     print('\nTODO OK' if ok else '\nHAY FALLOS'); sys.exit(0 if ok else 1)
 

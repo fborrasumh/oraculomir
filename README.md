@@ -26,15 +26,20 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
    - Una pregunta solo se **acepta** si los dos resolutores eligen la misma respuesta que el redactor. Si discrepa uno queda **dudosa**; si discrepan los dos se **descarta**.
    - Las preguntas aceptadas se exportan a Word, CSV y Moodle (GIFT).
 
-6. **«¿Por qué?» en cada pregunta corregida**, con la clave de IA de cada persona. La IA explica la respuesta **oficial** y no puede cambiarla; si con las guías actuales le parece discutible, lo dice aparte. La explicación se guarda para no pagarla dos veces.
-7. **Mi estudio:**
+6. **Examen MIR 2027 completo con IA** (paso 4): 25, 50, 100 o 200 preguntas nuevas, repartidas por asignatura según la predicción.
+   - Cada tanda pasa por redactor + 2 resolutores a ciegas + comprobaciones del código, y no repite preguntas dentro del mismo examen.
+   - Se puede continuar si se corta. Lo que los agentes descartan se completa, si se quiere, con preguntas oficiales marcadas.
+   - Se hace como simulacro con reloj y puntuación MIR, y se descarga en Word o Moodle (GIFT).
+   - 200 preguntas cuestan unas 90 llamadas con la clave de cada persona; la app lo estima antes de empezar.
+7. **«¿Por qué?» en cada pregunta corregida**, con la clave de IA de cada persona. La IA explica la respuesta **oficial** y no puede cambiarla; si con las guías actuales le parece discutible, lo dice aparte. La explicación se guarda para no pagarla dos veces.
+8. **Mi estudio:**
    - **Repaso espaciado de fallos:** cada fallo vuelve a salir al día siguiente y, si se acierta, a los 1, 3, 7, 21 y 60 días.
    - **Plan «dónde ganas más puntos»:** preguntas esperadas en 2027 × tu porcentaje de fallo en cada asignatura.
-8. **Banco y exámenes:** el MIR de un año concreto completo (también con enlace `?anio=2019`) y un buscador por palabras, asignatura y año.
-9. **Imágenes:** 154 preguntas con su imagen (2012, 2013, 2022, 2023, 2024 y 2026). Cada imagen se asigna por su rótulo, sea de texto o leído dentro de la imagen; los años cuyo orden no se puede confirmar quedan sin imágenes.
-10. **Avisar de un error** desde cada pregunta: abre una incidencia de GitHub ya rellenada.
-11. **Instalable y sin conexión** (manifest + service worker): una vez abierta, funciona sin internet.
-12. **Página «Cómo se valida»**, con el cotejo de cada examen frente a lo publicado.
+9. **Banco y exámenes:** el MIR de un año concreto completo (también con enlace `?anio=2019`) y un buscador por palabras, asignatura y año.
+10. **Imágenes:** 154 preguntas con su imagen (2012, 2013, 2022, 2023, 2024 y 2026). Cada imagen se asigna por su rótulo, sea de texto o leído dentro de la imagen; los años cuyo orden no se puede confirmar quedan sin imágenes.
+11. **Avisar de un error** desde cada pregunta: abre una incidencia de GitHub ya rellenada.
+12. **Instalable y sin conexión** (manifest + service worker): una vez abierta, funciona sin internet.
+13. **Página «Cómo se valida»**, con el cotejo de cada examen frente a lo publicado.
 
 ## Lo que no hace (límites reales)
 
