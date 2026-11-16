@@ -9,7 +9,7 @@ const GLOS = [
   ['¿Cómo se predice?', 'Para cada asignatura se calcula qué parte del examen ha ocupado cada año. Los años recientes pesan más (semivida de 4 años) y se añade la mitad de la tendencia. El resultado se escala a 200 preguntas. El intervalo del 80 % combina lo que varía de un año a otro y el azar propio de un recuento.'],
   ['¿Cuánto fiarse?', 'El método se prueba a ciegas: se esconde el último examen, se predice con los anteriores y se compara con lo que salió, en los tres últimos MIR. Se compara con dos referencias sencillas: repetir el año anterior y la media de todos los años. Si no las mejora, la app lo dice y conviene usar el resultado solo como orden de prioridad.'],
   ['¿Predice preguntas concretas?', 'No. Predice cuántas preguntas tendrá cada asignatura. El simulacro usa preguntas oficiales de años anteriores en esa proporción: sirve para entrenar el formato y el ritmo, no para adivinar el examen.'],
-  ['Generador con agentes', 'Un agente redacta, dos agentes resuelven a ciegas con las opciones barajadas y el código comprueba el formato y que no sea una copia del banco oficial. Solo se aceptan las preguntas que los tres responden igual. Eso reduce mucho los errores, pero no los elimina. Si tienes claves de dos proveedores, usa el otro para el segundo resolutor: modelos distintos se equivocan menos a la vez.'],
+  ['Generador con agentes', 'Un agente redacta, con el contexto de años anteriores (temas que más se repiten, temas que llevan tiempo sin salir y seis preguntas oficiales recientes), dos agentes resuelven a ciegas con las opciones barajadas y el código comprueba el formato y que no sea una copia del banco oficial. Solo se aceptan las preguntas que los tres responden igual. Eso reduce mucho los errores, pero no los elimina. Si tienes claves de dos proveedores, usa el otro para el segundo resolutor: modelos distintos se equivocan menos a la vez.'],
   ['Privacidad y coste', 'La predicción, los simulacros y el reto diario funcionan en tu navegador, sin clave y sin enviar nada. El generador envía al proveedor de IA que elijas la asignatura y unas preguntas oficiales de ejemplo; nunca datos tuyos. Cada tanda son tres llamadas a la IA y la pagas tú con tu clave: elige un modelo económico.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
@@ -207,11 +207,18 @@ function pintaGen() {
   const st = S.genStats;
   const acept = S.gen.filter(g => g.estado === 'aceptada'), dud = S.gen.filter(g => g.estado === 'dudosa');
   $('genRes').innerHTML = !S.gen.length && !st ? '' : `
-    ${st ? `<div class="card"><h3>${esc(t('Última tanda'))}</h3><p>${esc(t('Redactadas: {0} · aceptadas por los tres agentes: {1} · dudosas: {2} · descartadas: {3}.', st.total, st.aceptadas, st.dudosas, st.descartadas))}</p>${st.motivos.length ? `<ul class="fa-ul">${st.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}</div>` : ''}
+    ${st ? `<div class="card"><h3>${esc(t('Última tanda'))}</h3><p>${esc(t('Redactadas: {0} · aceptadas por los tres agentes: {1} · dudosas: {2} · descartadas: {3}.', st.total, st.aceptadas, st.dudosas, st.descartadas))}</p>${st.motivos.length ? `<ul class="fa-ul">${st.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}${ctxHTML(st.contexto)}</div>` : ''}
     <div class="card"><h3>${esc(t('Preguntas aceptadas ({0})', acept.length))}</h3>${acept.length ? acept.map(cartaGen).join('') : `<p class="empty">${esc(t('Todavía ninguna.'))}</p>`}
       <div class="actions"><button class="btn btn-word" id="btnGenWord" type="button">${ico('doc')} Word</button><button class="btn btn-ghost" id="btnGenCsv" type="button">CSV</button><button class="btn btn-ghost" id="btnGenGift" type="button">Moodle (GIFT)</button><button class="btn btn-ghost" id="btnGenBorra" type="button">${ico('trash')} ${esc(t('Borrar'))}</button></div></div>
     ${dud.length ? `<div class="card"><h3>${esc(t('Dudosas: un resolutor no estuvo de acuerdo ({0})', dud.length))}</h3><p class="help">${esc(t('No las uses para estudiar sin comprobarlas en tu manual.'))}</p>${dud.map(cartaGen).join('')}</div>` : ''}`;
   if ($('btnGenWord')) { $('btnGenWord').onclick = genWord; $('btnGenCsv').onclick = genCsv; $('btnGenGift').onclick = () => { const a = S.gen.filter(g => g.estado === 'aceptada'); if (!a.length) return toast(t('No hay preguntas aceptadas')); dl('oraculomir_preguntas.gift.txt', aGIFT(a), 'text/plain;charset=utf-8'); }; $('btnGenBorra').onclick = () => { S.gen = []; S.genStats = null; guarda(); pintaGen(); }; }
+}
+function ctxHTML(c) {
+  if (!c || !c.total) return '';
+  return `<details class="om-gen"><summary><b>${esc(t('Contexto de años anteriores que recibió el redactor'))}</b> · ${esc(t('{0} preguntas oficiales de {1}', nf(c.total), nombreAsig(c.asig)))}</summary>
+    <p><b>${esc(t('Temas que más se repiten'))}:</b> ${c.frecuentes.map(f => esc(`${f.tema} (${f.n} · ${f.ultimo})`)).join(', ') || '—'}</p>
+    <p><b>${esc(t('Llevan 4 años o más sin salir'))}:</b> ${c.olvidados.map(f => esc(`${f.tema} (${f.ultimo})`)).join(', ') || esc(t('ninguno'))}</p>
+    <p class="help">${esc(t('Recuento automático por palabras clave, más {0} preguntas oficiales recientes como ejemplo de estilo. Que un tema lleve años sin salir no significa que vaya a salir.', (c.ejemplos || []).length))}</p></details>`;
 }
 function cartaGen(g) {
   return `<details class="om-gen"><summary><span class="fa-chip ${g.estado === 'aceptada' ? 'ok' : 'aviso'}">${esc(t(g.estado === 'aceptada' ? '3/3 de acuerdo' : '2/3 de acuerdo'))}</span> <b>${esc(nombreAsig(g.asig))}</b> · ${esc(g.tema || '')}<br>${esc(g.enunciado)}</summary>
@@ -220,7 +227,7 @@ function cartaGen(g) {
     <p class="help">${g.resolutores.map((r, k) => esc(t('Resolutor {0} ({1}): opción {2}, seguridad {3} %. {4}', k + 1, r.prov, r.opcion || '–', r.seguridad ?? '–', r.motivo || ''))).join('<br>')}</p></details>`;
 }
 
-const PROMPT_GEN = (asig, n, ejemplos) => `Eres un redactor experto de preguntas del examen MIR (España). Redacta ${n} preguntas NUEVAS de «${asig}», de tipo test con 4 opciones y una sola respuesta correcta, con el estilo y la dificultad del MIR reciente (casos clínicos breves cuando proceda).
+const PROMPT_GEN = (asig, n, ejemplos, ctx) => `Eres un redactor experto de preguntas del examen MIR (España). Redacta ${n} preguntas NUEVAS de «${asig}», de tipo test con 4 opciones y una sola respuesta correcta, con el estilo y la dificultad del MIR reciente (casos clínicos breves cuando proceda).
 Reglas:
 - Solo contenidos con consenso firme en guías clínicas vigentes y manuales de referencia. Evita temas controvertidos, recomendaciones que hayan cambiado hace poco y cifras dudosas.
 - Una sola opción claramente correcta; las otras tres, plausibles pero inequívocamente incorrectas.
@@ -232,8 +239,13 @@ Devuelve SOLO este JSON:
 {"preguntas":[{"tema":"tema concreto","enunciado":"…","opciones":["…","…","…","…"],"correcta":1,"explicacion":"por qué es la correcta y por qué fallan las demás, en 2-4 frases","referencia":"…"}]}
 El enunciado y las opciones, siempre en español. La explicación y el tema, en ${langIA()}.
 
-PREGUNTAS OFICIALES DE EJEMPLO (solo estilo, no copiar):
-${ejemplos.map((q, i) => `${i + 1}. ${q.enunciado}\n${q.opciones.map((o, k) => `   ${k + 1}. ${o}`).join('\n')}`).join('\n\n') || '(sin ejemplos)'}`;
+${ctx && ctx.total ? `CONTEXTO DE AÑOS ANTERIORES (${ctx.total} preguntas oficiales de «${asig}» en los MIR ${ctx.desde}-${ctx.hasta}; recuento automático por palabras clave):
+- Temas que más se repiten: ${ctx.frecuentes.map(f => `${f.tema} (${f.n} preguntas; última vez en ${f.ultimo})`).join('; ') || '—'}.
+- Temas habituales que llevan 4 años o más sin salir: ${ctx.olvidados.map(f => `${f.tema} (última vez en ${f.ultimo})`).join('; ') || 'ninguno'}.
+Usa este contexto para elegir temas con peso en el MIR, sobre todo los que más se repiten y los que llevan tiempo sin salir, pero con un enfoque distinto al de las preguntas ya puestas. No repitas ni reformules ninguna pregunta oficial.
+
+` : ''}PREGUNTAS OFICIALES RECIENTES DE EJEMPLO (solo para el estilo y el nivel; la respuesta correcta va marcada con *; no copiar):
+${ejemplos.map((q, i) => `${i + 1}. [MIR ${q.anio}] ${q.enunciado}\n${q.opciones.map((o, k) => `   ${k + 1 === q.correcta ? '*' : ' '}${k + 1}. ${o}`).join('\n')}`).join('\n\n') || '(sin ejemplos)'}`;
 const ROLES = ['un internista con veinte años de experiencia clínica', 'el miembro de la comisión calificadora del MIR que revisa las impugnaciones'];
 const PROMPT_RES = (k, items) => `Eres ${ROLES[k]}. Resuelve estas preguntas tipo MIR. Para cada una elige la ÚNICA opción correcta según las guías clínicas vigentes. Si ninguna opción es claramente correcta o hay más de una correcta, responde 0 y explica por qué.
 Devuelve SOLO este JSON: {"respuestas":[{"id":"g1","opcion":1,"seguridad":90,"motivo":"una frase, en ${langIA()}"}]}
@@ -249,8 +261,9 @@ $('btnGen').onclick = async () => {
   if (busy) return; if (!pideClave()) return;
   const asig = $('genAsig').value, n = +$('genN').value, rev = $('genRev').value || '', pv1 = getProv();
   const r = rng('gen' + Date.now()), banco = DATA.preguntas.filter(q => q.asig === asig), todo = DATA.preguntas;
-  const ejemplos = baraja(banco.filter(utilizable), r).slice(0, 3);
-  const prompt = PROMPT_GEN(nombreAsig(asig), n, ejemplos);
+  const ejemplos = ejemplosRecientes(DATA.preguntas, asig, 6, r), ys = aniosDe(DATA.conteos);
+  const ctx = {...temasRecurrentes(DATA.preguntas, asig, (DATA.kws || {})[asig], ys.at(-1)), desde: ys[0], hasta: ys.at(-1)};
+  const prompt = PROMPT_GEN(nombreAsig(asig), n, ejemplos, ctx);
   if (!(await pideEnvio(prompt, 0))) return;
   busy = true; $('btnGen').disabled = true; const st = $('genEstado'), motivos = [];
   const paso = m => { st.innerHTML = '<span class="spin"></span> ' + esc(m); };
@@ -280,7 +293,7 @@ $('btnGen').onclick = async () => {
       if (c.estado === 'descartada') { de++; motivos.push(t('Pregunta «{0}…» descartada: ninguno de los dos resolutores eligió la respuesta del redactor.', c.enunciado.slice(0, 50))); return; }
       c.id = uid('gen-'); c.fecha = new Date().toISOString(); S.gen.push(c); c.estado === 'aceptada' ? ac++ : du++;
     });
-    S.genStats = {total: n, aceptadas: ac, dudosas: du, descartadas: de, motivos};
+    S.genStats = {total: n, aceptadas: ac, dudosas: du, descartadas: de, motivos, contexto: {asig, total: ctx.total, frecuentes: ctx.frecuentes.slice(0, 8), olvidados: ctx.olvidados, ejemplos: ejemplos.map(q => q.id)}};
     await guardaYa(); st.textContent = t('Hecho: {0} aceptadas de {1}.', ac, n); pintaGen();
   } catch (e) { st.textContent = e.message; toast(e.message, 8000); }
   finally { busy = false; $('btnGen').disabled = false; }

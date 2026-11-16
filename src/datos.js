@@ -46,6 +46,7 @@ async function cargaDatos() {
     const ps = (j.preguntas || []).filter(q => q && q.enunciado && q.anio);
     if (ps.length < 100) throw 0;
     DATA = {real: true, asignaturas: j.asignaturas || ASIGS_BASE, preguntas: ps, conteos: conteos(ps), examenes: j.examenes || [], generado: j.generado || null, clasificacion: j.clasificacion || ''};
+    try { const a = await (await fetch('data/asignaturas.json', {cache: 'no-cache'})).json(); DATA.kws = Object.fromEntries((a.asignaturas || []).map(x => [x.id, x.kw || []])); } catch { DATA.kws = {}; }
   } catch { /* se queda el DEMO */ }
   return DATA;
 }

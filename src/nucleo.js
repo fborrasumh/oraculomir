@@ -146,8 +146,29 @@ function veredicto(clave, respuestas) {
   const ok = respuestas.filter(x => x === clave).length;
   return ok === respuestas.length ? 'aceptada' : ok === 0 ? 'descartada' : 'dudosa';
 }
+/* Contexto de años anteriores para el generador: qué temas (palabras clave de la asignatura) han salido, cuántas veces y cuándo.
+   anioRef = último MIR del banco. «olvidados» = temas con ≥3 preguntas ausentes en los últimos ≥4 exámenes (heurística, no predicción). */
+const sinTildes = s => ' ' + String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9ñ]+/g, ' ') + ' ';
+function temasRecurrentes(preguntas, asig, kws, anioRef, {top = 15, hueco = 4} = {}) {
+  const qs = preguntas.filter(q => q.asig === asig && q.anio), cuenta = {};
+  const vistos = new Set(), unicas = (kws || []).filter(k => { const c = sinTildes(k).trim(); if (vistos.has(c)) return false; vistos.add(c); return true; });   // «disección»/«diseccion» = un tema
+  const rxs = unicas.map(k => [k, new RegExp('(?<![a-z0-9])' + sinTildes(k).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))]);
+  for (const q of qs) {
+    const tx = sinTildes(q.enunciado + ' ' + (q.opciones || []).join(' '));
+    for (const [k, rx] of rxs) if (rx.test(tx)) { const c = (cuenta[k] = cuenta[k] || {tema: k, n: 0, anios: new Set()}); c.n++; c.anios.add(q.anio); }
+  }
+  const lista = Object.values(cuenta).map(c => ({tema: c.tema, n: c.n, ultimo: Math.max(...c.anios), anios: c.anios.size})).sort((a, b) => b.n - a.n || b.ultimo - a.ultimo);
+  return {total: qs.length, frecuentes: lista.slice(0, top), olvidados: lista.filter(c => c.n >= 3 && anioRef - c.ultimo >= hueco).slice(0, 8)};
+}
+/* ejemplos oficiales para el redactor: los más recientes primero (con respuesta), sin imagen ni anuladas */
+function ejemplosRecientes(preguntas, asig, n, r) {
+  const ok = preguntas.filter(q => q.asig === asig && utilizable(q)).sort((a, b) => b.anio - a.anio);
+  const recientes = ok.filter(q => q.anio >= (ok[0] || {anio: 0}).anio - 4);
+  return baraja(recientes.length >= n ? recientes : ok, r).slice(0, n);
+}
+
 /* GIFT (formato de preguntas de Moodle) */
 const giftEsc = s => String(s).replace(/([~=#{}:\\])/g, '\\$1');
 function aGIFT(qs) { return qs.map((q, i) => `::OraculoMIR ${i + 1}::${giftEsc(q.enunciado)} {\n${q.opciones.map((o, k) => `${k + 1 === q.correcta ? '=' : '~'}${giftEsc(o)}`).join('\n')}\n}`).join('\n\n') + '\n'; }
 
-if (typeof module !== 'undefined') module.exports = {N_MIR, FECHA_MIR, rng, baraja, conteos, cuotas, predice, valida, reparto, simulacro, puntua, utilizable, fechaMadrid, numReto, diasHastaMIR, textoCompartirReto, jaccard, revisaFormato, parecidoBanco, permuta, veredicto, aGIFT};
+if (typeof module !== 'undefined') module.exports = {N_MIR, FECHA_MIR, rng, baraja, conteos, cuotas, predice, valida, reparto, simulacro, puntua, utilizable, fechaMadrid, numReto, diasHastaMIR, textoCompartirReto, jaccard, revisaFormato, parecidoBanco, permuta, veredicto, aGIFT, temasRecurrentes, ejemplosRecientes};
