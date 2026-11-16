@@ -8,7 +8,7 @@ T = [
  # ── portada y HTML ──
  ('title', cfg['i18n']['en']['title'], cfg['i18n']['pt']['title']),
  ('hero.eyebrow', cfg['i18n']['en']['eyebrow'], cfg['i18n']['pt']['eyebrow']),
- ('hero.h1', 'What twenty years of MIR exams say <em>about your 2027 exam</em>', 'O que vinte anos de MIR dizem <em>sobre o seu exame de 2027</em>'),
+ ('hero.h1', 'What 18 MIR exams, from 2009 to 2026, say <em>about your 2027 exam</em>', 'O que 18 exames MIR, de 2009 a 2026, dizem <em>sobre o seu exame de 2027</em>'),
  ('hero.lede', cfg['i18n']['en']['lede'], cfg['i18n']['pt']['lede']),
  ('s.empezar', 'See the forecast', 'Ver a previsão'), ('s.ejemplo', "Today's challenge", 'Desafio de hoje'),
  ('s.idea', 'Based on ConvocatorIA (Fernando Borrás Rocher), adapted to the MIR exam.', 'Baseada no ConvocatorIA (Fernando Borrás Rocher), adaptada ao exame MIR.'),
@@ -99,7 +99,7 @@ T = [
  ('Calculado con los MIR {0}–{1}. Las preguntas sin clasificar no se reparten. Las cifras de años antiguos se escalan a 200 preguntas.', 'Computed with the MIR {0}–{1}. Unclassified questions are not allocated. Older years are scaled to 200 questions.', 'Calculado com os MIR {0}–{1}. As perguntas sem classificação não se repartem. Os anos antigos escalam-se para 200 perguntas.'),
  ('asignatura', 'subject', 'disciplina'), ('esperadas', 'expected', 'esperadas'), ('minimo_80', 'min_80', 'minimo_80'), ('maximo_80', 'max_80', 'maximo_80'), ('tendencia', 'trend', 'tendencia'),
  ('MIR 2027: lo que más pesa', 'MIR 2027: what weighs most', 'MIR 2027: o que mais pesa'),
- ('Preguntas esperadas sobre 200, según 20 años de exámenes', 'Expected questions out of 200, from 20 years of exams', 'Perguntas esperadas em 200, segundo 20 anos de exames'),
+ ('Preguntas esperadas sobre 200, según los MIR {0}-{1}', 'Expected questions out of 200, from the MIR {0}-{1}', 'Perguntas esperadas em 200, segundo os MIR {0}-{1}'),
  ('Estimación estadística, no una filtración. Pruébala gratis:', 'A statistical estimate, not a leak. Try it for free:', 'Estimativa estatística, não uma fuga de informação. Experimente grátis:'),
  ('DEMO con datos ficticios', 'DEMO with fictitious data', 'DEMO com dados fictícios'), ('Aún no hay predicción', 'There is no forecast yet', 'Ainda não há previsão'),
  ('Según OráculoMIR, en el MIR 2027 lo que más pesa es {0}. ¿Y tú qué llevas peor?', 'According to OráculoMIR, what weighs most in the MIR 2027 is {0}. Which one are you weakest at?', 'Segundo o OráculoMIR, no MIR 2027 o que mais pesa é {0}. E tu, em qual estás pior?'),

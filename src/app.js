@@ -75,7 +75,7 @@ function lienzoPred() {
   g.fillStyle = '#0F2237'; g.fillRect(0, 0, W, H);
   g.fillStyle = '#FFB38A'; g.font = '700 34px system-ui, sans-serif'; g.fillText('OráculoMIR', 70, 100);
   g.fillStyle = '#fff'; g.font = '800 64px system-ui, sans-serif'; g.fillText(t('MIR 2027: lo que más pesa'), 70, 190);
-  g.fillStyle = '#C3D3E2'; g.font = '400 30px system-ui, sans-serif'; g.fillText(t('Preguntas esperadas sobre 200, según 20 años de exámenes'), 70, 240);
+  g.fillStyle = '#C3D3E2'; g.font = '400 30px system-ui, sans-serif'; g.fillText(t('Preguntas esperadas sobre 200, según los MIR {0}-{1}', PRED.anios[0], PRED.anios.at(-1)), 70, 240);
   const top = PRED.filas.slice(0, 10), max = Math.max(1, ...top.map(f => f.n));
   top.forEach((f, i) => {
     const y = 320 + i * 88; g.fillStyle = '#fff'; g.font = '600 30px system-ui, sans-serif'; g.fillText(`${i + 1}. ${nombreAsig(f.id)}`.slice(0, 44), 70, y);

@@ -487,7 +487,7 @@ table{border-collapse:collapse;width:100%;font-size:13.8px}th{background:var(--p
 <section class="screen" data-step="0">
   <div class="hero">
     <p class="eyebrow" data-i18n="hero.eyebrow">MIR 2027 · Exámenes oficiales del Ministerio de Sanidad · Universidad Miguel Hernández de Elche</p>
-    <h1 data-i18n="hero.h1">Lo que dicen veinte años de MIR <em>sobre tu examen de 2027</em></h1>
+    <h1 data-i18n="hero.h1">Lo que dicen 18 exámenes MIR, de 2009 a 2026, <em>sobre tu examen de 2027</em></h1>
     <p class="lede" data-i18n="hero.lede">OráculoMIR cuenta cuántas preguntas ha puesto cada asignatura en los exámenes MIR oficiales, estima cuántas caerán el 23 de enero de 2027 y te dice cuánto fiarte de esa estimación. Practica gratis con preguntas oficiales y su respuesta de la plantilla definitiva.</p>
     <div class="om-cuenta" id="cuenta" role="status"></div>
     <div class="actions"><button class="btn btn-primary btn-big" id="btnStart" type="button"><svg class="i"><use href="#i-target"/></svg><span data-i18n="s.empezar">Ver la predicción</span></button><button class="btn btn-ghost btn-big" id="btnEjemplo" type="button"><svg class="i"><use href="#i-flame"/></svg><span data-i18n="s.ejemplo">Reto de hoy</span></button></div>
@@ -1325,7 +1325,7 @@ const I18N = {
   en: {
 "title": "OráculoMIR · Which subjects will come up in the MIR 2027",
 "hero.eyebrow": "MIR 2027 · Official exams of the Spanish Ministry of Health · Miguel Hernández University of Elche",
-"hero.h1": "What twenty years of MIR exams say <em>about your 2027 exam</em>",
+"hero.h1": "What 18 MIR exams, from 2009 to 2026, say <em>about your 2027 exam</em>",
 "hero.lede": "OráculoMIR counts how many questions each subject has had in the official MIR exams, estimates how many will come up on 23 January 2027 and tells you how far to trust that estimate. Practise for free with official questions and the answer from the final answer key.",
 "s.empezar": "See the forecast",
 "s.ejemplo": "Today's challenge",
@@ -1456,7 +1456,7 @@ const I18N = {
 "maximo_80": "max_80",
 "tendencia": "trend",
 "MIR 2027: lo que más pesa": "MIR 2027: what weighs most",
-"Preguntas esperadas sobre 200, según 20 años de exámenes": "Expected questions out of 200, from 20 years of exams",
+"Preguntas esperadas sobre 200, según los MIR {0}-{1}": "Expected questions out of 200, from the MIR {0}-{1}",
 "Estimación estadística, no una filtración. Pruébala gratis:": "A statistical estimate, not a leak. Try it for free:",
 "DEMO con datos ficticios": "DEMO with fictitious data",
 "Aún no hay predicción": "There is no forecast yet",
@@ -1542,7 +1542,7 @@ const I18N = {
   pt: {
 "title": "OráculoMIR · Que disciplinas vão sair no MIR 2027",
 "hero.eyebrow": "MIR 2027 · Exames oficiais do Ministério da Saúde de Espanha · Universidade Miguel Hernández de Elche",
-"hero.h1": "O que vinte anos de MIR dizem <em>sobre o seu exame de 2027</em>",
+"hero.h1": "O que 18 exames MIR, de 2009 a 2026, dizem <em>sobre o seu exame de 2027</em>",
 "hero.lede": "O OráculoMIR conta quantas perguntas cada disciplina teve nos exames MIR oficiais, estima quantas vão sair a 23 de janeiro de 2027 e diz-lhe até que ponto confiar nessa estimativa. Pratique grátis com perguntas oficiais e a resposta da grelha definitiva.",
 "s.empezar": "Ver a previsão",
 "s.ejemplo": "Desafio de hoje",
@@ -1673,7 +1673,7 @@ const I18N = {
 "maximo_80": "maximo_80",
 "tendencia": "tendencia",
 "MIR 2027: lo que más pesa": "MIR 2027: o que mais pesa",
-"Preguntas esperadas sobre 200, según 20 años de exámenes": "Perguntas esperadas em 200, segundo 20 anos de exames",
+"Preguntas esperadas sobre 200, según los MIR {0}-{1}": "Perguntas esperadas em 200, segundo os MIR {0}-{1}",
 "Estimación estadística, no una filtración. Pruébala gratis:": "Estimativa estatística, não uma fuga de informação. Experimente grátis:",
 "DEMO con datos ficticios": "DEMO com dados fictícios",
 "Aún no hay predicción": "Ainda não há previsão",
@@ -2041,7 +2041,7 @@ function lienzoPred() {
   g.fillStyle = '#0F2237'; g.fillRect(0, 0, W, H);
   g.fillStyle = '#FFB38A'; g.font = '700 34px system-ui, sans-serif'; g.fillText('OráculoMIR', 70, 100);
   g.fillStyle = '#fff'; g.font = '800 64px system-ui, sans-serif'; g.fillText(t('MIR 2027: lo que más pesa'), 70, 190);
-  g.fillStyle = '#C3D3E2'; g.font = '400 30px system-ui, sans-serif'; g.fillText(t('Preguntas esperadas sobre 200, según 20 años de exámenes'), 70, 240);
+  g.fillStyle = '#C3D3E2'; g.font = '400 30px system-ui, sans-serif'; g.fillText(t('Preguntas esperadas sobre 200, según los MIR {0}-{1}', PRED.anios[0], PRED.anios.at(-1)), 70, 240);
   const top = PRED.filas.slice(0, 10), max = Math.max(1, ...top.map(f => f.n));
   top.forEach((f, i) => {
     const y = 320 + i * 88; g.fillStyle = '#fff'; g.font = '600 30px system-ui, sans-serif'; g.fillText(`${i + 1}. ${nombreAsig(f.id)}`.slice(0, 44), 70, y);
