@@ -189,7 +189,9 @@ def procesa_anio(anio, d):
     inf.update(preguntas=len(qs), opciones=nopt, fuente=fuente)
     if not qs: inf['error'] = 'no se reconocieron preguntas en el cuaderno'; return [], inf
     resp = {}
-    if (d / 'respuestas.json').exists():   # hoja de respuestas de la API del portal: filas {V_0: nº de pregunta en la versión 0, RC_0: respuesta}
+    if (d / 'respuestas_cruce.json').exists():   # 2010 y 2014: cruce por texto con una transcripción de terceros (scripts/mir_plantilla_cruce.py)
+        resp = {int(k): v for k, v in json.loads((d / 'respuestas_cruce.json').read_text(encoding='utf-8')).items()}
+    elif (d / 'respuestas.json').exists():   # hoja de respuestas de la API del portal: filas {V_0: nº de pregunta en la versión 0, RC_0: respuesta}
         resp = parse_respuestas_json(json.loads((d / 'respuestas.json').read_text(encoding='utf-8')))
     elif pl.exists() or (d / 'plantilla.txt').exists():
         tp = (d / 'plantilla.txt').read_text(encoding='utf-8') if (d / 'plantilla.txt').exists() else texto_pdf(pl, columnas=False)
@@ -231,14 +233,17 @@ def main():
         v = ver.get(str(i['anio']))
         if not v or not i.get('ok'): continue
         mias = sorted(q['n'] for q in preg if q['anio'] == i['anio'] and q['anulada'] and q['n'] <= v.get('hasta', 999))
-        pub = sorted(v['anuladas']); i['cotejo'] = {'publicadas': pub, 'extraidas': mias, 'coincide': mias == pub, 'fuente': v['fuente']}
+        pub = sorted(v['anuladas']); cb = {int(k): c for k, c in v.get('cambios', {}).items()}
+        res = {q['n']: q['correcta'] for q in preg if q['anio'] == i['anio']}
+        cb_ok = all(res.get(k) == c for k, c in cb.items())
+        i['cotejo'] = {'publicadas': pub, 'extraidas': mias, 'coincide': mias == pub and cb_ok, 'cambios_ok': cb_ok, 'n_cambios': len(cb), 'fuente': v['fuente']}
     datos_cotejo = True
     (OUT / 'mir.json').write_text(json.dumps(datos, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     # informe legible
     L = ['# Informe de extracción · OráculoMIR', '', f"Generado: {datos['generado']}", '',
          '| Año | Preguntas | Opciones | Con respuesta | Anuladas | Cotejo con lo publicado | Estado |', '|---|---|---|---|---|---|---|']
     for i in informes:
-        L.append(f"| {i['anio']}{' (copia)' if i.get('fuente') == 'tercero' else ''} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {('✓ coincide' if i['cotejo']['coincide'] else '✕ publicadas ' + str(i['cotejo']['publicadas']) + ' · extraídas ' + str(i['cotejo']['extraidas'])) if i.get('cotejo') else '—'} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
+        L.append(f"| {i['anio']}{' (copia)' if i.get('fuente') == 'tercero' else ''} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {(('✓ anuladas' + (f" y {i['cotejo']['n_cambios']} cambios" if i['cotejo']['n_cambios'] else '')) if i['cotejo']['coincide'] else '✕ publicadas ' + str(i['cotejo']['publicadas']) + ' · extraídas ' + str(i['cotejo']['extraidas']) + ('' if i['cotejo']['cambios_ok'] else ' · cambios NO')) if i.get('cotejo') else '—'} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
     sc = sum(1 for q in preg if q['asig'] == 'otras')
     nia = sum(1 for q in preg if q.get('metodo') == 'ia')
     L += ['', f'Preguntas totales: {len(preg)} · clasificadas con IA: {nia} · sin clasificar: {sc} ({(sc / max(1, len(preg))):.0%})', '',
