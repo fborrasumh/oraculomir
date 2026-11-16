@@ -39,11 +39,24 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
 | Años | Origen | Respuestas |
 |---|---|---|
 | 2022-2026 | Portal FSE del Ministerio (API de su web: cuaderno versión 0 y hoja de respuestas definitiva) | Oficiales |
-| 2016-2021 | Copias de terceros de los PDF oficiales (examenesmir.com, consalud.es), marcadas en la app | Plantilla definitiva copiada; anuladas cotejadas con la prensa |
-| 2015 | Copia del cuaderno | Sin plantilla legible: cuenta para la predicción, no entra en simulacros |
-| 2007-2014 | No disponibles: el portal ya no los ofrece y las copias conocidas (Google Drive) piden iniciar sesión | — |
+| 2016-2021 | Copias de terceros de los PDF oficiales (examenesmir.com, consalud.es) | Plantilla definitiva copiada |
+| 2009, 2011-2013, 2015 | Cuadernos e impresiones de la consulta oficial de respuestas correctas del Ministerio, guardados en una carpeta pública de Google Drive | Plantilla definitiva copiada |
+| 2010, 2014 | Cuaderno sí; la plantilla no se ha podido leer con seguridad (escaneada o del año equivocado) | Sin respuestas: cuentan para la predicción, no entran en simulacros |
+| 2007-2008 | No encontrados en ninguna fuente accesible | — |
 
-2.595 preguntas en total; 1.991 se pueden usar en simulacros. La asignatura de cada pregunta la asigna `gpt-6-luna` (`scripts/mir_clasifica_ia.py`, secreto `OPENAI_API_KEY`); si no hay clave, se usan palabras clave.
+Todo lo que no viene del portal se marca en la app como «tomada de una copia del cuaderno oficial».
+
+Comprobaciones antes de aceptar un año copiado:
+- El año del examen se toma del propio cuaderno: «PRUEBAS SELECTIVAS 2012» es el MIR de enero de 2013.
+- La plantilla debe ser del mismo año.
+- No se puede usar el mismo fichero para dos años.
+- No se admiten más de 15 anuladas.
+- La plantilla debe cubrir al menos el 90 % de las preguntas.
+- No se leen plantillas escaneadas.
+
+Las anuladas coinciden con lo publicado en prensa en los años contrastados (2016-2021 y 2023).
+
+En total hay 4.027 preguntas de 18 exámenes; 3.018 se pueden usar en simulacros. La asignatura de cada pregunta la asigna `gpt-6-luna` (`scripts/mir_clasifica_ia.py`, secreto `OPENAI_API_KEY`); si no hay clave, se usan palabras clave.
 
 ## Datos: cómo se traen los exámenes al repositorio
 
