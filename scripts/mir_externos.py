@@ -47,7 +47,7 @@ def main():
         if not ys.isdigit(): continue
         y = int(ys); d = RAW / ys
         if (d / 'respuestas.json').exists(): continue            # ya está del portal oficial
-        d.mkdir(parents=True, exist_ok=True); qs = None; origen = []
+        qs = None; origen = []
         if (d / 'cuaderno.txt').exists():
             qs, nopt = M.mejor_cuaderno((d / 'cuaderno.txt').read_text(encoding='utf-8'))
         for u in ([] if qs and len(qs) >= 0.9 * ESPERADAS(y) else e.get('cuaderno', [])):
@@ -57,7 +57,7 @@ def main():
                 if not re.search(r'medicina', tx, re.I): raise ValueError('no menciona MEDICINA')
                 q2, nopt = M.mejor_cuaderno(tx)
                 if len(q2) < 0.9 * ESPERADAS(y): raise ValueError(f'solo {len(q2)} preguntas de {ESPERADAS(y)}')
-                (d / 'cuaderno.pdf').write_bytes(b); (d / 'cuaderno.txt').write_text(tx, encoding='utf-8'); qs = q2
+                d.mkdir(parents=True, exist_ok=True); (d / 'cuaderno.pdf').write_bytes(b); (d / 'cuaderno.txt').write_text(tx, encoding='utf-8'); qs = q2
                 origen.append('cuaderno: ' + u); print(f'{y} cuaderno OK ({len(q2)} preg., {nopt} opciones) ← {u}'); break
             except Exception as ex: print(f'{y} cuaderno ✕ {u}: {ex}')
         if not qs: resumen.append(f'{y}: sin cuaderno válido'); continue

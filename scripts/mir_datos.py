@@ -195,7 +195,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--solo-informe', action='store_true'); a = ap.parse_args()
     asigs = carga_asignaturas()
     preg, informes = [], []
-    for d in sorted(p for p in RAW.glob('20[0-9][0-9]') if p.is_dir()):
+    for d in sorted(p for p in RAW.glob('20[0-9][0-9]') if p.is_dir() and any(p.iterdir())):
         anio = int(d.name)
         try: qs, inf = procesa_anio(anio, d)
         except Exception as e: qs, inf = [], {'anio': anio, 'ok': False, 'error': f'{type(e).__name__}: {e}'}
