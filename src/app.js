@@ -621,7 +621,7 @@ $('envioSi').onclick = () => cierraEnvio(true); $('envioNo').onclick = () => cie
 let INSTALAR = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); INSTALAR = e; $('btnInstalar').hidden = false; });
 $('btnInstalar').onclick = async () => { if (!INSTALAR) return; INSTALAR.prompt(); try { await INSTALAR.userChoice; } catch {} INSTALAR = null; $('btnInstalar').hidden = true; };
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch {} }
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').then(r => r.update()).catch(() => {}); let recargada = false; const habiaSW = !!navigator.serviceWorker.controller; navigator.serviceWorker.addEventListener('controllerchange', () => { if (!recargada && habiaSW) {   /* versión nueva: recarga una vez */ recargada = true; location.reload(); } }); } catch {} }
 
 /* ── Mis generadas: todo lo generado con IA, guardado en IndexedDB (solo en este navegador) ── */
 const fechaCorta = iso => { try { return new Date(iso).toLocaleDateString(LANG === 'en' ? 'en-GB' : LANG, {day: 'numeric', month: 'short', year: 'numeric'}); } catch { return (iso || '').slice(0, 10); } };
