@@ -183,6 +183,8 @@ T = [
  ('s.valPred', 'Forecast', 'Previsão'), ('s.valFuente', 'Code and data', 'Código e dados'),
  ('s.valFuente.txt', 'Everything is open: the code, the PDFs and the year-by-year extraction report are in the GitHub repository.', 'Tudo é aberto: o código, os PDF e o relatório de extração ano a ano estão no repositório do GitHub.'),
  ('s.informe', 'Extraction report', 'Relatório de extração'),
+ ('Abrir la imagen a tamaño completo', 'Open the image at full size', 'Abrir a imagem em tamanho completo'),
+ ('Imagen de la pregunta {0} del MIR {1}', 'Image for question {0} of the MIR {1}', 'Imagem da pergunta {0} do MIR {1}'),
  ('sube', 'rising', 'sobe'), ('baja', 'falling', 'desce'), ('estable', 'stable', 'estável'),
  ('enunciado demasiado corto', 'stem too short', 'enunciado demasiado curto'), ('no tiene 4 opciones', 'does not have 4 options', 'não tem 4 opções'), ('opciones repetidas', 'repeated options', 'opções repetidas'),
  ('respuesta correcta fuera de 1-4', 'correct answer outside 1-4', 'resposta correta fora de 1-4'), ('usa «todas/ninguna de las anteriores»', 'uses “all/none of the above”', 'usa «todas/nenhuma das anteriores»'),

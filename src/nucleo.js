@@ -84,7 +84,7 @@ function reparto(filas, n) {
   [...base].sort((a, b) => b.r - a.r).forEach(b => { if (falta > 0) { b.k++; falta--; } });
   return Object.fromEntries(base.map(b => [b.id, b.k]));
 }
-const utilizable = q => q && q.correcta && !q.anulada && !q.imagen && Array.isArray(q.opciones) && q.opciones.length >= 4;
+const utilizable = q => q && q.correcta && !q.anulada && (!q.imagen || !!q.img) && Array.isArray(q.opciones) && q.opciones.length >= 4;   // con imagen, solo si la tenemos
 
 /* Simulacro «probable 2027»: n preguntas oficiales, en la proporción que predice el modelo; reproducible con la semilla */
 function simulacro(preguntas, filas, n, semilla, soloAsig) {
@@ -162,7 +162,7 @@ function temasRecurrentes(preguntas, asig, kws, anioRef, {top = 15, hueco = 4} =
 }
 /* ejemplos oficiales para el redactor: los más recientes primero (con respuesta), sin imagen ni anuladas */
 function ejemplosRecientes(preguntas, asig, n, r) {
-  const ok = preguntas.filter(q => q.asig === asig && utilizable(q)).sort((a, b) => b.anio - a.anio);
+  const ok = preguntas.filter(q => q.asig === asig && utilizable(q) && !q.imagen).sort((a, b) => b.anio - a.anio);   // el redactor no ve imágenes
   const recientes = ok.filter(q => q.anio >= (ok[0] || {anio: 0}).anio - 4);
   return baraja(recientes.length >= n ? recientes : ok, r).slice(0, n);
 }

@@ -162,7 +162,7 @@ def descargar(imagenes=False):
                 u = e.get(tp)
                 if not u: continue
                 dst = RAW / anio / f'{tp}.pdf'
-                if dst.exists() and dst.stat().st_size > 10_000: continue
+                if dst.exists() and dst.stat().st_size > 100_000: continue   # un PDF de imágenes de pocos KB es una respuesta vacía: se vuelve a pedir
                 try:
                     r = ctx.request.get(u, timeout=120000)
                     body = r.body()
@@ -207,9 +207,10 @@ def api(titulacion='M', imagenes=False):
             (d / 'convocatoria.txt').write_text(f'convocatoria {an}/{an + 1} · titulación {titulacion}\n', encoding='utf-8')
             for op, nombre in (('C', 'cuaderno'),) + ((('I', 'imagenes'),) if imagenes else ()):
                 dst = d / f'{nombre}.pdf'
-                if dst.exists() and dst.stat().st_size > 10_000: continue
+                if dst.exists() and dst.stat().st_size > 100_000: continue   # un PDF de imágenes de pocos KB es una respuesta vacía: se vuelve a pedir
                 try:
                     r = get(f'getDatosCuadernosExamen?titulacion={titulacion}&anyo={an}&version=0&opcionSelect={op}')
+                    if op == 'I': print(f'  imágenes {an}: HTTP {r.status}, {len(r.body()) // 1024} KB')
                     j = r.json(); b64 = _b64_pdf(j)
                     if not b64: raise RuntimeError('sin PDF en la respuesta: ' + str(j)[:300])
                     dst.write_bytes(base64.b64decode(b64)); hecho.append(f'{an + 1}/{nombre}')

@@ -108,6 +108,7 @@ function pintaPregunta(box, ex, modo) {
   box.innerHTML = `<div class="card om-preg">
     <div class="om-cab"><span class="fa-chip">${esc(t('Pregunta {0} de {1}', i + 1, ids.length))}</span><span class="fa-chip">${esc(nombreAsig(q.asig))}</span>${modo === 'sim' && !ex.fin && ex.limite ? `<span class="fa-chip aviso" id="reloj"></span>` : ''}</div>
     <p class="om-enun">${esc(q.enunciado)}</p>
+    ${q.img ? `<a class="om-img" href="${esc(q.img)}" target="_blank" rel="noopener" aria-label="${esc(t('Abrir la imagen a tamaño completo'))}"><img src="${esc(q.img)}" alt="${esc(t('Imagen de la pregunta {0} del MIR {1}', q.n, q.anio))}" loading="lazy"></a>` : ''}
     <div class="om-ops" role="radiogroup" aria-label="${esc(t('Opciones'))}">${q.opciones.map((o, k) => {
       const n = k + 1, cls = ver ? (n === q.correcta ? 'ok' : n === r ? 'ko' : '') : (n === r ? 'sel' : '');
       return `<button type="button" role="radio" aria-checked="${n === r}" class="om-op ${cls}" data-op="${n}" ${ver ? 'disabled' : ''}><b>${n}</b><span>${esc(o)}</span></button>`; }).join('')}</div>
@@ -220,7 +221,7 @@ function pintaReto() {
 
 /* ── «¿Por qué?»: la IA explica la respuesta OFICIAL; no la puede cambiar. Si cree que hoy sería discutible, lo avisa aparte ── */
 const PROMPT_EXP = q => `Eres profesor de una academia de preparación del MIR. Explica a un estudiante esta pregunta OFICIAL del MIR ${q.anio}.
-La respuesta correcta es la ${q.correcta}, según la plantilla definitiva del Ministerio de Sanidad: NO la discutas ni la cambies; explica el razonamiento que lleva a ella.
+La respuesta correcta es la ${q.correcta}, según la plantilla definitiva del Ministerio de Sanidad: NO la discutas ni la cambies; explica el razonamiento que lleva a ella.${q.imagen ? '\nLa pregunta lleva una imagen que tú no ves: no describas la imagen ni inventes lo que muestra; explica a partir del texto y dilo si hace falta.' : ''}
 Si con las guías clínicas actuales esa respuesta te parece desfasada o discutible, dilo SOLO en el campo "aviso" (si no, déjalo vacío).
 Devuelve SOLO este JSON, en ${langIA()}:
 {"clave":"la idea que hay que saber, en una frase","explicacion":"por qué la ${q.correcta} es la correcta, en 3-5 frases","opciones":["por qué falla o acierta la opción 1, en una frase", "…una por opción, en orden…"],"aviso":"","repaso":"qué tema repasar"}

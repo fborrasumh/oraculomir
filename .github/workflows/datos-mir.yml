@@ -20,7 +20,7 @@ jobs:
         with: {python-version: '3.12'}
       - name: Dependencias
         run: |
-          pip install playwright==1.47.0 pdfplumber==0.11.4
+          pip install playwright==1.47.0 pdfplumber==0.11.4 pypdfium2 Pillow
           python -m playwright install --with-deps chromium
       - name: Pruebas del extractor
         run: python tests/test_datos.py
@@ -41,7 +41,7 @@ jobs:
       - name: Cuadernillos de imágenes (portal y copias) → data/img
         if: inputs.paso == 'imagenes'
         run: |
-          sudo apt-get install -y -qq poppler-utils >/dev/null
+          sudo apt-get install -y -qq poppler-utils tesseract-ocr >/dev/null
           python scripts/mir_fetch.py --api --imagenes
           python scripts/mir_externos.py --imagenes
           python scripts/mir_imagenes.py

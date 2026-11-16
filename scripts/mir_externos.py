@@ -5,7 +5,7 @@ Para cada año prueba las URL en orden y se queda con la primera que pasa las co
   · cuaderno: es un PDF, su texto menciona MEDICINA y se extraen al menos el 90 % de las preguntas esperadas para ese año;
   · plantilla: PDF o página web cuyas respuestas cubren al menos el 90 % de las preguntas extraídas.
 Lo que no pasa se descarta y se dice en el registro. Cada año guarda su origen en data/raw/<año>/origen.txt."""
-import json, re, sys, html, pathlib, urllib.request, urllib.parse, http.cookiejar, tempfile
+import json, re, sys, html, pathlib, urllib.request, urllib.parse, http.cookiejar, tempfile, unicodedata
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import mir_datos as M
 R = pathlib.Path(__file__).resolve().parent.parent; RAW = R / 'data' / 'raw'
@@ -48,6 +48,7 @@ def carpeta_drive(fid, desfase=1):
     for fid2, nombre in re.findall(r'"([\w-]{25,60})",\["[\w-]+"\],"([^"]{4,120}?\.pdf)"', t):
         m = re.search(r'(20\d\d)', nombre); n = nombre.lower()
         if not m: continue
+        n = unicodedata.normalize('NFD', n).encode('ascii', 'ignore').decode()   # «imágenes» → «imagenes»
         tipo = 'imagenes' if 'imag' in n else 'plantilla' if 'respuesta' in n or 'plantilla' in n else 'cuaderno' if 'cuaderno de examen' in n or re.search(r'examen', n) else None
         print(f'  Drive: {nombre} → {fid2} ({tipo or "se ignora"})')
         if tipo:   # el nombre puede llevar el año del examen o el de la convocatoria: se prueba en ambos y el texto del PDF decide

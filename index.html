@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0F2237">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; media-src blob: data:; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob: 'self'; media-src blob: data:; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com 'self'; base-uri 'none'; form-action 'none'">
 <meta name="author" content="Fernando Borrás Rocher; Antonio F. Compañ Rosique">
 <meta name="description" content="Qué asignaturas caerán en el MIR 2027, con simulacros de preguntas oficiales">
 <title>OráculoMIR · Qué asignaturas caerán en el MIR 2027, con simulacros de preguntas oficiales</title><link rel="preconnect" href="https://fonts.googleapis.com">
@@ -421,6 +421,7 @@ table{border-collapse:collapse;width:100%;font-size:13.8px}th{background:var(--p
 .om-bar.corto em{color:var(--tinta);text-shadow:none;padding-left:calc(var(--w,0%) + 6px)}
 .om-exp:empty{display:none}.om-expbox{margin-top:10px;padding:12px 14px;border-radius:12px;background:#F6F3FF;border:1px solid #DCD3FF}
 .om-res{padding:9px 0;border-bottom:1px solid var(--linea-2);font-size:14.5px;line-height:1.5}.om-res small{color:var(--acero)}
+.om-img{display:block;margin:0 0 14px;border-radius:12px;overflow:hidden;border:1px solid var(--linea);background:#111}.om-img img{display:block;width:100%;max-height:460px;object-fit:contain}
 </style></head>
 <body>
 <svg style="display:none" aria-hidden="true">
@@ -1633,6 +1634,8 @@ const I18N = {
 "s.valFuente": "Code and data",
 "s.valFuente.txt": "Everything is open: the code, the PDFs and the year-by-year extraction report are in the GitHub repository.",
 "s.informe": "Extraction report",
+"Abrir la imagen a tamaño completo": "Open the image at full size",
+"Imagen de la pregunta {0} del MIR {1}": "Image for question {0} of the MIR {1}",
 "sube": "rising",
 "baja": "falling",
 "estable": "stable",
@@ -1924,6 +1927,8 @@ const I18N = {
 "s.valFuente": "Código e dados",
 "s.valFuente.txt": "Tudo é aberto: o código, os PDF e o relatório de extração ano a ano estão no repositório do GitHub.",
 "s.informe": "Relatório de extração",
+"Abrir la imagen a tamaño completo": "Abrir a imagem em tamanho completo",
+"Imagen de la pregunta {0} del MIR {1}": "Imagem da pergunta {0} do MIR {1}",
 "sube": "sobe",
 "baja": "desce",
 "estable": "estável",
@@ -2029,7 +2034,7 @@ function reparto(filas, n) {
   [...base].sort((a, b) => b.r - a.r).forEach(b => { if (falta > 0) { b.k++; falta--; } });
   return Object.fromEntries(base.map(b => [b.id, b.k]));
 }
-const utilizable = q => q && q.correcta && !q.anulada && !q.imagen && Array.isArray(q.opciones) && q.opciones.length >= 4;
+const utilizable = q => q && q.correcta && !q.anulada && (!q.imagen || !!q.img) && Array.isArray(q.opciones) && q.opciones.length >= 4;   // con imagen, solo si la tenemos
 
 /* Simulacro «probable 2027»: n preguntas oficiales, en la proporción que predice el modelo; reproducible con la semilla */
 function simulacro(preguntas, filas, n, semilla, soloAsig) {
@@ -2107,7 +2112,7 @@ function temasRecurrentes(preguntas, asig, kws, anioRef, {top = 15, hueco = 4} =
 }
 /* ejemplos oficiales para el redactor: los más recientes primero (con respuesta), sin imagen ni anuladas */
 function ejemplosRecientes(preguntas, asig, n, r) {
-  const ok = preguntas.filter(q => q.asig === asig && utilizable(q)).sort((a, b) => b.anio - a.anio);
+  const ok = preguntas.filter(q => q.asig === asig && utilizable(q) && !q.imagen).sort((a, b) => b.anio - a.anio);   // el redactor no ve imágenes
   const recientes = ok.filter(q => q.anio >= (ok[0] || {anio: 0}).anio - 4);
   return baraja(recientes.length >= n ? recientes : ok, r).slice(0, n);
 }
@@ -2319,6 +2324,7 @@ function pintaPregunta(box, ex, modo) {
   box.innerHTML = `<div class="card om-preg">
     <div class="om-cab"><span class="fa-chip">${esc(t('Pregunta {0} de {1}', i + 1, ids.length))}</span><span class="fa-chip">${esc(nombreAsig(q.asig))}</span>${modo === 'sim' && !ex.fin && ex.limite ? `<span class="fa-chip aviso" id="reloj"></span>` : ''}</div>
     <p class="om-enun">${esc(q.enunciado)}</p>
+    ${q.img ? `<a class="om-img" href="${esc(q.img)}" target="_blank" rel="noopener" aria-label="${esc(t('Abrir la imagen a tamaño completo'))}"><img src="${esc(q.img)}" alt="${esc(t('Imagen de la pregunta {0} del MIR {1}', q.n, q.anio))}" loading="lazy"></a>` : ''}
     <div class="om-ops" role="radiogroup" aria-label="${esc(t('Opciones'))}">${q.opciones.map((o, k) => {
       const n = k + 1, cls = ver ? (n === q.correcta ? 'ok' : n === r ? 'ko' : '') : (n === r ? 'sel' : '');
       return `<button type="button" role="radio" aria-checked="${n === r}" class="om-op ${cls}" data-op="${n}" ${ver ? 'disabled' : ''}><b>${n}</b><span>${esc(o)}</span></button>`; }).join('')}</div>
@@ -2431,7 +2437,7 @@ function pintaReto() {
 
 /* ── «¿Por qué?»: la IA explica la respuesta OFICIAL; no la puede cambiar. Si cree que hoy sería discutible, lo avisa aparte ── */
 const PROMPT_EXP = q => `Eres profesor de una academia de preparación del MIR. Explica a un estudiante esta pregunta OFICIAL del MIR ${q.anio}.
-La respuesta correcta es la ${q.correcta}, según la plantilla definitiva del Ministerio de Sanidad: NO la discutas ni la cambies; explica el razonamiento que lleva a ella.
+La respuesta correcta es la ${q.correcta}, según la plantilla definitiva del Ministerio de Sanidad: NO la discutas ni la cambies; explica el razonamiento que lleva a ella.${q.imagen ? '\nLa pregunta lleva una imagen que tú no ves: no describas la imagen ni inventes lo que muestra; explica a partir del texto y dilo si hace falta.' : ''}
 Si con las guías clínicas actuales esa respuesta te parece desfasada o discutible, dilo SOLO en el campo "aviso" (si no, déjalo vacío).
 Devuelve SOLO este JSON, en ${langIA()}:
 {"clave":"la idea que hay que saber, en una frase","explicacion":"por qué la ${q.correcta} es la correcta, en 3-5 frases","opciones":["por qué falla o acierta la opción 1, en una frase", "…una por opción, en orden…"],"aviso":"","repaso":"qué tema repasar"}

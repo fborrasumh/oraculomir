@@ -69,5 +69,8 @@
     "nucleo.js",
     "datos.js",
     "app.js"
+  ],
+  "img_extra": [
+    "'self'"
   ]
 }
