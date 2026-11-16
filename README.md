@@ -34,12 +34,23 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
 - **Las preguntas con imagen y las anuladas no entran en los simulacros**: no se extraen los cuadernillos de imágenes.
 - Herramienta independiente, sin relación con el Ministerio de Sanidad.
 
+## Datos que hay ahora
+
+| Años | Origen | Respuestas |
+|---|---|---|
+| 2022-2026 | Portal FSE del Ministerio (API de su web: cuaderno versión 0 y hoja de respuestas definitiva) | Oficiales |
+| 2016-2021 | Copias de terceros de los PDF oficiales (examenesmir.com, consalud.es), marcadas en la app | Plantilla definitiva copiada; anuladas cotejadas con la prensa |
+| 2015 | Copia del cuaderno | Sin plantilla legible: cuenta para la predicción, no entra en simulacros |
+| 2007-2014 | No disponibles: el portal ya no los ofrece y las copias conocidas (Google Drive) piden iniciar sesión | — |
+
+2.595 preguntas en total; 1.991 se pueden usar en simulacros. La asignatura de cada pregunta la asigna `gpt-6-luna` (`scripts/mir_clasifica_ia.py`, secreto `OPENAI_API_KEY`); si no hay clave, se usan palabras clave.
+
 ## Datos: cómo se traen los exámenes al repositorio
 
 El flujo **Actions → «Datos MIR» → Run workflow** (`.github/workflows/datos-mir.yml`) hace estos pasos:
 
-1. `scripts/mir_fetch.py --descubrir` abre con Chromium el portal FSE del Ministerio (apartado de cuadernos de examen de convocatorias anteriores). Recorre sus desplegables y anota en `data/fuentes.json` los PDF de Medicina: el cuaderno (versión 0) y la plantilla **definitiva** de cada año.
-2. `scripts/mir_fetch.py --descargar` baja esos PDF a `data/raw/<año>/`.
+1. `scripts/mir_fetch.py --api` abre el portal FSE con Chromium para obtener su token anónimo y pide a su API, convocatoria a convocatoria, el cuaderno de la versión 0 y la hoja de respuestas definitiva.
+2. `scripts/mir_externos.py` completa los años que el portal ya no ofrece con las URL de `data/fuentes_externas.json`. Comprueba que cada cuaderno sea un PDF de Medicina con las preguntas esperadas y que la plantilla cubra al menos el 90 % de ellas.
 3. `scripts/mir_datos.py` extrae el texto (también de páginas a dos columnas), separa preguntas y opciones (4 o 5, según el año), lee la respuesta oficial, clasifica cada pregunta y escribe `data/mir.json` (lo que lee la app) y `data/informe.md` (año a año: preguntas, respuestas leídas, anuladas y huecos).
 
 El portal es una aplicación web sin lista pública de enlaces, así que el descubrimiento es heurístico. Si algún año falla:
