@@ -9,7 +9,7 @@ import json, re, sys, html, pathlib, urllib.request, urllib.parse, http.cookieja
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import mir_datos as M
 R = pathlib.Path(__file__).resolve().parent.parent; RAW = R / 'data' / 'raw'
-ESPERADAS = lambda y: 260 if y <= 2014 else 235 if y <= 2019 else 185 if y <= 2021 else 210   # incluidas las de reserva
+ESPERADAS = lambda y: 260 if y <= 2009 else 235 if y <= 2019 else 185 if y <= 2021 else 210   # incluidas las de reserva
 UA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36'}
 cj = http.cookiejar.CookieJar(); OP = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
@@ -65,6 +65,8 @@ def anio_examen(tx):
 
 def plantilla_del_anio(tx, y):
     """Si la plantilla menciona años, alguno debe ser el del examen o el de su convocatoria (y−1)."""
+    c = re.search(r'Convocatoria\s*:?\s*(20\d\d)', tx, re.I)
+    if c: return int(c.group(1)) + 1 == y          # «Convocatoria: 2008» → examen de enero de 2009
     ys = {int(a) for a in re.findall(r'(?<!\d)(20\d\d)(?!\d)', tx)}
     return not ys or bool(ys & {y, y - 1})
 

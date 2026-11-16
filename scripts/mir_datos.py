@@ -63,9 +63,12 @@ def mejor_cuaderno(texto):
     ls = texto.replace('\r', '').split('\n')
     inicios = [i for i, l in enumerate(ls) if NUM.match(l) and int(NUM.match(l).group(1)) == 1][:12] or [0]
     mejor = ([], 4)
+    cinco = sum(1 for l in ls if re.match(r'^\s*5\s*[.)]\s', l))   # muchas líneas «5.» → examen de 5 opciones (MIR antiguos)
+    q_aprox = max(1, sum(1 for l in ls if re.match(r'^\s*1\s*[.)]\s', l)))
+    opciones = (5,) if cinco >= 0.6 * q_aprox else (4, 5)
     for i in inicios:
         t = '\n'.join(ls[i:])
-        for nopt in (4, 5):
+        for nopt in opciones:
             qs = parse_cuaderno(t, nopt)
             if qs and len(qs) >= len(mejor[0]): mejor = (qs, nopt)   # empate → el inicio más tardío (se salta la portada)
     return mejor
@@ -97,7 +100,20 @@ def parse_plantilla(texto, n_preg, nopt):
         if len(tks) >= 2 and tks[0].isdigit():
             q, v = int(tks[0]), _val(tks[1], nopt)
             if 1 <= q <= n_preg and v is not None and q not in B: B[q] = v
+    # C) tabla «V RC V RC…» donde la anulada es un HUECO («106 158 5»: la 106 no tiene respuesta). Tras un número de pregunta,
+    #    el siguiente número es su respuesta solo si está entre 1 y nopt; si no, es la pregunta de la columna siguiente.
+    C = {}
+    for tks in lineas:
+        i = 0
+        while i < len(tks):
+            if not tks[i].isdigit(): i += 1; continue
+            q = int(tks[i]); sig = tks[i + 1] if i + 1 < len(tks) else None
+            if sig is not None and (sig.upper().startswith('ANUL') or (sig.isdigit() and 1 <= int(sig) <= nopt)):
+                v = _val(sig, nopt); i += 2
+            else: v = 0; i += 1
+            if 1 <= q <= n_preg and q not in C: C[q] = v
     cubre = lambda d: sum(1 for i in range(1, n_preg + 1) if i in d)
+    if cubre(C) >= max(cubre(A), cubre(B)) and re.search(r'\bRC\b', texto): return C
     por_versiones = len(set(re.findall(r'\bV\s?([0-4])\b', texto, re.I))) >= 2   # cabecera «V0 V1 V2…»
     if por_versiones and cubre(B) >= 0.9 * cubre(A): return B
     return A if cubre(A) >= cubre(B) else B
