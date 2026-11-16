@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo | externos | procesar | clasificar | sondear | descubrir | descargar'
+        description: 'todo | externos | procesar | clasificar | sondeo_plantillas | sondear | descubrir | descargar'
         default: 'todo'
         required: true
 permissions:
@@ -24,6 +24,11 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Pruebas del extractor
         run: python tests/test_datos.py
+      - name: Sondeo de plantillas 2010 y 2014 (diagnóstico, OCR)
+        if: inputs.paso == 'sondeo_plantillas'
+        run: |
+          sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-spa poppler-utils >/dev/null
+          python scripts/mir_sondeo_plantillas.py
       - name: Sondear la API del portal (diagnóstico)
         if: inputs.paso == 'sondear'
         run: python scripts/mir_fetch.py --sondear
@@ -40,10 +45,10 @@ jobs:
         if: inputs.paso == 'descargar'
         run: python scripts/mir_fetch.py --descargar
       - name: Extraer preguntas y clasificar
-        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
+        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear' && inputs.paso != 'sondeo_plantillas'
         run: python scripts/mir_datos.py || true
       - name: Clasificar por asignatura con IA (secreto OPENAI_API_KEY, modelo gpt-6-luna)
-        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear'
+        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear' && inputs.paso != 'sondeo_plantillas'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

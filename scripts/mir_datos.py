@@ -75,7 +75,7 @@ def mejor_cuaderno(texto):
 
 
 # ── 2 · plantilla ──────────────────────────────────────────────────────────────────────────────
-TOK = re.compile(r'ANULADA|ANUL\.?|\d{1,3}', re.I)   # un guion NO es anulada: «reserva (176 - 185)» lo confundía
+TOK = re.compile(r'ANULADA|ANUL\.?|(?<![\d/])\d{1,3}(?![\d/])', re.I)   # números enteros de 1-3 cifras: «2008» o «07/04» no se trocean   # un guion NO es anulada: «reserva (176 - 185)» lo confundía
 
 
 def _val(tk, nopt):
@@ -226,12 +226,19 @@ def main():
              'clasificacion': 'IA (data/clasificacion_ia.json) cuando existe; si no, palabras clave (data/asignaturas.json)',
              'asignaturas': [{'id': x['id'], 'nombre': x['nombre']} for x in asigs] + [{'id': 'otras', 'nombre': 'Sin clasificar'}],
              'examenes': informes, 'preguntas': preg}
+    ver = json.loads((OUT / 'verificacion.json').read_text(encoding='utf-8')) if (OUT / 'verificacion.json').exists() else {}
+    for i in informes:
+        v = ver.get(str(i['anio']))
+        if not v or not i.get('ok'): continue
+        mias = sorted(q['n'] for q in preg if q['anio'] == i['anio'] and q['anulada'] and q['n'] <= v.get('hasta', 999))
+        pub = sorted(v['anuladas']); i['cotejo'] = {'publicadas': pub, 'extraidas': mias, 'coincide': mias == pub, 'fuente': v['fuente']}
+    datos_cotejo = True
     (OUT / 'mir.json').write_text(json.dumps(datos, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     # informe legible
     L = ['# Informe de extracción · OráculoMIR', '', f"Generado: {datos['generado']}", '',
-         '| Año | Preguntas | Opciones | Con respuesta | Anuladas | Huecos | Estado |', '|---|---|---|---|---|---|---|']
+         '| Año | Preguntas | Opciones | Con respuesta | Anuladas | Cotejo con lo publicado | Estado |', '|---|---|---|---|---|---|---|']
     for i in informes:
-        L.append(f"| {i['anio']}{' (copia)' if i.get('fuente') == 'tercero' else ''} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {len(i.get('huecos', []))} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
+        L.append(f"| {i['anio']}{' (copia)' if i.get('fuente') == 'tercero' else ''} | {i.get('preguntas', 0)} | {i.get('opciones', '')} | {i.get('con_respuesta', 0)} | {i.get('anuladas', 0)} | {('✓ coincide' if i['cotejo']['coincide'] else '✕ publicadas ' + str(i['cotejo']['publicadas']) + ' · extraídas ' + str(i['cotejo']['extraidas'])) if i.get('cotejo') else '—'} | {'✓' if i['ok'] else '✕ ' + i.get('error', '')} |")
     sc = sum(1 for q in preg if q['asig'] == 'otras')
     nia = sum(1 for q in preg if q.get('metodo') == 'ia')
     L += ['', f'Preguntas totales: {len(preg)} · clasificadas con IA: {nia} · sin clasificar: {sc} ({(sc / max(1, len(preg))):.0%})', '',

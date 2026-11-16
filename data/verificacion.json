@@ -1,0 +1,89 @@
+{
+ "_nota": "Anuladas de la versión 0 publicadas en prensa o foros en su momento (plantilla definitiva). Sirven para cotejar lo extraído; «hasta» limita el cotejo a las preguntas puntuables cuando la fuente no cita las de reserva.",
+ "2009": {
+  "anuladas": [
+   96,
+   106,
+   113,
+   131,
+   133,
+   200
+  ],
+  "hasta": 250,
+  "fuente": "https://www.casimedicos.com/foro/threads/plantilla-definitiva.15332/"
+ },
+ "2011": {
+  "anuladas": [
+   142,
+   143,
+   148,
+   160,
+   209,
+   221
+  ],
+  "hasta": 225,
+  "fuente": "https://www.casimedicos.com/respuestas-correctas-aprobadas-definitivamente-por-la-comision-calificadora-mir-2010-29-enero-2011/"
+ },
+ "2012": {
+  "anuladas": [
+   22,
+   60,
+   102,
+   109,
+   121,
+   133,
+   136
+  ],
+  "hasta": 225,
+  "fuente": "https://www.casimedicos.com/respuestas-correctas-aprobadas-definitivamente-por-la-comision-calificadora-del-ejercicio-mir-20112012/"
+ },
+ "2014": {
+  "anuladas": [
+   92,
+   121,
+   129,
+   153,
+   182,
+   183,
+   230,
+   232
+  ],
+  "fuente": "https://www.casimedicos.com/analisis-respuestas-correctas-mir-2013-2014-y-comparativa-vs-mir-2-0/"
+ },
+ "2018": {
+  "anuladas": [
+   108,
+   178,
+   191,
+   231
+  ],
+  "fuente": "https://www.redaccionmedica.com/formacion/mir/20180228/plantilla-oficial-sanidad-impugna-dos-preguntas-mas-del-examen-mir/86599_0.html"
+ },
+ "2020": {
+  "anuladas": [
+   10,
+   33,
+   55,
+   174
+  ],
+  "hasta": 175,
+  "fuente": "https://www.redaccionmedica.com/formacion/mir/20200211/respuestas-definitivas-del-examen-mir-sanidad-anula-cuatro-preguntas/138212_0.html"
+ },
+ "2021": {
+  "anuladas": [
+   147,
+   176
+  ],
+  "fuente": "https://www.consalud.es/formacion/mir-2021-consultar-respuestas-correctas-examen_95132_102.html"
+ },
+ "2023": {
+  "anuladas": [
+   15,
+   40,
+   128,
+   138
+  ],
+  "hasta": 200,
+  "fuente": "https://www.redaccionmedica.com/virico/20230208/indignacion-mir-por-la-entrega-en-fasciculos-de-las-preguntas-impugnadas/187826_0.html"
+ }
+}
