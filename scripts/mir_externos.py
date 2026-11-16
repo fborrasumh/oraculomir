@@ -40,7 +40,7 @@ def texto_de(b, url):
     return t, 'html'
 
 
-def carpeta_drive(fid):
+def carpeta_drive(fid, desfase=1):
     """Lee una carpeta pública de Drive y devuelve {(año, 'cuaderno'|'plantilla'): [url de descarga]} según el nombre de cada PDF."""
     t = OP.open(urllib.request.Request(f'https://drive.google.com/drive/folders/{fid}', headers=UA), timeout=60).read().decode('utf-8', 'ignore')
     t = t.replace('\\x22', '"').replace('\\x5b', '[').replace('\\x5d', ']').replace('\\/', '/').replace('\\u0026', '&')
@@ -51,8 +51,7 @@ def carpeta_drive(fid):
         tipo = 'plantilla' if 'respuesta' in n or 'plantilla' in n else 'cuaderno' if 'cuaderno de examen' in n or re.search(r'examen(?!.*imag)', n) and 'imag' not in n else None
         print(f'  Drive: {nombre} → {fid2} ({tipo or "se ignora"})')
         if tipo:   # el nombre puede llevar el año del examen o el de la convocatoria: se prueba en ambos y el texto del PDF decide
-            u = f'https://drive.google.com/uc?export=download&id={fid2}'
-            out.setdefault((int(m.group(1)), tipo), []).insert(0, u); out.setdefault((int(m.group(1)) + 1, tipo), []).append(u)
+            out.setdefault((int(m.group(1)) + desfase, tipo), []).insert(0, f'https://drive.google.com/uc?export=download&id={fid2}')
     if not out: print('  Drive: no se reconocieron ficheros en la carpeta', fid, '· longitud de la página', len(t))
     return out
 
@@ -73,9 +72,11 @@ def plantilla_del_anio(tx, y):
 
 def main():
     F = json.loads((R / 'data' / 'fuentes_externas.json').read_text(encoding='utf-8'))
-    for fid in F.get('_carpetas_drive', []):
+    usadas = {l.split(': ', 1)[1].strip() for o in RAW.glob('20*/origen.txt') for l in o.read_text(encoding='utf-8').splitlines() if l.startswith('plantilla: ')}
+    for c in F.get('_carpetas_drive', []):
+        fid = c['id'] if isinstance(c, dict) else c
         try:
-            for (y, tp), us in carpeta_drive(fid).items():
+            for (y, tp), us in carpeta_drive(fid, c.get('desfase', 1) if isinstance(c, dict) else 1).items():
                 e = F.setdefault(str(y), {'cuaderno': [], 'plantilla': []}); e[tp] = us + e.get(tp, [])
         except Exception as ex: print('  Drive: error al leer la carpeta', fid, ex)
     resumen = []
@@ -107,14 +108,18 @@ def main():
                     if tipo == 'html': i = tx.lower().find('respuesta'); tx = tx[i:] if i >= 0 else tx
                     if tipo == 'pdf' and len(tx.strip()) < 200: raise ValueError('PDF escaneado sin texto: no se lee para no arriesgar respuestas mal leídas')
                     if not plantilla_del_anio(tx, y): raise ValueError('la plantilla menciona otros años')
+                    if u in usadas: raise ValueError('esta plantilla ya se usó para otro año')
                     r = M.parse_plantilla(tx, nmax, nopt)
-                    cubre = sum(1 for q in qs if q['n'] in r)
+                    cubre = sum(1 for q in qs if q['n'] in r); anul = sum(1 for q in qs if r.get(q['n']) == 0)
                     if cubre < 0.9 * len(qs): raise ValueError(f'respuestas para {cubre} de {len(qs)}')
+                    if anul > 15: raise ValueError(f'{anul} anuladas: la tabla no se ha leído bien (lo normal son menos de 10)')
                     (d / 'plantilla.txt').write_text(tx, encoding='utf-8')
                     if tipo == 'pdf': (d / 'plantilla.pdf').write_bytes(b)
-                    origen.append('plantilla: ' + u); print(f'{y} plantilla OK ({cubre}/{len(qs)}, anuladas {sum(1 for v in r.values() if v == 0)}) ← {u}'); break
+                    usadas.add(u); origen.append('plantilla: ' + u); print(f'{y} plantilla OK ({cubre}/{len(qs)}, anuladas {sum(1 for v in r.values() if v == 0)}) ← {u}'); break
                 except Exception as ex: print(f'{y} plantilla ✕ {u}: {ex}')
-        if origen: (d / 'origen.txt').write_text('Copia de terceros del documento oficial del Ministerio de Sanidad\n' + '\n'.join(origen) + '\n', encoding='utf-8')
+        if origen:   # se añade a lo que ya hubiera (el cuaderno puede venir de una ejecución anterior)
+            prev = [l for l in ((d / 'origen.txt').read_text(encoding='utf-8').splitlines() if (d / 'origen.txt').exists() else []) if l.startswith(('cuaderno: ', 'plantilla: '))]
+            (d / 'origen.txt').write_text('Copia de terceros del documento oficial del Ministerio de Sanidad\n' + '\n'.join(dict.fromkeys(prev + origen)) + '\n', encoding='utf-8')
         resumen.append(f"{y}: cuaderno {'sí' if qs else 'no'} · plantilla {'sí' if (d / 'plantilla.txt').exists() else 'NO'}")
     print('\n'.join(resumen))
 
