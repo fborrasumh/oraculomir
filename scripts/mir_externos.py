@@ -40,8 +40,42 @@ def texto_de(b, url):
     return t, 'html'
 
 
+def carpeta_drive(fid):
+    """Lee una carpeta pública de Drive y devuelve {(año, 'cuaderno'|'plantilla'): [url de descarga]} según el nombre de cada PDF."""
+    t = OP.open(urllib.request.Request(f'https://drive.google.com/drive/folders/{fid}', headers=UA), timeout=60).read().decode('utf-8', 'ignore')
+    t = t.replace('\\x22', '"').replace('\\x5b', '[').replace('\\x5d', ']').replace('\\/', '/').replace('\\u0026', '&')
+    out = {}
+    for fid2, nombre in re.findall(r'"([\w-]{25,60})",\["[\w-]+"\],"([^"]{4,120}?\.pdf)"', t):
+        m = re.search(r'(20\d\d)', nombre); n = nombre.lower()
+        if not m: continue
+        tipo = 'plantilla' if 'respuesta' in n or 'plantilla' in n else 'cuaderno' if 'cuaderno de examen' in n or re.search(r'examen(?!.*imag)', n) and 'imag' not in n else None
+        print(f'  Drive: {nombre} → {fid2} ({tipo or "se ignora"})')
+        if tipo:   # el nombre puede llevar el año del examen o el de la convocatoria: se prueba en ambos y el texto del PDF decide
+            u = f'https://drive.google.com/uc?export=download&id={fid2}'
+            out.setdefault((int(m.group(1)), tipo), []).insert(0, u); out.setdefault((int(m.group(1)) + 1, tipo), []).append(u)
+    if not out: print('  Drive: no se reconocieron ficheros en la carpeta', fid, '· longitud de la página', len(t))
+    return out
+
+
+def anio_examen(tx):
+    """Año del EXAMEN según el propio cuaderno: «PRUEBAS SELECTIVAS 2012» se examinó en enero de 2013."""
+    m = re.search(r'PRUEBAS\s+SELECTIVAS\s+(20\d\d)', tx, re.I)
+    return int(m.group(1)) + 1 if m else None
+
+
+def plantilla_del_anio(tx, y):
+    """Si la plantilla menciona años, alguno debe ser el del examen o el de su convocatoria (y−1)."""
+    ys = {int(a) for a in re.findall(r'(?<!\d)(20\d\d)(?!\d)', tx)}
+    return not ys or bool(ys & {y, y - 1})
+
+
 def main():
     F = json.loads((R / 'data' / 'fuentes_externas.json').read_text(encoding='utf-8'))
+    for fid in F.get('_carpetas_drive', []):
+        try:
+            for (y, tp), us in carpeta_drive(fid).items():
+                e = F.setdefault(str(y), {'cuaderno': [], 'plantilla': []}); e[tp] = us + e.get(tp, [])
+        except Exception as ex: print('  Drive: error al leer la carpeta', fid, ex)
     resumen = []
     for ys, e in F.items():
         if not ys.isdigit(): continue
@@ -54,7 +88,9 @@ def main():
             try:
                 b = baja(u); tx, tipo = texto_de(b, u)
                 if tipo != 'pdf': raise ValueError('no es un PDF')
-                if not re.search(r'medicina', tx, re.I): raise ValueError('no menciona MEDICINA')
+                if not re.search(r'medicina|m[ée]dicos', tx, re.I): raise ValueError('no menciona MEDICINA')
+                ya = anio_examen(tx)
+                if ya and ya != y: raise ValueError(f'el propio cuaderno dice que es del MIR {ya}')
                 q2, nopt = M.mejor_cuaderno(tx)
                 if len(q2) < 0.9 * ESPERADAS(y): raise ValueError(f'solo {len(q2)} preguntas de {ESPERADAS(y)}')
                 d.mkdir(parents=True, exist_ok=True); (d / 'cuaderno.pdf').write_bytes(b); (d / 'cuaderno.txt').write_text(tx, encoding='utf-8'); qs = q2
@@ -68,6 +104,7 @@ def main():
                     b = baja(u); tx, tipo = texto_de(b, u)
                     if tipo == 'html': i = tx.lower().find('respuesta'); tx = tx[i:] if i >= 0 else tx
                     if tipo == 'pdf' and len(tx.strip()) < 200: raise ValueError('PDF escaneado sin texto: no se lee para no arriesgar respuestas mal leídas')
+                    if not plantilla_del_anio(tx, y): raise ValueError('la plantilla menciona otros años')
                     r = M.parse_plantilla(tx, nmax, nopt)
                     cubre = sum(1 for q in qs if q['n'] in r)
                     if cubre < 0.9 * len(qs): raise ValueError(f'respuestas para {cubre} de {len(qs)}')

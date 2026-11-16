@@ -1,5 +1,5 @@
 {
- "_nota": "Copias de terceros de los cuadernos (versión 0) y plantillas definitivas oficiales para los años que el portal FSE ya no ofrece. Se prueban las URL en orden; el código comprueba que sea un PDF del MIR de ese año y que salgan las preguntas esperadas. Fuentes: miricinaparatodos.wordpress.com (Google Drive), consalud.es, examenesmir.com.",
+ "_nota": "Copias de terceros de los cuadernos (versión 0) y plantillas definitivas oficiales para los años que el portal FSE ya no ofrece. Se prueban las URL en orden; el código comprueba que sea un PDF del MIR de ese año y que salgan las preguntas esperadas. Fuentes: miricinaparatodos.wordpress.com (Google Drive), consalud.es, examenesmir.com. «_carpetas_drive»: carpetas públicas de Drive cuyos PDF («MIR AAAA Cuaderno de examen.pdf», «MIR AAAA Hoja de respuestas….pdf») se prueban primero.",
  "2007": {
   "cuaderno": [
    "https://drive.google.com/uc?export=download&id=0B0SDcuvMWIc1bk5jUE93NGJTS0U",
@@ -144,5 +144,8 @@
    "https://www.consalud.es/uploads/s1/15/67/49/5/mir-version-0-respuestas-correctas.pdf",
    "https://examenesmir.com/examenes-mir/2021"
   ]
- }
+ },
+ "_carpetas_drive": [
+  "0BzoyV8-T3UMERzBZVEdBeVozZ2s"
+ ]
 }
