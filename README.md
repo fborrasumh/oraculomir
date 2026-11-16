@@ -88,14 +88,16 @@ python3 tests/smoke_test.py        # app completa en Chromium con IA simulada
 
 ## Autoría
 
-Fernando Borrás Rocher (Universidad Miguel Hernández de Elche) · ORCID [0000-0002-5519-4573](https://orcid.org/0000-0002-5519-4573).
+- Fernando Borrás Rocher (Universidad Miguel Hernández de Elche) · ORCID [0000-0002-5519-4573](https://orcid.org/0000-0002-5519-4573)
+- Antonio F. Compañ Rosique (Universidad Miguel Hernández de Elche) · ORCID [0000-0002-8166-396X](https://orcid.org/0000-0002-8166-396X)
+
 Basada en ConvocatorIA (Fernando Borrás Rocher), adaptada al examen MIR.
 
 Fuente de las preguntas oficiales: cuadernos de examen y plantillas definitivas de respuestas publicados por el Ministerio de Sanidad (portal de Formación Sanitaria Especializada).
 
 ## Cómo citar
 
-Borrás Rocher, F. (2026). *OráculoMIR* (v1.0.0) [Software]. https://github.com/fborrasumh/oraculomir (DOI en trámite)
+Borrás Rocher, F., y Compañ Rosique, A. F. (2026). *OráculoMIR* (v1.0.0) [Software]. https://github.com/fborrasumh/oraculomir (DOI en trámite)
 
 ## Licencia
 
