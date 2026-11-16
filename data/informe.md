@@ -1,9 +1,15 @@
 # Informe de extracción · OráculoMIR
 
-Generado: 2026-11-16T00:06:06+00:00
+Generado: 2026-11-16T00:24:32+00:00
 
 | Año | Preguntas | Opciones | Con respuesta | Anuladas | Huecos | Estado |
 |---|---|---|---|---|---|---|
+| 2009 (copia) | 260 | 5 | 245 | 0 | 0 | ✓ |
+| 2010 (copia) | 235 | 5 | 0 | 0 | 0 | ✓ |
+| 2011 (copia) | 234 | 4 | 0 | 0 | 0 | ✓ |
+| 2012 (copia) | 235 | 5 | 0 | 0 | 0 | ✓ |
+| 2013 (copia) | 235 | 5 | 228 | 0 | 0 | ✓ |
+| 2014 (copia) | 235 | 5 | 0 | 0 | 0 | ✓ |
 | 2015 (copia) | 235 | 4 | 0 | 0 | 0 | ✓ |
 | 2016 (copia) | 235 | 4 | 231 | 4 | 0 | ✓ |
 | 2017 (copia) | 235 | 4 | 232 | 3 | 0 | ✓ |
@@ -17,6 +23,6 @@ Generado: 2026-11-16T00:06:06+00:00
 | 2025 | 210 | 4 | 204 | 6 | 0 | ✓ |
 | 2026 | 210 | 4 | 203 | 7 | 0 | ✓ |
 
-Preguntas totales: 2595 · clasificadas con IA: 2595 · sin clasificar: 0 (0%)
+Preguntas totales: 4029 · clasificadas con IA: 4004 · sin clasificar: 0 (0%)
 
 Revisa a mano al menos 20 preguntas por año contra el PDF antes de fiarte de los datos.
