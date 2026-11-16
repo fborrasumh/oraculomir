@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo | externos | procesar | clasificar | sondeo_plantillas | sondear | descubrir | descargar'
+        description: 'todo | externos | imagenes | procesar | clasificar | sondeo_plantillas | sondear | descubrir | descargar'
         default: 'todo'
         required: true
 permissions:
@@ -38,6 +38,13 @@ jobs:
       - name: MIR antiguos (2007-2021) desde copias de los PDF oficiales
         if: inputs.paso == 'todo' || inputs.paso == 'externos'
         run: python scripts/mir_externos.py
+      - name: Cuadernillos de imágenes (portal y copias) → data/img
+        if: inputs.paso == 'imagenes'
+        run: |
+          sudo apt-get install -y -qq poppler-utils >/dev/null
+          python scripts/mir_fetch.py --api --imagenes
+          python scripts/mir_externos.py --imagenes
+          python scripts/mir_imagenes.py
       - name: Descubrir enlaces en el portal FSE (método antiguo)
         if: inputs.paso == 'descubrir'
         run: python scripts/mir_fetch.py --descubrir

@@ -204,8 +204,12 @@ def procesa_anio(anio, d):
     out = []
     for q in qs:
         r = resp.get(q['n'])
+        img = None
+        if q['imagen']:   # «Pregunta vinculada a la imagen nº 5» → data/img/<año>/5.jpg, si existe
+            mi = re.search(r'imagen(?:es)?\s*(?:n\s*[ºo°.]*\s*)?(\d{1,3})', q['enunciado'], re.I)
+            if mi and (OUT / 'img' / str(anio) / f'{int(mi.group(1))}.jpg').exists(): img = f'data/img/{anio}/{int(mi.group(1))}.jpg'
         out.append({'id': f"{anio}-{q['n']:03d}", 'anio': anio, 'n': q['n'], 'enunciado': q['enunciado'], 'opciones': q['opciones'],
-                    'correcta': r if r else None, 'anulada': r == 0, 'imagen': q['imagen'], 'fuente': fuente})
+                    'correcta': r if r else None, 'anulada': r == 0, 'imagen': q['imagen'], 'fuente': fuente, **({'img': img} if img else {})})
     inf['ok'] = True
     return out, inf
 
