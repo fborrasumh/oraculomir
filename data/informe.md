@@ -1,6 +1,6 @@
 # Informe de extracción · OráculoMIR
 
-Generado: 2026-11-16T15:26:00+00:00
+Generado: 2026-11-16T15:35:22+00:00
 
 | Año | Preguntas | Opciones | Con respuesta | Anuladas | Cotejo con lo publicado | Estado |
 |---|---|---|---|---|---|---|
