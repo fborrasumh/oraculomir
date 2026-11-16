@@ -5,7 +5,7 @@ Para cada año prueba las URL en orden y se queda con la primera que pasa las co
   · cuaderno: es un PDF, su texto menciona MEDICINA y se extraen al menos el 90 % de las preguntas esperadas para ese año;
   · plantilla: PDF o página web cuyas respuestas cubren al menos el 90 % de las preguntas extraídas.
 Lo que no pasa se descarta y se dice en el registro. Cada año guarda su origen en data/raw/<año>/origen.txt."""
-import json, re, sys, html, pathlib, urllib.request, http.cookiejar, tempfile
+import json, re, sys, html, pathlib, urllib.request, urllib.parse, http.cookiejar, tempfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import mir_datos as M
 R = pathlib.Path(__file__).resolve().parent.parent; RAW = R / 'data' / 'raw'
@@ -16,9 +16,19 @@ cj = http.cookiejar.CookieJar(); OP = urllib.request.build_opener(urllib.request
 
 def baja(url):
     m = re.search(r'[?&]id=([\w-]+)', url) if 'drive.google' in url else None
-    if m:   # Google Drive: descarga directa con confirmación (sin la página de aviso de virus)
-        url = f'https://drive.usercontent.google.com/download?id={m.group(1)}&export=download&confirm=t'
-    return OP.open(urllib.request.Request(url, headers=UA), timeout=120).read()
+    if m: url = f'https://drive.usercontent.google.com/download?id={m.group(1)}&export=download&confirm=t'
+    b = OP.open(urllib.request.Request(url, headers=UA), timeout=120).read()
+    if m and b[:4] != b'%PDF':
+        # página de aviso de Drive (fichero grande): reenviar su formulario con los campos ocultos (id, export, confirm, uuid…)
+        t = b.decode('utf-8', 'ignore'); f = re.search(r'<form[^>]*action="([^"]+)"[^>]*>(.*?)</form>', t, re.S)
+        if f:
+            campos = dict(re.findall(r'<input[^>]*name="([^"]+)"[^>]*value="([^"]*)"', f.group(2)))
+            u2 = html.unescape(f.group(1)) + '?' + urllib.parse.urlencode(campos)
+            b = OP.open(urllib.request.Request(u2, headers=UA), timeout=180).read()
+        if b[:4] != b'%PDF':
+            tit = re.search(r'<title>(.*?)</title>', b.decode('utf-8', 'ignore'), re.S)
+            raise ValueError('Drive no da el PDF: ' + (tit.group(1).strip()[:80] if tit else b[:80].decode('utf-8', 'ignore')))
+    return b
 
 
 def texto_de(b, url):
@@ -57,6 +67,7 @@ def main():
                 try:
                     b = baja(u); tx, tipo = texto_de(b, u)
                     if tipo == 'html': i = tx.lower().find('respuesta'); tx = tx[i:] if i >= 0 else tx
+                    if tipo == 'pdf' and len(tx.strip()) < 200: raise ValueError('PDF escaneado sin texto: no se lee para no arriesgar respuestas mal leídas')
                     r = M.parse_plantilla(tx, nmax, nopt)
                     cubre = sum(1 for q in qs if q['n'] in r)
                     if cubre < 0.9 * len(qs): raise ValueError(f'respuestas para {cubre} de {len(qs)}')
