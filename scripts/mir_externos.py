@@ -31,10 +31,10 @@ def baja(url):
     return b
 
 
-def texto_de(b, url):
+def texto_de(b, url, columnas=True):
     if b[:4] == b'%PDF':
         with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as f: f.write(b); n = f.name
-        return M.texto_pdf(n), 'pdf'
+        return M.texto_pdf(n, columnas), 'pdf'
     t = re.sub(r'<script.*?</script>|<style.*?</style>', ' ', b.decode('utf-8', 'ignore'), flags=re.S)
     t = html.unescape(re.sub(r'<(br|/tr|/li|/p|/div)[^>]*>', '\n', t)); t = re.sub(r'<[^>]+>', ' ', t)
     return t, 'html'
@@ -104,7 +104,7 @@ def main():
             nmax = max(q['n'] for q in qs)
             for u in e.get('plantilla', []):
                 try:
-                    b = baja(u); tx, tipo = texto_de(b, u)
+                    b = baja(u); tx, tipo = texto_de(b, u, columnas=False)
                     if tipo == 'html': i = tx.lower().find('respuesta'); tx = tx[i:] if i >= 0 else tx
                     if tipo == 'pdf' and len(tx.strip()) < 200: raise ValueError('PDF escaneado sin texto: no se lee para no arriesgar respuestas mal leídas')
                     if not plantilla_del_anio(tx, y): raise ValueError('la plantilla menciona otros años')

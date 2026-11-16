@@ -164,13 +164,14 @@ def _dos_columnas(pg):
     return cruza / len(ws) < 0.02 and 0.2 < izq / len(ws) < 0.8
 
 
-def texto_pdf(p):
-    """Texto en orden de lectura: si la página va a dos columnas, primero la izquierda y luego la derecha."""
+def texto_pdf(p, columnas=True):
+    """Texto en orden de lectura: si la página va a dos columnas, primero la izquierda y luego la derecha.
+    columnas=False para tablas (plantillas): partir la página por la mitad separaría números de sus respuestas."""
     import pdfplumber
     out = []
     with pdfplumber.open(p) as pdf:
         for pg in pdf.pages:
-            if _dos_columnas(pg):
+            if columnas and _dos_columnas(pg):
                 w, h = pg.width, pg.height
                 out += [pg.crop((0, 0, w / 2, h)).extract_text() or '', pg.crop((w / 2, 0, w, h)).extract_text() or '']
             else: out.append(pg.extract_text() or '')
@@ -191,7 +192,7 @@ def procesa_anio(anio, d):
     if (d / 'respuestas.json').exists():   # hoja de respuestas de la API del portal: filas {V_0: nº de pregunta en la versión 0, RC_0: respuesta}
         resp = parse_respuestas_json(json.loads((d / 'respuestas.json').read_text(encoding='utf-8')))
     elif pl.exists() or (d / 'plantilla.txt').exists():
-        tp = (d / 'plantilla.txt').read_text(encoding='utf-8') if (d / 'plantilla.txt').exists() else texto_pdf(pl)
+        tp = (d / 'plantilla.txt').read_text(encoding='utf-8') if (d / 'plantilla.txt').exists() else texto_pdf(pl, columnas=False)
         (d / 'plantilla.txt').write_text(tp, encoding='utf-8')
         resp = parse_plantilla(tp, max(q['n'] for q in qs), nopt)
     inf['con_respuesta'] = sum(1 for q in qs if resp.get(q['n']))
