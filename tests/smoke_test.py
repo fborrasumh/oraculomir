@@ -1,5 +1,5 @@
 """Prueba de OráculoMIR en un Chromium real con IA simulada:  python3 tests/smoke_test.py
-Comprueba: modo demostración, predicción, simulacro reproducible por enlace, reto diario y racha, generador con tres agentes
+Comprueba: modo demostración, predicción, simulacro reproducible por enlace, reto diario y racha, generador con panel de cinco agentes, medición con preguntas oficiales
 (formato, copia del banco, discrepancias), idiomas, CSP, descargas, modo con datos «reales» sintéticos y desborde en móvil."""
 import asyncio, sys, pathlib, re, json, random
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -34,6 +34,14 @@ async def reply(prov, system, user, info):
             k = next((i + 1 for i, l in enumerate(ops) if marca in l), 0)
             out.append({'id': qid, 'opcion': k, 'seguridad': 90, 'motivo': 'ok'})
         return ('j', {'respuestas': out})
+    if 'Eres el Contradictor' in user or 'Eres la Lista de control' in user:
+        contra = 'Contradictor' in user; out = []
+        for bloque in user.split('id: ')[1:]:
+            ls = bloque.strip().split('\n'); qid = ls[0].strip(); ops = [l for l in ls if re.match(r'^[1-4]\. ', l)]
+            m = re.search(r'Clave(?: del redactor)?: (\d)', bloque); k = int(m.group(1)) if m else 0
+            buena = 0 < k <= len(ops) and 'CORRECTA' in ops[k - 1]
+            out.append({'id': qid, 'veredicto': ('ok' if buena else 'mala') if contra else 'ok', 'problema': '' if buena else 'La clave no es la correcta', 'alternativa': 0, 'fallos': [], 'nota': ''})
+        return ('j', {'revisiones': out})
     return ('t', '{}')
 
 def datos_sinteticos():
@@ -100,7 +108,9 @@ async def main():
         mot = ' '.join(st['motivos'])
         check('el código descarta formato erróneo y copia del banco', 'opciones repetidas' in mot and 'se parece demasiado' in mot, mot)
         check('se descarta la clave equivocada aunque la diga el redactor', 'ninguno de los dos resolutores' in mot)
-        check('tres llamadas a la IA (redactor + 2 resolutores)', len(h.seen) == 3, str(len(h.seen)))
+        check('cinco llamadas a la IA (redactor + 2 resolutores + Contradictor + Lista)', len(h.seen) == 5, str(len(h.seen)))
+        pan = await p.evaluate("(g => [g.contra && g.contra.veredicto, g.lista && g.lista.veredicto])(S.gen.find(g=>g.estado==='aceptada'))")
+        check('la aceptada lleva la revisión del Contradictor y de la Lista', pan == ['ok', 'ok'], str(pan))
         res = await p.evaluate("S.gen.find(g=>g.estado==='aceptada').resolutores.map(r=>r.opcion)")
         check('las opciones barajadas se devuelven a su número original', res == [2, 2], str(res))
         await h.shot(str(OUT / '3_generador.png'))
@@ -174,7 +184,7 @@ async def main():
         await p.click('#btnExGen'); await h.esp("S.examenIA && S.examenIA.estado==='listo'", n=240)
         X = await p.evaluate("({n:S.examenIA.preguntas.length, ia:S.examenIA.preguntas.filter(q=>q.ia).length, plan:Object.values(S.examenIA.plan).reduce((a,b)=>a+b,0), porAsig: Object.entries(S.examenIA.plan).every(([a,k])=>S.examenIA.preguntas.filter(q=>q.asig===a).length===k)})")
         check('examen de 25: todas generadas y verificadas, en la proporción predicha', X['n'] == 25 and X['ia'] == 25 and X['plan'] == 25 and X['porAsig'], str(X))
-        check('cada tanda = redactor + 2 resolutores', len(h.seen) % 3 == 0 and len(h.seen) >= 3, str(len(h.seen)))
+        check('cada tanda = panel de 5 llamadas', len(h.seen) % 5 == 0 and len(h.seen) >= 5, str(len(h.seen)))
         await p.click('#btnExSim'); await p.wait_for_timeout(400)
         check('el examen generado se hace como simulacro', await p.evaluate('step') == 2 and await p.evaluate('S.sim.ia') and await p.evaluate('S.sim.qs.length') == 25)
         for i in range(25):
@@ -183,6 +193,15 @@ async def main():
         check('corrección del examen generado (todas acertadas)', await p.evaluate('puntua(S.sim.qs.map(preg), S.sim.resp).ac') == 25)
         check('las preguntas generadas no entran en el historial oficial', not await p.evaluate("S.sim.qs.some(id=>S.hist[id])"))
         await p.click('#simRev [data-porque]'); await p.wait_for_timeout(200)
+        # medición con preguntas oficiales (respuesta conocida): clave buena y clave errónea
+        EXAMEN['activo'] = False; h.seen.clear()
+        C = await p.evaluate("""(async () => { const viejas = DATA.preguntas;
+          DATA.preguntas = Array.from({length: 30}, (_, i) => ({id: 'x' + i, anio: 2020, n: i + 1, asig: 'cardio', enunciado: 'Enunciado oficial de prueba número ' + i, opciones: ['Distractor uno ' + i, 'CORRECTA ' + i, 'Distractor dos ' + i, 'Distractor tres ' + i], correcta: 2}));
+          const r = await calibra(20); DATA.preguntas = viejas; delete r.filas; return r; })()""")
+        check('medición: 20 preguntas, acepta las buenas y para las claves erróneas', C['n'] == 20 and C['C']['ta'] == 1 and C['C']['fa'] == 0 and C['A']['fa'] == 0, json.dumps({k: C[k] for k in ('n', 'A', 'B', 'C')}))
+        check('medición: 2 tandas × (2 resolutores + 2 × panel) = 12 llamadas', len(h.seen) == 12, str(len(h.seen)))
+        await p.evaluate("CALIB = " + json.dumps(C) + "; go(8)"); await p.wait_for_timeout(200)
+        check('la medición se ve en «Cómo se valida»', 'Panel completo' in await p.inner_text('#valCalib'))
         check('«Ver la explicación» muestra la del redactor sin nueva llamada', 'Explicación del redactor' in await p.inner_text('#simRev'))
         # si los agentes lo descartan todo: se completa con oficiales, marcadas
         EXAMEN['mal'] = True

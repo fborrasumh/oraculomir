@@ -10,8 +10,8 @@ const GLOS = [
   ['¿Cómo se predice?', 'Para cada asignatura se calcula qué parte del examen ha ocupado cada año. Los años recientes pesan más (semivida de 4 años) y se añade la mitad de la tendencia. El resultado se escala a 200 preguntas. El intervalo del 80 % combina lo que varía de un año a otro y el azar propio de un recuento.'],
   ['¿Cuánto fiarse?', 'El método se prueba a ciegas: se esconde el último examen, se predice con los anteriores y se compara con lo que salió, en los tres últimos MIR. Se compara con dos referencias sencillas: repetir el año anterior y la media de todos los años. Si no las mejora, la app lo dice y conviene usar el resultado solo como orden de prioridad.'],
   ['¿Predice preguntas concretas?', 'No. Predice cuántas preguntas tendrá cada asignatura. El simulacro usa preguntas oficiales de años anteriores en esa proporción: sirve para entrenar el formato y el ritmo, no para adivinar el examen.'],
-  ['Generador con agentes', 'Un agente redacta, con el contexto de años anteriores (temas que más se repiten, temas que llevan tiempo sin salir y seis preguntas oficiales recientes), dos agentes resuelven a ciegas con las opciones barajadas y el código comprueba el formato y que no sea una copia del banco oficial. Solo se aceptan las preguntas que los tres responden igual. Eso reduce mucho los errores, pero no los elimina. Si tienes claves de dos proveedores, usa el otro para el segundo resolutor: modelos distintos se equivocan menos a la vez.'],
-  ['Privacidad y coste', 'La predicción, los simulacros y el reto diario funcionan en tu navegador, sin clave y sin enviar nada. El generador envía al proveedor de IA que elijas la asignatura y unas preguntas oficiales de ejemplo; nunca datos tuyos. Cada tanda son tres llamadas a la IA y la pagas tú con tu clave: elige un modelo económico.'],
+  ['Generador con agentes', 'Un panel de cinco agentes, inspirado en DiagnostIA: uno redacta con el contexto de años anteriores, dos resuelven a ciegas con las opciones barajadas, el Contradictor intenta demostrar que la pregunta está mal y la Lista de control revisa la redacción. El código comprueba el formato, el estilo y que no sea una copia del banco oficial. Solo se acepta lo que supera todo el panel. La fiabilidad del método se mide con preguntas oficiales y se publica en «Cómo se valida». Si tienes claves de dos proveedores, el segundo se usa por defecto para resolver y revisar.'],
+  ['Privacidad y coste', 'La predicción, los simulacros y el reto diario funcionan en tu navegador, sin clave y sin enviar nada. El generador envía al proveedor de IA que elijas la asignatura y unas preguntas oficiales de ejemplo; nunca datos tuyos. Cada tanda son cinco llamadas a la IA y la pagas tú con tu clave: elige un modelo económico.'],
   ['Instalable y sin conexión', 'En Android o en el ordenador, pulsa «Instalar la app» (o «Añadir a la pantalla de inicio» en el menú del navegador). En iPhone: botón Compartir → «Añadir a pantalla de inicio». Una vez abierta con conexión, la predicción, los simulacros, el reto, el repaso y las imágenes ya vistas funcionan sin internet.'],
   ['Puntuación', 'Como en el MIR: +3 por acierto, −1 por fallo y 0 en blanco. La «neta» es aciertos menos fallos entre tres.']
 ];
@@ -27,7 +27,7 @@ function calcula() {
   VAL = valida(c);
 }
 const preg = id => DATA.preguntas.find(q => q.id === id) || ((S.examenIA && S.examenIA.preguntas) || []).find(q => q.id === id);
-const origenDe = q => q.ia ? t('Pregunta generada por IA y verificada por tres agentes (no oficial)') : q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
+const origenDe = q => q.ia ? t('Pregunta generada por IA y aprobada por un panel de cinco agentes (no oficial)') : q.demo ? t('Pregunta de ejemplo (no oficial)') : t('MIR {0} · pregunta {1}', q.anio, q.n) + (q.fuente === 'tercero' ? ' · ' + t('tomada de una copia del cuaderno oficial') : '');
 
 /* ── compartir: menú nativo del móvil; si no hay, se copia al portapapeles ── */
 async function comparte(texto, url) {
@@ -312,6 +312,8 @@ function pintaValidacion() {
   $('valTabla').innerHTML = !ex.length ? `<p class="empty">${esc(t('Disponible cuando estén cargados los exámenes oficiales.'))}</p>` : `<div class="table-wrap"><table class="om-tabla"><thead><tr><th>MIR</th><th>${esc(t('Origen'))}</th><th>${esc(t('Preguntas'))}</th><th>${esc(t('Con respuesta'))}</th><th>${esc(t('Anuladas'))}</th><th>${esc(t('Cotejo con lo publicado'))}</th></tr></thead><tbody>
     ${ex.map(e => `<tr><td><b>${e.anio}</b></td><td>${esc(t(e.fuente === 'tercero' ? 'Copia del documento oficial' : 'Portal del Ministerio'))}</td><td>${e.preguntas}</td><td>${e.con_respuesta || 0}</td><td>${e.anuladas || 0}</td>
       <td>${e.cotejo ? (e.cotejo.coincide ? `<span class="fa-chip ok">✓ ${esc(t('coincide'))}</span>` : `<span class="fa-chip aviso">${esc(t('difiere'))}</span>`) + ` <a href="${esc(e.cotejo.fuente)}" target="_blank" rel="noopener">${esc(t('fuente'))}</a>` : '–'}</td></tr>`).join('')}</tbody></table></div>`;
+  $('valCalib').innerHTML = CALIB ? calibHTML(CALIB) : `<p class="empty">${esc(t('Todavía no hay una medición publicada.'))}</p>`;
+  $('valCalibMia').innerHTML = S.calibPropia ? `<h4>${esc(t('Tu medición'))}</h4>` + calibHTML(S.calibPropia) : '';
   const v = VAL;
   $('valPred').textContent = v ? t('Predicción probada a ciegas en los MIR {0}: se desvía de media {1} preguntas por asignatura (repetir el año anterior: {2}; media de todos los años: {3}) y acierta {4} de las 10 asignaturas con más peso.', v.porAnio.map(o => o.anio).join(', '), v.mae.toFixed(1), v.maeAnterior.toFixed(1), v.maeMedia.toFixed(1), v.aciertoTop10.toFixed(1)) : '';
 }
@@ -320,10 +322,11 @@ function pintaValidacion() {
 let busy = false;
 const LOTE_IA = 8;
 function planExamen(n) { return Object.fromEntries(Object.entries(reparto(PRED.filas, n)).filter(([, k]) => k > 0)); }
-function estimaExamen(n) { const pl = planExamen(n); const lotes = Object.values(pl).reduce((a, k) => a + Math.ceil(k / LOTE_IA), 0); return {asigs: Object.keys(pl).length, llamadas: 3 * lotes, minutos: Math.max(1, Math.round(lotes * 3 * 18 / 60 / (($('exRev') || {}).value ? 1 : 3)))}; }
+function estimaExamen(n) { const pl = planExamen(n); const lotes = Object.values(pl).reduce((a, k) => a + Math.ceil(k / LOTE_IA), 0); return {asigs: Object.keys(pl).length, llamadas: 5 * lotes, minutos: Math.max(1, Math.round(lotes * 5 * 18 / 60 / (($('exRev') || {}).value ? 1 : 3)))}; }
 function pintaExamenIA() {
+  $('exCalib').textContent = resumenCalib();
   const pv = getProv(), otros = Object.keys(PROV).filter(p => p !== pv && getKey(p)), sel = $('exRev'), v = sel.value;
-  sel.innerHTML = `<option value="">${esc(t('Mismo proveedor ({0})', PROV[pv].n))}</option>` + otros.map(p => `<option value="${p}">${esc(PROV[p].n)}</option>`).join(''); sel.value = otros.includes(v) ? v : '';
+  sel.innerHTML = `<option value="">${esc(t('Mismo proveedor ({0})', PROV[pv].n))}</option>` + otros.map(p => `<option value="${p}">${esc(PROV[p].n)}</option>`).join(''); sel.value = otros.includes(v) ? v : (!S.revMismo && otros.length ? otros[0] : '');
   const e = estimaExamen(+$('exN').value);
   $('exEstima').textContent = t('Reparto en {0} asignaturas según la predicción. Coste aproximado: {1} llamadas a la IA con tu clave y unos {2} minutos. Si se corta, puedes continuar sin repetir lo hecho.', e.asigs, e.llamadas, e.minutos);
   const X = S.examenIA, box = $('exRes');
@@ -333,7 +336,7 @@ function pintaExamenIA() {
   const tot = X.preguntas.filter(q => q.ia).length, totRel = X.preguntas.length - tot;
   $('btnExGen').querySelector('span').textContent = X.estado === 'listo' ? t('Generar otro examen') : t('Continuar la generación');
   box.innerHTML = `<div class="card"><h3>${esc(t('Examen de {0} preguntas', X.n))} · <span class="fa-chip ${X.estado === 'listo' ? 'ok' : 'aviso'}">${esc(t(X.estado === 'listo' ? 'listo' : 'a medias'))}</span></h3>
-    <p>${esc(t('Generadas y verificadas por tres agentes: {0}. Completadas con preguntas oficiales: {1}. Faltan: {2}.', tot, totRel, Math.max(0, X.n - X.preguntas.length)))}</p>
+    <p>${esc(t('Generadas y aprobadas por el panel: {0}. Completadas con preguntas oficiales: {1}. Faltan: {2}.', tot, totRel, Math.max(0, X.n - X.preguntas.length)))}</p>
     <div class="om-bar" role="img" aria-label="${esc(pct(X.preguntas.length / X.n))}"><span style="width:${(100 * X.preguntas.length / X.n).toFixed(1)}%"></span><em>${X.preguntas.length}/${X.n}</em></div>
     <div class="actions"><button class="btn btn-primary" type="button" id="btnExSim" ${X.preguntas.length ? '' : 'disabled'}>${ico('play')} ${esc(t('Hacer el simulacro'))}</button>
       <button class="btn btn-word" type="button" id="btnExWord" ${tot ? '' : 'disabled'}>${ico('doc')} Word</button><button class="btn btn-ghost" type="button" id="btnExGift" ${tot ? '' : 'disabled'}>Moodle (GIFT)</button>
@@ -341,9 +344,9 @@ function pintaExamenIA() {
     <details class="om-gen"><summary><b>${esc(t('Reparto por asignatura'))}</b></summary><div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Asignatura'))}</th><th>${esc(t('Pedidas'))}</th><th>${esc(t('IA verificadas'))}</th><th>${esc(t('Oficiales'))}</th></tr></thead><tbody>
       ${filas.map(([a, k]) => `<tr><td>${esc(nombreAsig(a))}</td><td>${k}</td><td>${hechas(a)}</td><td>${rel(a) || ''}</td></tr>`).join('')}</tbody></table></div></details>
     ${X.motivos.length ? `<details class="om-gen"><summary>${esc(t('Descartes del código y de los agentes ({0})', X.motivos.length))}</summary><ul class="fa-ul">${X.motivos.slice(-60).map(m => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
-    <p class="help">${esc(t('Las preguntas generadas no son oficiales: tres agentes coinciden en la respuesta, pero pueden equivocarse a la vez. Cada una trae su explicación y la referencia que cita el redactor.'))}</p></div>`;
+    <p class="help">${esc(t('Las preguntas generadas no son oficiales: el panel reduce los errores, pero no los elimina. Cada una trae su explicación y la referencia que cita el redactor. En «Cómo se valida» tienes cuántas respuestas erróneas se cuelan según la medición.'))}</p></div>`;
   $('btnExSim').onclick = () => { creaExamenIA($('exTiempo').value); go(2); };
-  $('btnExWord').onclick = async () => { try { dl('oraculomir_examen_2027.docx', await wordDeMarkdown(mdPreguntas(X.preguntas.filter(q => q.ia)), {titulo: APP_NAME + ' · ' + t('Examen MIR 2027 generado'), subtitulo: t('Preguntas generadas y verificadas por tres agentes de IA'), pie: t('Generado con {0}. Preguntas no oficiales: compruébalas en tu manual.', APP_NAME)})); } catch (e) { toast(e.message, 7000); } };
+  $('btnExWord').onclick = async () => { try { dl('oraculomir_examen_2027.docx', await wordDeMarkdown(mdPreguntas(X.preguntas.filter(q => q.ia)), {titulo: APP_NAME + ' · ' + t('Examen MIR 2027 generado'), subtitulo: t('Preguntas generadas y revisadas por un panel de agentes de IA'), pie: t('Generado con {0}. Preguntas no oficiales: compruébalas en tu manual.', APP_NAME)})); } catch (e) { toast(e.message, 7000); } };
   $('btnExGift').onclick = () => dl('oraculomir_examen_2027.gift.txt', aGIFT(X.preguntas.filter(q => q.ia)), 'text/plain;charset=utf-8');
   $('btnExBorra').onclick = () => { if (S.sim && S.sim.ia) S.sim = null; S.examenIA = null; guarda(); pintaExamenIA(); };
 }
@@ -355,7 +358,8 @@ function creaExamenIA(tiempo) {
   guarda(); return true;
 }
 async function enParalelo(tareas, k) { const res = []; let i = 0; await Promise.all(Array.from({length: Math.min(k, tareas.length)}, async () => { while (i < tareas.length) { const j = i++; res[j] = await tareas[j](); } })); return res; }
-$('exN').onchange = () => pintaExamenIA(); $('exRev').onchange = () => pintaExamenIA();
+$('exN').onchange = () => pintaExamenIA(); $('exRev').onchange = () => { S.revMismo = !$('exRev').value; guarda(); pintaExamenIA(); };
+$('genRev').onchange = () => { S.revMismo = !$('genRev').value; guarda(); };
 $('btnExGen').onclick = async () => {
   if (busy) return; if (!pideClave()) return;
   let X = S.examenIA;
@@ -364,7 +368,7 @@ $('btnExGen').onclick = async () => {
     const n = +$('exN').value; X = S.examenIA = {id: uid('ex-'), n, plan: planExamen(n), preguntas: [], motivos: [], estado: 'generando', relleno: $('exRelleno').checked, rev: $('exRev').value || '', intentos: {}, creado: new Date().toISOString()};
   }
   const e = estimaExamen(X.n), muestra = PROMPT_GEN(nombreAsig(Object.keys(X.plan)[0]), LOTE_IA, [], {total: 0});
-  if (!(await pideEnvio(muestra, 0, t('Se van a generar {0} preguntas: unas {1} llamadas a {2} con tu clave (redactor y dos resolutores por cada tanda). Se envían la asignatura, el contexto de años anteriores y preguntas oficiales de ejemplo; nunca datos tuyos.', X.n, e.llamadas, PROV[getProv()].n)))) return;
+  if (!(await pideEnvio(muestra, 0, t('Se van a generar {0} preguntas: unas {1} llamadas a {2} con tu clave (el panel de cinco agentes por cada tanda). Se envían la asignatura, el contexto de años anteriores y preguntas oficiales de ejemplo; nunca datos tuyos.', X.n, e.llamadas, PROV[getProv()].n)))) return;
   busy = true; $('btnExGen').disabled = true; const st = $('exEstado'); await guardaYa();
   try {
     for (let ronda = 0; ronda < 2; ronda++) {   // 2.ª ronda: reintenta lo que falte por los descartes
@@ -405,15 +409,69 @@ $('btnExGen').onclick = async () => {
   finally { busy = false; $('btnExGen').disabled = false; }
 };
 
+/* ── medición de la fiabilidad del panel con preguntas OFICIALES (respuesta conocida) ──
+   Cada pregunta se revisa dos veces: con su clave oficial y con una clave errónea elegida al azar (simula un error del redactor).
+   Resolutores a ciegas: una sola vez (no ven la clave). Contradictor y Lista: una vez con cada clave, en tandas separadas.
+   Resultado: % aceptado con la clave buena (TA) y % de claves erróneas que se cuelan (FA), para A (solo resolutores), B (+Contradictor) y C (panel completo). */
+async function calibra(N = 100, rev = '', avance = () => {}) {
+  const r = rng('calibra-' + N), pool = DATA.preguntas.filter(q => utilizable(q) && !q.imagen && q.opciones.length === 4);
+  const sel = baraja(pool, r).slice(0, N), filas = [], pv1 = getProv(), L = 10;
+  for (let i = 0; i < sel.length; i += L) {
+    const lote = sel.slice(i, i + L).map((q, j) => ({id: 'c' + (i + j + 1), q, mala: [1, 2, 3, 4].filter(x => x !== q.correcta)[Math.floor(r() * 3)]}));
+    avance(i, sel.length);
+    const res = [];
+    for (const k of [0, 1]) {
+      const pv = k === 1 && rev ? rev : pv1, perm = lote.map(x => permuta(x.q, rng(x.id + k)));
+      const out = await conProveedor(pv, () => llmJSON([{role: 'system', content: 'Eres un médico especialista que resuelve preguntas tipo MIR. Respondes SOLO con JSON válido.'}, {role: 'user', content: PROMPT_RES(k, lote.map((x, j) => ({id: x.id, enunciado: x.q.enunciado, opciones: perm[j].opciones})))}], {max: 220 * lote.length + 400}));
+      const m = Object.fromEntries((out.respuestas || []).map(a => [String(a.id), Number(a.opcion)]));
+      res.push(lote.map((x, j) => { const o = m[x.id]; return o >= 1 && o <= 4 ? perm[j].aOriginal(o) : 0; }));
+    }
+    const buena = await revisaPanel(lote.map(x => ({id: x.id, enunciado: x.q.enunciado, opciones: x.q.opciones, correcta: x.q.correcta})), rev || pv1);
+    const mala = await revisaPanel(lote.map(x => ({id: x.id, enunciado: x.q.enunciado, opciones: x.q.opciones, correcta: x.mala})), rev || pv1);
+    lote.forEach((x, j) => filas.push({id: x.q.id, res: [res[0][j], res[1][j]],
+      buena: {clave: x.q.correcta, contra: (buena.contra[x.id] || {}).veredicto || 'dudosa', lista: (buena.lista[x.id] || {}).veredicto || 'corregir', estilo: revisaEstilo(x.q)},
+      mala: {clave: x.mala, contra: (mala.contra[x.id] || {}).veredicto || 'dudosa', lista: (mala.lista[x.id] || {}).veredicto || 'corregir', estilo: revisaEstilo({...x.q, correcta: x.mala})}}));
+  }
+  avance(sel.length, sel.length);
+  return {fecha: new Date().toISOString().slice(0, 10), prov: PROV[pv1].n, modelo: getMod(), prov2: rev ? PROV[rev].n : PROV[pv1].n, ...metricas(filas), filas};
+}
+let CALIB = null;   // medición publicada (data/calibracion.json)
+async function cargaCalibracion() { try { const r = await fetch('data/calibracion.json', {cache: 'no-cache'}); if (r.ok) CALIB = await r.json(); } catch {} }
+function calibHTML(c) {
+  if (!c || !c.n) return '';
+  const p = x => x === null || x === undefined ? '–' : Math.round(x * 100) + ' %';
+  return `<p>${esc(t('Medido el {0} con {1} preguntas oficiales ({2}, {3}).', c.fecha, c.n, c.prov, c.modelo || ''))}</p>
+    <div class="table-wrap"><table class="om-tabla"><thead><tr><th>${esc(t('Método'))}</th><th>${esc(t('Acepta la pregunta con la respuesta buena'))}</th><th>${esc(t('Deja pasar una respuesta errónea'))}</th></tr></thead><tbody>
+      <tr><td>${esc(t('Solo los dos resolutores'))}</td><td>${p(c.A.ta)}</td><td>${p(c.A.fa)}</td></tr>
+      <tr><td>${esc(t('+ Contradictor'))}</td><td>${p(c.B.ta)}</td><td>${p(c.B.fa)}</td></tr>
+      <tr><td><b>${esc(t('Panel completo (+ Lista de control y estilo)'))}</b></td><td><b>${p(c.C.ta)}</b></td><td><b>${p(c.C.fa)}</b></td></tr></tbody></table></div>
+    <p class="help">${esc(t('Cuando los dos resolutores coinciden, aciertan el {0} de las veces. Lo importante es la última columna: de cada 100 preguntas en las que el redactor se equivoca de respuesta, cuántas se colarían. Medido con preguntas oficiales; las generadas pueden comportarse algo distinto.', p(c.precisionAcuerdo)))}</p>`;
+}
+
+$('btnCalib').onclick = async () => {
+  if (busy) return; if (!pideClave()) return;
+  if (!(await pideEnvio(PROMPT_CONTRA([{id: 'c1', enunciado: '…', opciones: ['…', '…', '…', '…'], correcta: 1}]), 0, t('Se enviarán 50 preguntas oficiales a {0}, en unas 25 llamadas con tu clave. No incluye datos tuyos.', PROV[getProv()].n)))) return;
+  busy = true; $('btnCalib').disabled = true; const st = $('calibEstado');
+  try {
+    const otros = Object.keys(PROV).filter(p => p !== getProv() && getKey(p));
+    const r = await calibra(50, !S.revMismo && otros.length ? otros[0] : '', (i, n) => { st.innerHTML = '<span class="spin"></span> ' + esc(t('Midiendo… {0} de {1} preguntas', i, n)); });
+    delete r.filas; S.calibPropia = r; await guardaYa(); st.textContent = ''; pintaValidacion();
+  } catch (e) { st.textContent = e.message; toast(e.message, 8000); }
+  finally { busy = false; $('btnCalib').disabled = false; }
+};
+
 /* ── 3 · generador con agentes ── */
+function resumenCalib() { return CALIB && CALIB.n ? t('Medición publicada: el panel acepta el {0} de las preguntas con respuesta buena y deja pasar el {1} de las respuestas erróneas (solo con dos resolutores: {2}).', Math.round(CALIB.C.ta * 100) + ' %', Math.round(CALIB.C.fa * 100) + ' %', Math.round(CALIB.A.fa * 100) + ' %') : ''; }
 function pintaGen() {
-  opcionesAsig($('genAsig'), false);
+  opcionesAsig($('genAsig'), false); $('genCalib').textContent = resumenCalib();
   const pv = getProv(), otros = Object.keys(PROV).filter(p => p !== pv && getKey(p));
+  const gv = $('genRev').value;
   $('genRev').innerHTML = `<option value="">${esc(t('Mismo proveedor ({0})', PROV[pv].n))}</option>` + otros.map(p => `<option value="${p}">${esc(PROV[p].n)}</option>`).join('');
+  $('genRev').value = otros.includes(gv) ? gv : (!S.revMismo && otros.length ? otros[0] : '');   // por defecto, otro proveedor: modelos distintos se equivocan menos a la vez
   const st = S.genStats;
   const acept = S.gen.filter(g => g.estado === 'aceptada'), dud = S.gen.filter(g => g.estado === 'dudosa');
   $('genRes').innerHTML = !S.gen.length && !st ? '' : `
-    ${st ? `<div class="card"><h3>${esc(t('Última tanda'))}</h3><p>${esc(t('Redactadas: {0} · aceptadas por los tres agentes: {1} · dudosas: {2} · descartadas: {3}.', st.total, st.aceptadas, st.dudosas, st.descartadas))}</p>${st.motivos.length ? `<ul class="fa-ul">${st.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}${ctxHTML(st.contexto)}</div>` : ''}
+    ${st ? `<div class="card"><h3>${esc(t('Última tanda'))}</h3><p>${esc(t('Redactadas: {0} · aprobadas por el panel: {1} · dudosas: {2} · descartadas: {3}.', st.total, st.aceptadas, st.dudosas, st.descartadas))}</p>${st.motivos.length ? `<ul class="fa-ul">${st.motivos.map(m => `<li>${esc(m)}</li>`).join('')}</ul>` : ''}${ctxHTML(st.contexto)}</div>` : ''}
     <div class="card"><h3>${esc(t('Preguntas aceptadas ({0})', acept.length))}</h3>${acept.length ? acept.map(cartaGen).join('') : `<p class="empty">${esc(t('Todavía ninguna.'))}</p>`}
       <div class="actions"><button class="btn btn-word" id="btnGenWord" type="button">${ico('doc')} Word</button><button class="btn btn-ghost" id="btnGenCsv" type="button">CSV</button><button class="btn btn-ghost" id="btnGenGift" type="button">Moodle (GIFT)</button><button class="btn btn-ghost" id="btnGenBorra" type="button">${ico('trash')} ${esc(t('Borrar'))}</button></div></div>
     ${dud.length ? `<div class="card"><h3>${esc(t('Dudosas: un resolutor no estuvo de acuerdo ({0})', dud.length))}</h3><p class="help">${esc(t('No las uses para estudiar sin comprobarlas en tu manual.'))}</p>${dud.map(cartaGen).join('')}</div>` : ''}`;
@@ -427,10 +485,11 @@ function ctxHTML(c) {
     <p class="help">${esc(t('Recuento automático por palabras clave, más {0} preguntas oficiales recientes como ejemplo de estilo. Que un tema lleve años sin salir no significa que vaya a salir.', (c.ejemplos || []).length))}</p></details>`;
 }
 function cartaGen(g) {
-  return `<details class="om-gen"><summary><span class="fa-chip ${g.estado === 'aceptada' ? 'ok' : 'aviso'}">${esc(t(g.estado === 'aceptada' ? '3/3 de acuerdo' : '2/3 de acuerdo'))}</span> <b>${esc(nombreAsig(g.asig))}</b> · ${esc(g.tema || '')}<br>${esc(g.enunciado)}</summary>
+  return `<details class="om-gen"><summary><span class="fa-chip ${g.estado === 'aceptada' ? 'ok' : 'aviso'}">${esc(t(g.estado === 'aceptada' ? 'aprobada por el panel' : 'dudosa'))}</span> <b>${esc(nombreAsig(g.asig))}</b> · ${esc(g.tema || '')}<br>${esc(g.enunciado)}</summary>
     <ol class="om-ol">${g.opciones.map((o, k) => `<li class="${k + 1 === g.correcta ? 'om-ok' : ''}">${esc(o)}</li>`).join('')}</ol>
     <p><b>${esc(t('Explicación'))}:</b> ${esc(g.explicacion || '')}</p><p class="help">${esc(t('Referencia que cita el redactor (compruébala)'))}: ${esc(g.referencia || t('no indicada'))}</p>
-    <p class="help">${g.resolutores.map((r, k) => esc(t('Resolutor {0} ({1}): opción {2}, seguridad {3} %. {4}', k + 1, r.prov, r.opcion || '–', r.seguridad ?? '–', r.motivo || ''))).join('<br>')}</p></details>`;
+    <p class="help">${g.resolutores.map((r, k) => esc(t('Resolutor {0} ({1}): opción {2}, seguridad {3} %. {4}', k + 1, r.prov, r.opcion || '–', r.seguridad ?? '–', r.motivo || ''))).join('<br>')}
+      ${g.contra ? '<br>' + esc(t('Contradictor: {0}. {1}', t(g.contra.veredicto), g.contra.problema || '')) : ''}${g.lista ? '<br>' + esc(t('Lista de control: {0}. {1}', t(g.lista.veredicto), [(g.lista.fallos || []).join(', '), g.lista.nota].filter(Boolean).join(' · '))) : ''}${(g.estilo || []).length ? '<br>' + esc(t('Estilo (código): {0}', g.estilo.map(x => t(x)).join('; '))) : ''}</p></details>`;
 }
 
 const PROMPT_GEN = (asig, n, ejemplos, ctx) => `Eres un redactor experto de preguntas del examen MIR (España). Redacta ${n} preguntas NUEVAS de «${asig}», de tipo test con 4 opciones y una sola respuesta correcta, con el estilo y la dificultad del MIR reciente (casos clínicos breves cuando proceda).
@@ -457,6 +516,27 @@ const PROMPT_RES = (k, items) => `Eres ${ROLES[k]}. Resuelve estas preguntas tip
 Devuelve SOLO este JSON: {"respuestas":[{"id":"g1","opcion":1,"seguridad":90,"motivo":"una frase, en ${langIA()}"}]}
 
 ${items.map(x => `id: ${x.id}\n${x.enunciado}\n${x.opciones.map((o, j) => `${j + 1}. ${o}`).join('\n')}`).join('\n\n')}`;
+/* Contradictor (panel de DiagnostIA): ve la clave y SOLO busca razones para que la pregunta esté mal */
+const PROMPT_CONTRA = items => `Eres el Contradictor de un panel de revisión de preguntas del MIR. Tu único trabajo es intentar demostrar que cada pregunta está MAL. Se te da la respuesta que el redactor da por correcta.
+Busca, por este orden: (1) que la clave sea errónea; (2) que haya otra opción igual de defendible según las guías vigentes; (3) que falten datos para decidir o el enunciado sea ambiguo; (4) que se apoye en una recomendación que ha cambiado.
+Veredicto: "mala" si la clave es errónea o hay dos correctas; "dudosa" si hay ambigüedad o un problema real aunque menor; "ok" solo si no encuentras nada serio. No seas complaciente.
+Devuelve SOLO este JSON: {"revisiones":[{"id":"g1","veredicto":"ok","problema":"una frase, en ${langIA()}","alternativa":0}]}  ("alternativa": número de otra opción defendible, o 0)
+
+${items.map(x => `id: ${x.id}\n${x.enunciado}\n${x.opciones.map((o, j) => `${j + 1}. ${o}`).join('\n')}\nClave del redactor: ${x.correcta}`).join('\n\n')}`;
+/* Lista de control: normas habituales de redacción de preguntas de examen médico */
+const PROMPT_LISTA = items => `Eres la Lista de control de un panel de revisión de preguntas del MIR. Revisa cada pregunta con estas normas y nada más:
+L1 una sola idea evaluada; L2 el enunciado se puede responder sin ver las opciones; L3 sin pistas gramaticales ni de longitud hacia la correcta; L4 distractores plausibles y homogéneos; L5 sin «todas/ninguna de las anteriores»; L6 sin negaciones confusas ni dobles negaciones; L7 datos clínicos coherentes (edad, cifras, unidades); L8 una única respuesta inequívoca.
+Veredicto: "mala" si incumple L7 o L8; "corregir" si incumple alguna otra; "ok" si las cumple todas.
+Devuelve SOLO este JSON: {"revisiones":[{"id":"g1","veredicto":"ok","fallos":["L3"],"nota":"una frase, en ${langIA()}"}]}
+
+${items.map(x => `id: ${x.id}\n${x.enunciado}\n${x.opciones.map((o, j) => `${j + 1}. ${o}`).join('\n')}\nClave: ${x.correcta}`).join('\n\n')}`;
+async function revisaPanel(items, pv) {   // devuelve {contra: {id: {...}}, lista: {id: {...}}}; items: [{id, enunciado, opciones, correcta}]
+  const sis = 'Eres un revisor exigente de preguntas de examen médico. Respondes SOLO con JSON válido.';
+  const [c, l] = await conProveedor(pv, async () => [await llmJSON([{role: 'system', content: sis}, {role: 'user', content: PROMPT_CONTRA(items)}], {max: 260 * items.length + 400}),
+                                                     await llmJSON([{role: 'system', content: sis}, {role: 'user', content: PROMPT_LISTA(items)}], {max: 200 * items.length + 400})]);
+  const mapa = (o, ok) => Object.fromEntries((o.revisiones || []).map(r => [String(r.id), {...r, veredicto: ok.includes(String(r.veredicto)) ? String(r.veredicto) : 'dudosa'}]));
+  return {contra: mapa(c, ['ok', 'dudosa', 'mala']), lista: mapa(l, ['ok', 'corregir', 'mala'])};
+}
 async function conProveedor(pv, fn) {
   if (!pv || pv === getProv()) return fn();
   const prev = localStorage.getItem(APP + '_prov'); localStorage.setItem(APP + '_prov', pv);
@@ -490,10 +570,14 @@ async function generaTanda(asig, n, rev, paso = () => {}, evitar = []) {
     const mapa = Object.fromEntries((out.respuestas || []).map(a => [String(a.id), a]));
     res.push(cands.map((c, j) => { const a = mapa[c.id] || {}, o = Number(a.opcion); return {prov: PROV[pv].n, opcion: o >= 1 && o <= 4 ? perm[j].aOriginal(o) : 0, seguridad: a.seguridad, motivo: String(a.motivo || '')}; }));
   }
+  let panel = {contra: {}, lista: {}};
+  const vivas = cands.filter((c, j) => res.length === 2 && res.some(rr => rr[j].opcion === c.correcta));
+  if (vivas.length) { paso(t('Agentes 4 y 5: el Contradictor y la Lista de control revisan {0} preguntas…', vivas.length)); panel = await revisaPanel(vivas.map(c => ({id: c.id, enunciado: c.enunciado, opciones: c.opciones, correcta: c.correcta})), rev || pv1); }
   const aceptadas = [], dudosas = []; let descartadas = motivos.length + Math.max(0, n - (raw.preguntas || []).slice(0, n).length);
   cands.forEach((c, j) => {
-    c.resolutores = res.map(rr => rr[j]); c.estado = veredicto(c.correcta, c.resolutores.map(x => x.opcion));
-    if (c.estado === 'descartada') { descartadas++; motivos.push(t('Pregunta «{0}…» descartada: ninguno de los dos resolutores eligió la respuesta del redactor.', c.enunciado.slice(0, 50))); return; }
+    c.resolutores = res.map(rr => rr[j]); c.contra = panel.contra[c.id] || null; c.lista = panel.lista[c.id] || null; c.estilo = revisaEstilo(c);
+    c.estado = veredictoPanel(c.correcta, c.resolutores.map(x => x.opcion), {contra: c.contra, lista: c.lista, estilo: c.estilo});
+    if (c.estado === 'descartada') { descartadas++; motivos.push(c.resolutores.every(x => x.opcion !== c.correcta) ? t('Pregunta «{0}…» descartada: ninguno de los dos resolutores eligió la respuesta del redactor.', c.enunciado.slice(0, 50)) : t('Pregunta «{0}…» descartada por el panel: {1}', c.enunciado.slice(0, 50), (c.contra && c.contra.veredicto === 'mala' ? c.contra.problema : c.lista && c.lista.nota) || '')); return; }
     c.id = uid('gen-'); c.fecha = new Date().toISOString(); (c.estado === 'aceptada' ? aceptadas : dudosas).push(c);
   });
   return {aceptadas, dudosas, descartadas, motivos, ctx, ejemplos, prompt};
@@ -513,14 +597,14 @@ $('btnGen').onclick = async () => {
   finally { busy = false; $('btnGen').disabled = false; }
 };
 function genMd() { return S.gen.filter(g => g.estado === 'aceptada').map((g, i) => `## ${i + 1}. ${nombreAsig(g.asig)} · ${g.tema}\n${g.enunciado}\n\n${g.opciones.map((o, k) => `${k + 1}. ${o}`).join('\n')}\n\n**${t('Respuesta')}:** ${g.correcta}. ${g.explicacion}\n\n*${t('Referencia que cita el redactor (compruébala)')}: ${g.referencia}*`).join('\n\n'); }
-async function genWord() { if (!S.gen.some(g => g.estado === 'aceptada')) return toast(t('No hay preguntas aceptadas')); try { dl('oraculomir_preguntas.docx', await wordDeMarkdown(genMd(), {titulo: APP_NAME, subtitulo: t('Preguntas generadas y verificadas por tres agentes de IA'), pie: t('Generado con {0}. Preguntas no oficiales: compruébalas en tu manual.', APP_NAME)})); } catch (e) { toast(e.message, 7000); } }
+async function genWord() { if (!S.gen.some(g => g.estado === 'aceptada')) return toast(t('No hay preguntas aceptadas')); try { dl('oraculomir_preguntas.docx', await wordDeMarkdown(genMd(), {titulo: APP_NAME, subtitulo: t('Preguntas generadas y revisadas por un panel de agentes de IA'), pie: t('Generado con {0}. Preguntas no oficiales: compruébalas en tu manual.', APP_NAME)})); } catch (e) { toast(e.message, 7000); } }
 function genCsv() { const a = S.gen.filter(g => g.estado === 'aceptada'); if (!a.length) return toast(t('No hay preguntas aceptadas')); dl('oraculomir_preguntas.csv', csvDe([t('asignatura'), t('tema'), t('enunciado'), '1', '2', '3', '4', t('correcta'), t('explicacion'), t('referencia')], a.map(g => [nombreAsig(g.asig), g.tema, g.enunciado, ...g.opciones, g.correcta, g.explicacion, g.referencia])), 'text/csv;charset=utf-8'); }
 
 /* aviso previo al envío (una vez por sesión) */
 let envioRes = null;
 function pideEnvio(textoEnviado, masks, mensaje) {
   if (ENVIO_OK) return Promise.resolve(true);
-  $('envioInfo').innerHTML = `<p class="sub" style="margin-top:0">${esc(mensaje || t('Se enviarán unos {0} caracteres a {1}. No incluye datos tuyos: solo la asignatura y preguntas oficiales de ejemplo. Son tres llamadas (redactor y dos resolutores).', nf(textoEnviado.length), PROV[getProv()].n))}</p><p class="help">${esc(t('Muestra del envío:'))}</p>`;
+  $('envioInfo').innerHTML = `<p class="sub" style="margin-top:0">${esc(mensaje || t('Se enviarán unos {0} caracteres a {1}. No incluye datos tuyos: solo la asignatura y preguntas oficiales de ejemplo. Son cinco llamadas (redactor, dos resolutores, Contradictor y Lista de control).', nf(textoEnviado.length), PROV[getProv()].n))}</p><p class="help">${esc(t('Muestra del envío:'))}</p>`;
   $('envioTxt').textContent = textoEnviado.slice(0, 3000) + (textoEnviado.length > 3000 ? '\n…' : '');
   $('envioOk').checked = false; $('envioSi').disabled = true; $('mEnvio').classList.add('on');
   return new Promise(r => { envioRes = r; });
@@ -539,7 +623,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 /* ── arranque: datos → predicción → enlaces compartidos (?reto, ?sim=…) ── */
 (async () => {
   const p = await cargaEstado(); if (p) S = {...S, ...p};
-  await cargaDatos(); calcula(); iniciaUI();
+  await cargaDatos(); await cargaCalibracion(); calcula(); iniciaUI();
   const q = new URLSearchParams(location.search);
   if (q.has('reto')) return go(5);
   if (q.get('anio') && creaExamenAnio(q.get('anio'), 'mir')) return go(2);

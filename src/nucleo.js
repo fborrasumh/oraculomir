@@ -205,8 +205,48 @@ function urlAviso(repo, q, comentario = '') {
   return `https://github.com/${repo}/issues/new?labels=error-pregunta&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}`;
 }
 
+/* ── panel de revisión (inspirado en el panel de DiagnostIA): estilo por código + veredicto combinado ── */
+const ABSOLUTOS = /\b(siempre|nunca|jam[aá]s|todos|todas|ninguno|ninguna|exclusivamente|únicamente|unicamente|en ningún caso)\b/i;
+/* fallos de redacción detectables sin IA (normas habituales de redacción de preguntas de examen médico) */
+function revisaEstilo(g) {
+  const avisos = [], ops = (g.opciones || []).map(o => String(o)), k = Number(g.correcta) - 1;
+  if (ops.length === 4 && k >= 0 && k < 4) {
+    const L = ops.map(o => o.length), otras = L.filter((_, i) => i !== k), media = otras.reduce((a, b) => a + b, 0) / otras.length;
+    if (L[k] > 1.5 * media && L[k] === Math.max(...L) && L[k] - Math.max(...otras) > 15) avisos.push('la correcta es mucho más larga que las demás');
+    const absD = ops.filter((o, i) => i !== k && ABSOLUTOS.test(o)).length;
+    if (absD >= 2 && !ABSOLUTOS.test(ops[k])) avisos.push('solo los distractores usan absolutos («siempre», «nunca»…)');
+  }
+  return avisos;
+}
+/* veredicto del panel:
+   · descartada: ningún resolutor elige la clave, o el Contradictor o la Lista de control la declaran «mala»;
+   · dudosa: un resolutor discrepa, o el Contradictor la ve «dudosa», o la Lista pide «corregir», o hay avisos de estilo;
+   · aceptada: todo lo demás (los resolutores a ciegas coinciden con la clave y nadie encuentra un problema). */
+function veredictoPanel(clave, respuestas, {contra, lista, estilo = []} = {}) {
+  const ok = respuestas.filter(x => x === clave).length;
+  if (ok === 0) return 'descartada';
+  if ((contra && contra.veredicto === 'mala') || (lista && lista.veredicto === 'mala')) return 'descartada';
+  if (ok < respuestas.length || (contra && contra.veredicto === 'dudosa') || (lista && lista.veredicto === 'corregir') || estilo.length) return 'dudosa';
+  return 'aceptada';
+}
+/* métricas de la medición: con la clave buena, % aceptado (TA); con una clave errónea, % que se cuela (FA) */
+function metricas(filas) {
+  const pct = (xs, f) => xs.length ? xs.filter(f).length / xs.length : null;
+  const conf = {
+    A: (r, v) => r.res.every(x => x === v.clave),
+    B: (r, v) => r.res.every(x => x === v.clave) && v.contra === 'ok',
+    C: (r, v) => veredictoPanel(v.clave, r.res, {contra: {veredicto: v.contra}, lista: {veredicto: v.lista}, estilo: v.estilo}) === 'aceptada'
+  };
+  const out = {n: filas.length};
+  for (const [k, f] of Object.entries(conf)) out[k] = {ta: pct(filas, r => f(r, r.buena)), fa: pct(filas, r => f(r, r.mala))};
+  out.acierto1 = pct(filas, r => r.res[0] === r.buena.clave); out.acierto2 = pct(filas, r => r.res[1] === r.buena.clave);
+  const acuerdo = filas.filter(r => r.res[0] && r.res[0] === r.res[1]);
+  out.acuerdo = filas.length ? acuerdo.length / filas.length : null; out.precisionAcuerdo = pct(acuerdo, r => r.res[0] === r.buena.clave);
+  return out;
+}
+
 /* GIFT (formato de preguntas de Moodle) */
 const giftEsc = s => String(s).replace(/([~=#{}:\\])/g, '\\$1');
 function aGIFT(qs) { return qs.map((q, i) => `::OraculoMIR ${i + 1}::${giftEsc(q.enunciado)} {\n${q.opciones.map((o, k) => `${k + 1 === q.correcta ? '=' : '~'}${giftEsc(o)}`).join('\n')}\n}`).join('\n\n') + '\n'; }
 
-if (typeof module !== 'undefined') module.exports = {N_MIR, FECHA_MIR, rng, baraja, conteos, cuotas, predice, valida, reparto, simulacro, puntua, utilizable, fechaMadrid, numReto, diasHastaMIR, textoCompartirReto, jaccard, revisaFormato, parecidoBanco, permuta, veredicto, aGIFT, temasRecurrentes, ejemplosRecientes, registra, pendientes, enRepaso, plan, busca, urlAviso, sumaDias};
+if (typeof module !== 'undefined') module.exports = {N_MIR, FECHA_MIR, rng, baraja, conteos, cuotas, predice, valida, reparto, simulacro, puntua, utilizable, fechaMadrid, numReto, diasHastaMIR, textoCompartirReto, jaccard, revisaFormato, parecidoBanco, permuta, veredicto, aGIFT, temasRecurrentes, ejemplosRecientes, registra, pendientes, enRepaso, plan, busca, urlAviso, sumaDias, revisaEstilo, veredictoPanel, metricas};

@@ -69,4 +69,16 @@ check('plan: esperadas × tasa de fallo, y «sin datos» si hay pocas respuestas
 // búsqueda y aviso
 check('búsqueda sin tildes y por varias palabras', M.busca([{id: 1, anio: 2020, asig: 'c', enunciado: 'Fibrilación auricular paroxística', opciones: []}, {id: 2, anio: 2020, asig: 'c', enunciado: 'Asma', opciones: []}], 'fibrilacion paroxistica').length === 1);
 check('enlace para avisar de un error', M.urlAviso('a/b', {id: '2020-001', anio: 2020, n: 1, asig: 'c', enunciado: 'x', correcta: 2}).startsWith('https://github.com/a/b/issues/new?labels=error-pregunta&title=Error%20en%20MIR%202020'));
+// panel de revisión
+check('estilo: correcta mucho más larga', M.revisaEstilo({opciones: ['Sí.', 'No.', 'Quizá.', 'La respuesta correcta y muy detallada con todos los matices necesarios'], correcta: 4}).length === 1);
+check('estilo: absolutos solo en distractores', M.revisaEstilo({opciones: ['Siempre es así', 'Nunca ocurre', 'Depende del contexto clínico', 'Opción razonable'], correcta: 3}).some(a => a.includes('absolutos')));
+check('estilo: pregunta equilibrada sin avisos', M.revisaEstilo({opciones: ['Angioplastia primaria', 'Fibrinólisis inmediata', 'Tratamiento conservador', 'Cirugía urgente'], correcta: 1}).length === 0);
+check('panel: aceptada solo si todo cuadra', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'ok'}}) === 'aceptada');
+check('panel: el Contradictor «dudosa» la deja en dudosa aunque coincidan', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'dudosa'}, lista: {veredicto: 'ok'}}) === 'dudosa');
+check('panel: «mala» descarta', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'mala'}}) === 'descartada' && M.veredictoPanel(2, [1, 3]) === 'descartada');
+check('panel: aviso de estilo → dudosa', M.veredictoPanel(2, [2, 2], {contra: {veredicto: 'ok'}, lista: {veredicto: 'ok'}, estilo: ['x']}) === 'dudosa');
+const fil = [{res: [1, 1], buena: {clave: 1, contra: 'ok', lista: 'ok', estilo: []}, mala: {clave: 3, contra: 'mala', lista: 'ok', estilo: []}},
+             {res: [2, 2], buena: {clave: 2, contra: 'dudosa', lista: 'ok', estilo: []}, mala: {clave: 2, contra: 'ok', lista: 'ok', estilo: []}}];
+const mt = M.metricas(fil);
+check('métricas: aceptación con clave buena y errónea por configuración', mt.A.ta === 1 && mt.A.fa === 0.5 && mt.B.ta === 0.5 && mt.B.fa === 0.5 && mt.C.ta === 0.5 && mt.precisionAcuerdo === 1, JSON.stringify(mt));
 console.log(ok ? '\nTODO OK' : '\nHAY FALLOS'); process.exit(ok ? 0 : 1);

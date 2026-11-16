@@ -19,18 +19,21 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
 4. **Reto diario.** Diez preguntas oficiales, las mismas para todo el mundo cada día.
    - Racha de días seguidos.
    - Resultado en emojis para compartir sin desvelar las respuestas.
-5. **Generador con agentes**, con la clave de IA de cada persona:
+5. **Generador con un panel de cinco agentes** (inspirado en [DiagnostIA](https://fborrasumh.github.io/diagnostia/)), con la clave de IA de cada persona:
    - **Agente 1** redacta preguntas nuevas de la asignatura elegida. Recibe tres preguntas oficiales solo como muestra de estilo.
-   - **Agentes 2 y 3** resuelven a ciegas, cada uno con las opciones barajadas de otra forma. El segundo puede usar otro proveedor de IA.
-   - **El código** comprueba el formato (4 opciones distintas, clave entre 1 y 4, sin «todas/ninguna de las anteriores») y descarta las preguntas que se parecen demasiado a una oficial.
-   - Una pregunta solo se **acepta** si los dos resolutores eligen la misma respuesta que el redactor. Si discrepa uno queda **dudosa**; si discrepan los dos se **descarta**.
+   - **Agentes 2 y 3** resuelven a ciegas, cada uno con las opciones barajadas de otra forma. Si hay clave de un segundo proveedor, se usa por defecto para resolver y revisar: modelos distintos se equivocan menos a la vez.
+   - **Agente 4, el Contradictor**, ve la clave y solo busca razones para que la pregunta esté mal (clave errónea, dos opciones defendibles, falta de datos, guía cambiada).
+   - **Agente 5, la Lista de control**, revisa la redacción con ocho normas habituales de preguntas de examen médico.
+   - **El código** comprueba el formato (4 opciones distintas, clave entre 1 y 4, sin «todas/ninguna de las anteriores») y descarta las preguntas que se parecen demasiado a una oficial. También mira el estilo: que la correcta no sea mucho más larga que las demás y que los absolutos («siempre», «nunca») no estén solo en los distractores.
+   - Una pregunta solo se **acepta** si los dos resolutores eligen la respuesta del redactor y el Contradictor, la Lista y el estilo no ponen pegas. Si un resolutor discrepa o hay una pega menor queda **dudosa**; si discrepan los dos, o el Contradictor o la Lista la dan por mala, se **descarta**.
+   - **Medición de la fiabilidad:** el panel se prueba con 100 preguntas oficiales, cada una dos veces: con su respuesta oficial y con una respuesta errónea puesta a propósito. Así se publica cuántas buenas acepta y cuántas erróneas deja pasar, con solo los resolutores y con el panel completo (`data/calibracion.json`, pantalla «Cómo se valida»). Cada persona puede repetirla con su clave.
    - Las preguntas aceptadas se exportan a Word, CSV y Moodle (GIFT).
 
 6. **Examen MIR 2027 completo con IA** (paso 4): 25, 50, 100 o 200 preguntas nuevas, repartidas por asignatura según la predicción.
-   - Cada tanda pasa por redactor + 2 resolutores a ciegas + comprobaciones del código, y no repite preguntas dentro del mismo examen.
+   - Cada tanda pasa por el panel completo (redactor, 2 resolutores a ciegas, Contradictor, Lista de control) y las comprobaciones del código, y no repite preguntas dentro del mismo examen.
    - Se puede continuar si se corta. Lo que los agentes descartan se completa, si se quiere, con preguntas oficiales marcadas.
    - Se hace como simulacro con reloj y puntuación MIR, y se descarga en Word o Moodle (GIFT).
-   - 200 preguntas cuestan unas 90 llamadas con la clave de cada persona; la app lo estima antes de empezar.
+   - 200 preguntas cuestan unas 150 llamadas con la clave de cada persona; la app lo estima antes de empezar.
 7. **«¿Por qué?» en cada pregunta corregida**, con la clave de IA de cada persona. La IA explica la respuesta **oficial** y no puede cambiarla; si con las guías actuales le parece discutible, lo dice aparte. La explicación se guarda para no pagarla dos veces.
 8. **Mi estudio:**
    - **Repaso espaciado de fallos:** cada fallo vuelve a salir al día siguiente y, si se acierta, a los 1, 3, 7, 21 y 60 días.
@@ -45,7 +48,7 @@ Qué asignaturas caerán en el MIR 2027 (sábado 23 de enero de 2027), estimado 
 
 - **No predice preguntas concretas**, solo cuántas tendrá cada asignatura. El simulacro entrena el formato y el ritmo; no adivina el examen.
 - **La clasificación por asignatura es automática**, por palabras clave (`data/asignaturas.json`), y se equivoca en algunas preguntas, sobre todo en las que tocan dos asignaturas. La portada muestra la parte sin clasificar.
-- **Que tres agentes coincidan no garantiza que una pregunta generada sea correcta.** Reduce los errores, pero varios modelos pueden equivocarse a la vez. Las únicas respuestas con respaldo oficial son las de las preguntas oficiales.
+- **Que el panel apruebe una pregunta no garantiza que sea correcta.** Reduce los errores, pero varios modelos pueden equivocarse a la vez; la medición dice cuántos se cuelan con preguntas oficiales, y las generadas pueden comportarse algo distinto. Las únicas respuestas con respaldo oficial son las de las preguntas oficiales.
 - **Las preguntas con imagen y las anuladas no entran en los simulacros**: no se extraen los cuadernillos de imágenes.
 - Herramienta independiente, sin relación con el Ministerio de Sanidad.
 
@@ -82,6 +85,8 @@ El flujo **Actions → «Datos MIR» → Run workflow** (`.github/workflows/dato
 2. `scripts/mir_externos.py` completa los años que el portal ya no ofrece con las URL de `data/fuentes_externas.json`. Comprueba que cada cuaderno sea un PDF de Medicina con las preguntas esperadas y que la plantilla cubra al menos el 90 % de ellas.
 3. `scripts/mir_datos.py` extrae el texto (también de páginas a dos columnas), separa preguntas y opciones (4 o 5, según el año), lee la respuesta oficial, clasifica cada pregunta y escribe `data/mir.json` (lo que lee la app) y `data/informe.md` (año a año: preguntas, respuestas leídas, anuladas y huecos).
 
+Con el paso `calibrar`, `scripts/mir_calibracion.py` abre la propia app en Chromium con el secreto `OPENAI_API_KEY` (en memoria, sin escribirlo en disco), mide el panel de agentes con 100 preguntas oficiales y guarda `data/calibracion.json`.
+
 El portal es una aplicación web sin lista pública de enlaces, así que el descubrimiento es heurístico. Si algún año falla:
 
 - Mira las capturas del portal en el artefacto `portal-debug` de la ejecución.
@@ -94,7 +99,7 @@ El portal es una aplicación web sin lista pública de enlaces, así que el desc
 
 - La predicción, los simulacros, el reto diario, la racha y la clave de IA se quedan en el navegador.
 - El generador envía al proveedor elegido la asignatura y unas preguntas oficiales de ejemplo, nunca datos de la persona. Antes del primer envío muestra lo que va a salir.
-- Cada tanda son tres llamadas a la IA, que cada persona paga con su propia clave.
+- Cada tanda son cinco llamadas a la IA, que cada persona paga con su propia clave.
 
 ## Para que se difunda (diseño)
 

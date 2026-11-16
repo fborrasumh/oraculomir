@@ -27,7 +27,7 @@
   <div class="journey" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
     <div class="jstop" style="--c:#6B4FD8"><span class="jn">1</span><div class="ji"><svg class="i"><use href="#i-target"/></svg></div><b data-i18n="s.j1b">Predicción por asignatura</b><span data-i18n="s.j1s">Cuántas preguntas caerán de cada asignatura, con un margen y con una prueba a ciegas de lo que habría acertado otros años.</span></div>
     <div class="jstop" style="--c:#E4572E"><span class="jn">2</span><div class="ji"><svg class="i"><use href="#i-quiz"/></svg></div><b data-i18n="s.j2b">Simulacro probable</b><span data-i18n="s.j2s">Preguntas oficiales en la proporción que se espera para 2027, con la respuesta de la plantilla definitiva. Gratis y sin clave.</span></div>
-    <div class="jstop" style="--c:#0E8C7A"><span class="jn">3</span><div class="ji"><svg class="i"><use href="#i-users"/></svg></div><b data-i18n="s.j3b">Preguntas nuevas, revisadas por agentes</b><span data-i18n="s.j3s">Con tu clave, un agente redacta y otros dos la resuelven a ciegas. Solo pasa lo que los tres responden igual.</span></div>
+    <div class="jstop" style="--c:#0E8C7A"><span class="jn">3</span><div class="ji"><svg class="i"><use href="#i-users"/></svg></div><b data-i18n="s.j3b">Preguntas nuevas, revisadas por agentes</b><span data-i18n="s.j3s">Con tu clave, un panel de agentes inspirado en DiagnostIA redacta, resuelve a ciegas, busca fallos y revisa la redacción. Solo pasa lo que supera todo el panel.</span></div>
   </div>
   <h2 class="sec-title" data-i18n="Dónde va cada cosa">Dónde va cada cosa</h2>
   <div class="zonas"><div class="zona l"><h4 data-i18n="Siempre en tu ordenador">Siempre en tu ordenador</h4><ul data-i18n="s.zl">
@@ -62,7 +62,7 @@
 
 <!-- 3 · GENERADOR IA -->
 <section class="screen" data-step="3">
-  <header class="sh" style="--c:#0E8C7A"><div class="sh-ico"><svg class="i"><use href="#i-users"/></svg></div><div><p class="sh-step" data-i18n="s.paso3">Paso 3 de 4</p><h2 data-i18n="s.gen">Preguntas nuevas con agentes de IA</h2><p class="sh-lede" data-i18n="s.gen.lede">Un agente redacta preguntas al estilo MIR de las asignaturas que más pesan en 2027. Dos agentes resolutores las contestan a ciegas, con las opciones barajadas. Solo se aceptan las que los tres responden igual; el código comprueba además el formato y que no sean copias del banco oficial.</p></div></header>
+  <header class="sh" style="--c:#0E8C7A"><div class="sh-ico"><svg class="i"><use href="#i-users"/></svg></div><div><p class="sh-step" data-i18n="s.paso3">Paso 3 de 4</p><h2 data-i18n="s.gen">Preguntas nuevas con agentes de IA</h2><p class="sh-lede" data-i18n="s.gen.lede">Un panel de cinco agentes, inspirado en DiagnostIA: uno redacta preguntas al estilo MIR de las asignaturas que más pesan en 2027; dos las resuelven a ciegas con las opciones barajadas; el Contradictor intenta demostrar que están mal y la Lista de control revisa la redacción. El código comprueba además el formato, el estilo y que no sean copias del banco oficial. Solo se aceptan las que superan todo el panel.</p></div></header>
   <div class="card">
     <div class="grid3">
       <div class="field"><label for="genAsig" data-i18n="s.asig1">Asignatura</label><select id="genAsig"></select></div>
@@ -71,13 +71,14 @@
     </div>
     <div class="actions"><button class="btn btn-primary" id="btnGen" type="button"><svg class="i"><use href="#i-sparkles"/></svg><span data-i18n="s.generar">Redactar y verificar</span></button></div>
     <p class="help" id="genEstado" role="status" aria-live="polite"></p>
-    <div class="aviso" data-i18n="s.gen.aviso">Que tres agentes coincidan reduce mucho los errores, pero no los elimina: varios modelos pueden equivocarse a la vez. Las preguntas oficiales llevan la respuesta del Ministerio; las generadas, no. Si algo no te cuadra, consulta tu manual.</div></div>
+    <p class="help" id="genCalib"></p>
+    <div class="aviso" data-i18n="s.gen.aviso">El panel reduce mucho los errores, pero no los elimina: varios modelos pueden equivocarse a la vez. Las preguntas oficiales llevan la respuesta del Ministerio; las generadas, no. En «Cómo se valida» tienes la medición de cuántas respuestas erróneas se cuelan.</div></div>
   <div id="genRes"></div>
 </section>
 
 <!-- 4 · EXAMEN MIR 2027 GENERADO -->
 <section class="screen" data-step="4">
-  <header class="sh" style="--c:#C98200"><div class="sh-ico"><svg class="i"><use href="#i-rocket"/></svg></div><div><p class="sh-step" data-i18n="s.paso4">Paso 4 de 4</p><h2 data-i18n="s.ex">Examen MIR 2027 completo con IA</h2><p class="sh-lede" data-i18n="s.ex.lede">Un examen entero de preguntas nuevas, repartidas por asignatura según lo que predice OráculoMIR para 2027. Cada pregunta pasa por el mismo control que el generador: un agente redacta, dos resuelven a ciegas y solo entra si los tres coinciden. Después, lo haces como simulacro con reloj y puntuación MIR.</p></div></header>
+  <header class="sh" style="--c:#C98200"><div class="sh-ico"><svg class="i"><use href="#i-rocket"/></svg></div><div><p class="sh-step" data-i18n="s.paso4">Paso 4 de 4</p><h2 data-i18n="s.ex">Examen MIR 2027 completo con IA</h2><p class="sh-lede" data-i18n="s.ex.lede">Un examen entero de preguntas nuevas, repartidas por asignatura según lo que predice OráculoMIR para 2027. Cada pregunta pasa por el panel de cinco agentes del generador y solo entra si lo supera. Después, lo haces como simulacro con reloj y puntuación MIR.</p></div></header>
   <div class="card">
     <div class="grid3">
       <div class="field"><label for="exN" data-i18n="s.nPreg">Número de preguntas</label><select id="exN"><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="200" selected data-i18n="s.ex200">200 (examen completo)</option></select></div>
@@ -88,6 +89,7 @@
     <p class="help" id="exEstima"></p>
     <div class="actions"><button class="btn btn-primary" id="btnExGen" type="button"><svg class="i"><use href="#i-sparkles"/></svg><span data-i18n="s.exGen">Generar el examen</span></button></div>
     <p class="help" id="exEstado" role="status" aria-live="polite"></p>
+    <p class="help" id="exCalib"></p>
   </div>
   <div id="exRes"></div>
 </section>
@@ -129,6 +131,11 @@
     <ul class="fa-ul" data-i18n="s.valLista">
 <li>2022-2026: descargados del portal del Ministerio de Sanidad, con su hoja de respuestas definitiva.</li><li>Años anteriores: copias de los documentos oficiales. El año se comprueba en el propio cuaderno, la plantilla debe ser del mismo año y cubrir al menos el 90 % de las preguntas, y un mismo fichero no puede servir para dos años.</li><li>Las anuladas y los cambios de respuesta se cotejan con lo publicado en prensa en su momento.</li><li>MIR 2010: sin respuestas, porque la única fuente choca con lo publicado. Sus preguntas solo cuentan para la predicción.</li></ul></div>
   <div class="card"><h3 data-i18n="s.valPred">Predicción</h3><p id="valPred"></p></div>
+  <div class="card"><h3 data-i18n="s.valGen">Fiabilidad de las preguntas generadas con IA</h3>
+    <p class="help" data-i18n="s.valGen.txt">Se mide con preguntas oficiales, cuya respuesta conocemos. Cada una pasa por el panel dos veces: con su respuesta oficial y con una respuesta errónea puesta a propósito, como si el redactor se hubiera equivocado. Así se sabe cuántas buenas acepta y cuántas erróneas deja pasar.</p>
+    <div id="valCalib"></div>
+    <div class="actions"><button class="btn btn-ghost btn-sm" id="btnCalib" type="button"><svg class="i"><use href="#i-scale"/></svg><span data-i18n="s.calibMia">Medirlo con mi clave (50 preguntas, unas 25 llamadas)</span></button></div>
+    <p class="help" id="calibEstado" role="status" aria-live="polite"></p><div id="valCalibMia"></div></div>
   <div class="card"><h3 data-i18n="s.valFuente">Código y datos</h3><p data-i18n="s.valFuente.txt">Todo es abierto: el código, los PDF y el informe de extracción año a año están en el repositorio de GitHub.</p>
     <div class="actions"><a class="btn btn-ghost btn-sm" href="https://github.com/fborrasumh/oraculomir" target="_blank" rel="noopener"><svg class="i"><use href="#i-github"/></svg><span>GitHub</span></a><a class="btn btn-ghost btn-sm" href="https://github.com/fborrasumh/oraculomir/blob/main/data/informe.md" target="_blank" rel="noopener"><svg class="i"><use href="#i-doc"/></svg><span data-i18n="s.informe">Informe de extracción</span></a></div></div>
 </section>

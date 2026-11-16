@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       paso:
-        description: 'todo | externos | imagenes | procesar | clasificar | sondeo_plantillas | sondear | descubrir | descargar'
+        description: 'todo | externos | imagenes | procesar | clasificar | calibrar | sondeo_plantillas | sondear | descubrir | descargar'
         default: 'todo'
         required: true
 permissions:
@@ -52,15 +52,21 @@ jobs:
         if: inputs.paso == 'descargar'
         run: python scripts/mir_fetch.py --descargar
       - name: Extraer preguntas y clasificar
-        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear' && inputs.paso != 'sondeo_plantillas'
+        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear' && inputs.paso != 'sondeo_plantillas' && inputs.paso != 'calibrar'
         run: python scripts/mir_datos.py || true
       - name: Clasificar por asignatura con IA (secreto OPENAI_API_KEY, modelo gpt-6-luna)
-        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear' && inputs.paso != 'sondeo_plantillas'
+        if: inputs.paso != 'descubrir' && inputs.paso != 'sondear' && inputs.paso != 'sondeo_plantillas' && inputs.paso != 'calibrar'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MODELO_IA: gpt-6-luna
         run: python scripts/mir_clasifica_ia.py && python scripts/mir_datos.py
+      - name: Medir la fiabilidad del panel de agentes con 100 preguntas oficiales (secreto OPENAI_API_KEY)
+        if: inputs.paso == 'calibrar'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MODELO_IA: gpt-6-luna
+        run: python scripts/mir_calibracion.py 100
       - name: Informe en el resumen de la ejecución
         if: always()
         run: cat data/informe.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "Sin informe todavía" >> "$GITHUB_STEP_SUMMARY"
