@@ -1,0 +1,646 @@
+{
+ "fecha": "2026-11-17",
+ "modelo": "gpt-6-luna",
+ "revisables": 3207,
+ "revisadas": 3207,
+ "completa": true,
+ "total": {
+  "vigente": 3145,
+  "discutible": 40,
+  "desactualizada": 22
+ },
+ "por_anio": {
+  "2009": {
+   "vigente": 243,
+   "discutible": 4,
+   "desactualizada": 2
+  },
+  "2011": {
+   "discutible": 6,
+   "vigente": 188,
+   "desactualizada": 2
+  },
+  "2012": {
+   "vigente": 191,
+   "discutible": 4,
+   "desactualizada": 1
+  },
+  "2013": {
+   "vigente": 190,
+   "desactualizada": 1,
+   "discutible": 4
+  },
+  "2014": {
+   "vigente": 179,
+   "desactualizada": 5,
+   "discutible": 3
+  },
+  "2015": {
+   "vigente": 188,
+   "desactualizada": 1,
+   "discutible": 4
+  },
+  "2016": {
+   "vigente": 193,
+   "desactualizada": 2,
+   "discutible": 3
+  },
+  "2017": {
+   "vigente": 186,
+   "discutible": 4,
+   "desactualizada": 4
+  },
+  "2018": {
+   "vigente": 190,
+   "discutible": 2,
+   "desactualizada": 3
+  },
+  "2019": {
+   "vigente": 195,
+   "discutible": 1,
+   "desactualizada": 1
+  },
+  "2020": {
+   "vigente": 154
+  },
+  "2021": {
+   "vigente": 155,
+   "discutible": 1
+  },
+  "2022": {
+   "vigente": 180
+  },
+  "2023": {
+   "vigente": 179,
+   "discutible": 2
+  },
+  "2024": {
+   "vigente": 178,
+   "discutible": 1
+  },
+  "2025": {
+   "vigente": 179,
+   "discutible": 1
+  },
+  "2026": {
+   "vigente": 177
+  }
+ },
+ "por_asig": {
+  "anestesia": {
+   "vigente": 97,
+   "discutible": 1
+  },
+  "basicas": {
+   "vigente": 59
+  },
+  "bioetica": {
+   "vigente": 55,
+   "discutible": 1
+  },
+  "cardio": {
+   "vigente": 226,
+   "discutible": 5,
+   "desactualizada": 1
+  },
+  "derma": {
+   "vigente": 42
+  },
+  "digestivo": {
+   "vigente": 237,
+   "discutible": 6,
+   "desactualizada": 3
+  },
+  "endocrino": {
+   "vigente": 147,
+   "discutible": 2,
+   "desactualizada": 3
+  },
+  "estadistica": {
+   "vigente": 193,
+   "discutible": 2
+  },
+  "farmaco": {
+   "vigente": 107,
+   "discutible": 2
+  },
+  "genetica": {
+   "vigente": 50
+  },
+  "geriatria": {
+   "vigente": 67,
+   "discutible": 1,
+   "desactualizada": 1
+  },
+  "gine": {
+   "vigente": 140,
+   "desactualizada": 1,
+   "discutible": 2
+  },
+  "hemato": {
+   "vigente": 129,
+   "discutible": 2
+  },
+  "infecciosas": {
+   "vigente": 202,
+   "desactualizada": 3,
+   "discutible": 5
+  },
+  "inmuno": {
+   "vigente": 73,
+   "discutible": 1
+  },
+  "nefro": {
+   "vigente": 133
+  },
+  "neumo": {
+   "vigente": 153,
+   "desactualizada": 1,
+   "discutible": 1
+  },
+  "neuro": {
+   "vigente": 175,
+   "discutible": 1
+  },
+  "oftalmo": {
+   "vigente": 45
+  },
+  "onco": {
+   "vigente": 116,
+   "desactualizada": 2,
+   "discutible": 2
+  },
+  "orl": {
+   "vigente": 65
+  },
+  "patologia": {
+   "vigente": 20
+  },
+  "pedia": {
+   "vigente": 128,
+   "desactualizada": 2,
+   "discutible": 1
+  },
+  "preventiva": {
+   "vigente": 72,
+   "discutible": 2
+  },
+  "psiq": {
+   "vigente": 118,
+   "discutible": 1
+  },
+  "radio": {
+   "vigente": 3
+  },
+  "reuma": {
+   "vigente": 117,
+   "desactualizada": 1,
+   "discutible": 1
+  },
+  "trauma": {
+   "vigente": 116,
+   "desactualizada": 2
+  },
+  "uro": {
+   "vigente": 60,
+   "discutible": 1,
+   "desactualizada": 2
+  }
+ },
+ "preguntas": {
+  "2009-075": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Guías ESC/EAS de dislipidemias de 2019: en prevención secundaria por enfermedad cardiovascular aterosclerótica, el objetivo de LDL-C pasó a <55 mg/dl y una reducción ≥50%.",
+   "motivo": "La cardiopatía isquémica previa sigue siendo la opción que identifica prevención secundaria, pero <100 mg/dl ya no es el objetivo terapéutico vigente.",
+   "verificador": "El objetivo actual en prevención secundaria suele ser LDL-C <55 mg/dl, pero la opción 1 sigue identificando correctamente al paciente de mayor riesgo entre las alternativas."
+  },
+  "2009-128": {
+   "v": "desactualizada",
+   "actual": 3,
+   "cambio": "Desde 2015, tras los resultados del ensayo START y la actualización de las guías, se recomienda iniciar tratamiento antirretroviral a toda persona con VIH, independientemente del recuento de CD4.",
+   "motivo": "Con 550 CD4/mm³ no se indica profilaxis de Pneumocystis, pero sí tratamiento antirretroviral y tratamiento de la infección tuberculosa latente.",
+   "verificador": "Desde los ensayos y guías posteriores se recomienda tratamiento antirretroviral a toda persona con VIH, por lo que hoy la opción 3 es preferible a la respuesta oficial."
+  },
+  "2009-136": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Las guías contemporáneas de cuidado de heridas, incluidas las recomendaciones de la Wound Healing Society de 2023, desaconsejan el uso rutinario de antisépticos citotóxicos en úlceras por presión.",
+   "motivo": "Sin signos de infección, los antibióticos sistémicos no están indicados; además, el uso rutinario de povidona yodada o hipoclorito también es poco recomendable, por lo que la opción menos adecuada resulta menos inequívoca.",
+   "verificador": "Las recomendaciones actuales desaconsejan tanto antibióticos sistémicos sin infección como el uso rutinario de antisépticos citotóxicos, de modo que la opción menos adecuada ya no es inequívoca."
+  },
+  "2009-185": {
+   "v": "desactualizada",
+   "actual": 4,
+   "cambio": "Guías ESPGHAN de enfermedad celíaca de 2012 y actualización de 2020",
+   "motivo": "En niños asintomáticos con respuesta clínica y serológica no se recomienda de rutina una biopsia de control; se mantiene la dieta sin gluten de por vida.",
+   "verificador": "Las guías actuales no recomiendan biopsia de control rutinaria en niños con respuesta clínica y serológica, por lo que la opción 4 refleja mejor la conducta vigente."
+  },
+  "2009-220": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Autorización de vacunas frente al meningococo B: 4CMenB en la UE en 2013 y MenB-FHbp en 2017.",
+   "motivo": "La opción 3 sigue siendo cierta, pero hoy también hay vacunas autorizadas frente al meningococo B, por lo que la opción 1 puede considerarse correcta y la pregunta deja de tener una respuesta única.",
+   "verificador": "Desde 2013 y 2017 existen vacunas autorizadas frente al meningococo B; aunque la expresión «gran eficacia» es discutible, hoy la opción 1 también puede considerarse válida y deja la pregunta ambigua junto a la 3."
+  },
+  "2009-258": {
+   "v": "discutible",
+   "actual": 5,
+   "cambio": "Las recomendaciones perioperatorias actuales, incluida la guía ESC de 2022, individualizan la continuación de IECA/ARA-II y suelen aconsejar omitirlos antes de cirugía de riesgo elevado en pacientes tratados por hipertensión.",
+   "motivo": "La opción 5 sigue siendo la más cercana entre las disponibles, pero no es plenamente correcta hoy: los antidepresivos ISRS suelen mantenerse y la decisión sobre enalapril depende de la indicación y del riesgo quirúrgico.",
+   "verificador": "La opción 5 sigue siendo la más cercana, aunque actualmente se suele mantener el ISRS y la decisión de suspender enalapril se individualiza según indicación y riesgo quirúrgico."
+  },
+  "2011-031": {
+   "v": "discutible",
+   "actual": 4,
+   "cambio": "Guía ACG sobre esófago de Barrett, 2022",
+   "motivo": "Para displasia de bajo grado confirmada se sugiere terapia endoscópica de erradicación, aunque la vigilancia sigue siendo una alternativa aceptable y la opción 4 es la mejor de las ofrecidas.",
+   "verificador": "La terapia endoscópica puede ofrecerse para displasia de bajo grado confirmada, pero la vigilancia continúa siendo una alternativa aceptada y la opción 4 es la mejor disponible."
+  },
+  "2011-041": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Ensayo CHOCOLATE (2018) y guías WSES (2020), que favorecen la colecistectomía laparoscópica temprana frente al drenaje en pacientes de alto riesgo que sean operables.",
+   "motivo": "La edad y las comorbilidades por sí solas no determinan que el paciente no sea operable; si puede tolerar cirugía, el estándar actual favorece la colecistectomía.",
+   "verificador": "CHOCOLATE y las guías posteriores favorecen cirugía en pacientes de alto riesgo que sean operables, pero la edad, comorbilidades e insuficiencia del tratamiento hacen que no pueda afirmarse que la opción 1 sea necesariamente mejor que el drenaje."
+  },
+  "2011-079": {
+   "v": "discutible",
+   "actual": 5,
+   "cambio": "Las guías ESC de prevención cardiovascular de 2021 incorporaron SCORE2 y la estratificación del riesgo cardiovascular para orientar el tratamiento hipolipemiante.",
+   "motivo": "Con 65 años, hipertensión, tabaquismo previo y LDL de 135 mg/dl, la opción 3 ya no es la mejor: la decisión debe basarse en el riesgo cardiovascular global y puede estar indicado iniciar tratamiento hipolipemiante.",
+   "verificador": "El riesgo cardiovascular global puede justificar una estatina, pero la opción 5 no se deduce de contar tres factores y, con una HbA1c de 7,4%, la opción 4 es más coherente si se confirma diabetes."
+  },
+  "2011-122": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Guías perioperatorias posteriores a 2011, incluidas las recomendaciones ACC/AHA de 2014 y 2024, desaconsejan iniciar betabloqueantes de forma inmediata antes de la cirugía; la cirugía de cadera urgente no debe retrasarse por la confusión ni por esa presión arterial.",
+   "motivo": "La opción oficial añade iniciar un betabloqueante en una paciente que no lo tomaba, conducta que hoy no se recomienda; ninguna opción expresa correctamente proceder a la cirugía sin iniciarlo.",
+   "verificador": "Las guías actuales desaconsejan iniciar rutinariamente un betabloqueante justo antes de la cirugía; ninguna opción propone la conducta adecuada de operar sin iniciarlo."
+  },
+  "2011-166": {
+   "v": "desactualizada",
+   "actual": 1,
+   "cambio": "Guías internacionales de síndrome de ovario poliquístico de 2018 y actualización de 2023: la relación LH/FSH no es una prueba diagnóstica recomendada.",
+   "motivo": "La relación entre FSH y LH no confirma el diagnóstico; entre las opciones, la ecografía puede aportar orientación, aunque en una adulta con oligoovulación e hiperandrogenismo no es necesaria para diagnosticarlo.",
+   "verificador": "La relación LH/FSH no se recomienda para diagnosticar SOP y, entre las opciones ofrecidas, la ecografía puede orientar, aunque no sea necesaria si ya se cumplen criterios clínicos."
+  },
+  "2011-174": {
+   "v": "discutible",
+   "actual": 3,
+   "cambio": "",
+   "motivo": "La opción 3 no es necesariamente falsa: un intervalo de confianza para un odds ratio no tiene por qué estar centrado aritméticamente en la estimación, aunque la interpretación de la opción 1 también es incorrecta en sentido frecuentista.",
+   "verificador": "Un intervalo de confianza para un odds ratio no tiene por qué estar centrado aritméticamente en la estimación, por lo que la opción 3 no es necesariamente falsa; además, las opciones 1 y 4 también presentan problemas de interpretación."
+  },
+  "2011-193": {
+   "v": "discutible",
+   "actual": 5,
+   "cambio": "La evaluación económica sanitaria contemporánea distingue el análisis de coste de la enfermedad como estudio descriptivo de costes, no como evaluación económica completa; no hay un cambio posterior concreto que altere la clasificación básica.",
+   "motivo": "La opción oficial es la respuesta clásica si se pregunta por estudios que cuantifican costes sin resultados, pero el coste de la enfermedad no suele considerarse una evaluación económica comparativa; la minimización de costes también compara costes, aunque exige equivalencia de resultados.",
+   "verificador": "No hay un cambio posterior: el estudio de coste de la enfermedad cuantifica costes sin evaluar resultados clínicos, mientras que la minimización de costes presupone resultados equivalentes."
+  },
+  "2011-199": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "La FDA eliminó las categorías de riesgo A, B, C, D y X y las sustituyó por el etiquetado narrativo PLLR, vigente desde 2015.",
+   "motivo": "La categoría A ya no es la clasificación regulatoria vigente y no permite afirmar de forma general que un medicamento sea seguro durante toda la gestación.",
+   "verificador": "La FDA sustituyó las categorías por el etiquetado narrativo, pero ese cambio no altera el significado histórico de la categoría A ni convierte otra opción en correcta."
+  },
+  "2012-038": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Desde 2020, atezolizumab más bevacizumab pasó a ser tratamiento sistémico de primera línea para muchos pacientes con hepatocarcinoma avanzado; en 2022 se incorporó también durvalumab más tremelimumab como opción de primera línea.",
+   "motivo": "El sorafenib ya no es el estándar preferente de primera línea para un paciente apto con hepatocarcinoma avanzado; ninguna opción ofrece los esquemas inmunoterápicos actuales.",
+   "verificador": "Desde 2020 existen esquemas de inmunoterapia preferidos como primera línea para muchos pacientes aptos con hepatocarcinoma avanzado, y ninguna opción los incluye."
+  },
+  "2012-042": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Guía de la American Society of Colon and Rectal Surgeons sobre incontinencia fecal, 2023",
+   "motivo": "La guía actual prioriza medidas conservadoras como tratamiento inicial y reserva la cirugía para casos seleccionados; la esfinteroplastia sigue siendo una opción ante un defecto esfinteriano, aunque sus resultados pueden deteriorarse con el tiempo.",
+   "verificador": "La guía de 2023 prioriza el tratamiento conservador inicial de la incontinencia fecal, por lo que hoy la opción 1 puede ser preferible antes de plantear una esfinteroplastia."
+  },
+  "2012-057": {
+   "v": "discutible",
+   "actual": 3,
+   "cambio": "IABP-SHOCK II (2012) no encontró beneficio de supervivencia con el balón de contrapulsación intraaórtico en el shock cardiogénico por infarto; las guías posteriores dejaron de recomendar su uso rutinario.",
+   "motivo": "La opción 2 sigue siendo la respuesta prevista, pero la opción 3 también carece de beneficio demostrado de supervivencia en el uso rutinario, por lo que hoy la pregunta admite más de una respuesta.",
+   "verificador": "IABP-SHOCK II mostró ausencia de beneficio de supervivencia con el balón de uso rutinario, por lo que la opción 3 también resulta defendible hoy junto con la 2."
+  },
+  "2012-101": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Guía ASH sobre tromboembolismo venoso en el embarazo, 2018",
+   "motivo": "ASH sugiere no usar profilaxis anteparto ni posparto en portadoras heterocigotas de factor V Leiden sin trombosis previa, incluso con antecedentes familiares, aunque otras guías recomiendan profilaxis posparto en determinados casos.",
+   "verificador": "La guía ASH de 2018 sugiere no indicar profilaxis anteparto ni posparto en portadoras heterocigotas de factor V Leiden sin trombosis previa, aunque otras guías mantienen la profilaxis puerperal en ciertos casos."
+  },
+  "2012-114": {
+   "v": "discutible",
+   "actual": 3,
+   "cambio": "Recomendaciones ATS/CDC/IDSA de 2016 y OMS de 2022: en general, la tuberculosis sensible en personas con VIH se trata con las mismas pautas y duración que en personas sin VIH.",
+   "motivo": "La opción 3 describe la pauta general actual, aunque ciertas situaciones clínicas pueden requerir prolongación y existen interacciones relevantes con antirretrovirales.",
+   "verificador": "Las recomendaciones actuales indican en general la misma pauta y duración para tuberculosis sensible con VIH que sin VIH, de modo que la opción 3 es hoy la más ajustada."
+  },
+  "2013-039": {
+   "v": "discutible",
+   "actual": 4,
+   "cambio": "Guías AASLD de 2023: recomiendan valorar trasplante en pacientes con HCC dentro de criterios de Milán y cirrosis descompensada; la edad por sí sola no es una contraindicación absoluta.",
+   "motivo": "La lesión única de 3 cm está dentro de Milán y la ascitis sugiere cirrosis descompensada, por lo que hoy se valoraría trasplante, aunque la edad de 75 años y la elegibilidad individual pueden favorecer ablación.",
+   "verificador": "En un paciente con cirrosis descompensada y hepatocarcinoma dentro de criterios de Milán se valora hoy el trasplante si es elegible, aunque la edad y el estado individual pueden inclinar la decisión hacia ablación."
+  },
+  "2013-044": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Las guías AGA de 2020 y WSES de 2019 desaconsejan la punción-aspiración rutinaria de la necrosis para diagnosticar infección.",
+   "motivo": "Ante sospecha de necrosis infectada, la punción guiada ya no es el siguiente paso rutinario y ninguna de las otras opciones ofrece una alternativa estándar adecuada.",
+   "verificador": "Las guías actuales desaconsejan la punción rutinaria de la necrosis pancreática para diagnosticar infección, y ninguna otra opción ofrecida es un paso estándar equivalente."
+  },
+  "2013-083": {
+   "v": "discutible",
+   "actual": 2,
+   "cambio": "Guías ESC de insuficiencia cardiaca de 2021: desaconsejan el uso rutinario de opioides en la insuficiencia cardiaca aguda.",
+   "motivo": "La morfina ya no se recomienda de rutina; por ello, la opción 2 también puede ser falsa, aunque la opción 4 tampoco expresa adecuadamente el papel actual del nitroprusiato.",
+   "verificador": "Las guías actuales desaconsejan la morfina rutinaria en insuficiencia cardiaca aguda, por lo que la opción 2 también puede considerarse falsa además de la 4."
+  },
+  "2013-154": {
+   "v": "discutible",
+   "actual": 5,
+   "cambio": "CDC Sexually Transmitted Infections Treatment Guidelines, 2021: recomienda añadir metronidazol al régimen ambulatorio de ceftriaxona y doxiciclina.",
+   "motivo": "La opción 5 sigue siendo la más adecuada entre las ofrecidas, pero el esquema actual estándar añade metronidazol.",
+   "verificador": "La guía CDC de 2021 añade metronidazol al esquema ambulatorio, pero como no está entre las opciones, ceftriaxona más doxiciclina sigue siendo la mejor respuesta disponible."
+  },
+  "2013-216": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Guía IDSA de infecciones por bacilos gramnegativos resistentes de 2024: recomienda sulbactam-durlobactam combinado con imipenem-cilastatina o meropenem como tratamiento preferido de Acinetobacter baumannii resistente a carbapenémicos.",
+   "motivo": "La colistina sigue siendo una alternativa si no se dispone del tratamiento preferido, pero no figura entre las opciones y ya no es la elección preferida.",
+   "verificador": "La guía IDSA de 2024 prefiere sulbactam-durlobactam combinado con un carbapenémico para Acinetobacter resistente a carbapenémicos; al no figurar entre las opciones, la colistina sigue siendo la alternativa más adecuada de la lista."
+  },
+  "2014-065": {
+   "v": "desactualizada",
+   "actual": 1,
+   "cambio": "Ensayo ISCHEMIA (2020) y guías de revascularización ACC/AHA (2021)",
+   "motivo": "En la angina estable sin datos de refractariedad ni anatomía de alto riesgo, el manejo inicial recomendado es tratamiento médico óptimo; una estenosis subtotal aislada no obliga a implantar un stent.",
+   "verificador": "En la angina estable sin datos de refractariedad ni anatomía de alto riesgo, el tratamiento médico óptimo es el abordaje inicial actual y una estenosis subtotal aislada no obliga a implantar un stent."
+  },
+  "2014-095": {
+   "v": "desactualizada",
+   "actual": 1,
+   "cambio": "Recomendaciones ADA sobre tratamiento farmacológico de la diabetes tipo 2, reforzadas desde 2018 y vigentes en los Standards of Care actuales",
+   "motivo": "En una diabetes tipo 2 confirmada, las recomendaciones actuales indican iniciar tratamiento farmacológico junto con cambios de estilo de vida; entre las opciones, corresponde metformina.",
+   "verificador": "Actualmente se recomienda iniciar tratamiento farmacológico junto con cambios de estilo de vida en la diabetes tipo 2 confirmada, y la metformina es la opción farmacológica adecuada entre las ofrecidas."
+  },
+  "2014-118": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Recomendaciones de la OMS para tuberculosis resistente a rifampicina, actualizadas en 2022, que incorporan regímenes orales cortos como BPaLM/BPaL para pacientes elegibles.",
+   "motivo": "El régimen de la opción 4 ya no es el estándar actual y ninguna opción ofrece los regímenes recomendados hoy.",
+   "verificador": "Las recomendaciones actuales incorporan regímenes orales cortos como BPaLM o BPaL para pacientes elegibles con tuberculosis resistente a rifampicina, que no aparecen entre las opciones."
+  },
+  "2014-131": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Recomendaciones de resonancia magnética multiparamétrica antes de la biopsia, incorporadas en guías europeas desde 2019.",
+   "motivo": "La sospecha justifica estudio histológico, pero hoy se recomienda realizar primero una resonancia multiparamétrica y dirigir la biopsia según sus hallazgos, no indicar directamente ecografía transrectal y biopsia.",
+   "verificador": "Las guías actuales recomiendan resonancia multiparamétrica antes de la biopsia en este contexto, por lo que la opción 1 no refleja la secuencia diagnóstica preferida y ninguna opción es plenamente adecuada."
+  },
+  "2014-157": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "La evidencia de GiACTA (2017) y las recomendaciones posteriores incorporaron tocilizumab como tratamiento ahorrador de glucocorticoides de referencia en la arteritis de células gigantes.",
+   "motivo": "Para enfermedad corticodependiente, tocilizumab es hoy la opción preferida y no aparece entre las respuestas; metotrexato queda como alternativa.",
+   "verificador": "El tocilizumab es actualmente el ahorrador de glucocorticoides preferido en la arteritis de células gigantes, aunque no figura entre las opciones y el metotrexato sigue siendo una alternativa."
+  },
+  "2014-167": {
+   "v": "desactualizada",
+   "actual": 3,
+   "cambio": "La 8.ª edición de la clasificación TNM del cáncer de pulmón, publicada en 2017, modificó la agrupación por estadios.",
+   "motivo": "Con un tumor de 4 cm y afectación ganglionar N1, la clasificación TNM vigente corresponde a estadio IIB, opción 3.",
+   "verificador": "Con la 8.ª edición TNM, un tumor de 4 cm con afectación ganglionar N1 corresponde a estadio IIB, por lo que la opción 3 es la clasificación actual."
+  },
+  "2014-199": {
+   "v": "discutible",
+   "actual": 2,
+   "cambio": "La definición metodológica de estudio de casos y controles anidado exige que los casos y controles procedan de una cohorte previamente definida; concepto establecido antes de 2014.",
+   "motivo": "El enunciado no menciona una cohorte de origen, por lo que describe con mayor claridad un estudio de casos y controles apareado; no es un cambio posterior al examen, pero la respuesta oficial depende de asumir un diseño anidado no explicitado.",
+   "verificador": "Un estudio de casos y controles anidado requiere una cohorte de origen, que el enunciado no identifica; por ello, la opción 2 es metodológicamente defendible y la plantilla depende de una suposición no explicitada."
+  },
+  "2014-202": {
+   "v": "discutible",
+   "actual": 2,
+   "cambio": "La guía ICH E10 sobre elección de grupos control (2000) y los estándares actuales de investigación clínica permiten ensayos con placebo en depresión bajo salvaguardas éticas; no hubo un cambio posterior que invalide la plantilla.",
+   "motivo": "La afirmación absoluta de que el placebo no es ético es falsa, aunque el uso de placebo depende del contexto y de que no se prive a pacientes de tratamiento necesario.",
+   "verificador": "El uso de placebo en depresión puede ser ético con salvaguardas, de modo que la afirmación de que nunca se considera ético es falsa y la opción 2 sigue siendo correcta."
+  },
+  "2015-035": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Clasificación ISSVA de anomalías vasculares, actualizada en 2018",
+   "motivo": "La clasificación ISSVA reserva el fenómeno de Kasabach-Merritt para tumores vasculares específicos, por lo que atribuirlo a hemangiomas hepáticos gigantes es terminológicamente discutible, aunque la coagulopatía de consumo asociada a lesiones gigantes se ha descrito.",
+   "verificador": "La nomenclatura actual cuestiona llamar síndrome de Kasabach-Merritt a la coagulopatía de estos tumores, pero no cambia que la opción 1 sea la mejor entre las ofrecidas."
+  },
+  "2015-044": {
+   "v": "desactualizada",
+   "actual": 1,
+   "cambio": "Guías IDSA/SHEA de 2021: para el episodio inicial de infección por Clostridioides difficile se prefieren fidaxomicina o vancomicina oral; metronidazol dejó de ser tratamiento de primera línea.",
+   "motivo": "Entre las opciones, la vancomicina por vía oral es hoy la mejor respuesta.",
+   "verificador": "Las guías actuales prefieren fidaxomicina o vancomicina oral para el episodio inicial, por lo que, entre las opciones, la opción 1 es hoy la mejor."
+  },
+  "2015-109": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Desde 2018 se incorporaron combinaciones de inmunoterapia y terapia dirigida como estándares de primera línea en el carcinoma renal metastásico.",
+   "motivo": "Sunitinib sigue siendo una opción válida en determinados pacientes, pero ya no es el estándar preferente para muchos casos y la pregunta no aporta el grupo de riesgo ni ofrece las combinaciones actuales.",
+   "verificador": "Aunque hoy existen combinaciones preferidas para muchos pacientes, sunitinib sigue siendo una opción válida y es claramente la mejor entre las alternativas propuestas."
+  },
+  "2015-129": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Aprobación de anticuerpos monoclonales para tratar la enfermedad por virus del Ébola por la FDA en 2020.",
+   "motivo": "El tratamiento de soporte continúa siendo fundamental, pero para la enfermedad por virus del Ébola Zaire existen tratamientos específicos, por lo que la afirmación queda incompleta aunque sigue siendo la mejor opción ofrecida.",
+   "verificador": "Los tratamientos específicos actuales no sustituyen las medidas de soporte, que siguen siendo fundamentales; la opción 2 continúa siendo la mejor de las ofrecidas."
+  },
+  "2015-164": {
+   "v": "discutible",
+   "actual": 4,
+   "cambio": "En 2013, los CDC ampliaron hasta 10 días tras la exposición la ventana para administrar inmunoglobulina específica contra varicela; ya no es correcto afirmar que el máximo sea 96 horas.",
+   "motivo": "Además de estar contraindicada la vacunación durante el embarazo, hoy también es falsa la afirmación de que la inmunoglobulina solo puede administrarse hasta las 96 horas.",
+   "verificador": "La ampliación de la ventana de inmunoglobulina hace también falsa la opción 4, pero no la convierte en una respuesta única mejor que la 5, que sigue siendo claramente falsa porque la vacuna está contraindicada durante el embarazo."
+  },
+  "2016-084": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Guías ESC/EAS de dislipidemia de 2019: objetivo de LDL <55 mg/dL en pacientes de muy alto riesgo cardiovascular.",
+   "motivo": "Con cardiopatía isquémica, el objetivo actual de LDL es <55 mg/dL, cifra que no aparece entre las opciones.",
+   "verificador": "Con cardiopatía isquémica, el objetivo actual de LDL suele ser inferior a 55 mg/dL y ninguna opción lo contempla, aunque la opción 3 era la más adecuada entre las disponibles en el examen."
+  },
+  "2016-118": {
+   "v": "desactualizada",
+   "actual": 2,
+   "cambio": "España incorporó la vacunación sistemática frente al VPH para los niños en el calendario común en 2023.",
+   "motivo": "La opción 4 ya es cierta en el calendario actual; la opción 2 es la falsa, pues las parejas de pacientes con cáncer de pene pueden compartir exposición al VPH y presentar mayor riesgo de lesiones cervicales.",
+   "verificador": "Desde la inclusión de los varones en el calendario sistemático español, la opción 4 es cierta, mientras que la opción 2 es falsa porque las parejas de pacientes con cáncer de pene presentan mayor riesgo de lesiones cervicales asociadas al VPH."
+  },
+  "2016-185": {
+   "v": "discutible",
+   "actual": 3,
+   "cambio": "Marco revisado de sedación paliativa de la EAPC, 2024",
+   "motivo": "La EAPC contempla que el sufrimiento existencial refractario pueda ser considerado para sedación en circunstancias estrictas, por lo que la afirmación categórica de que no está indicada resulta discutible.",
+   "verificador": "El marco EAPC de 2024 admite considerar la sedación por sufrimiento existencial refractario en circunstancias estrictas, por lo que la exclusión categórica de la opción 3 ya no es sostenible."
+  },
+  "2016-229": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Las recomendaciones contemporáneas sobre osteoporosis premenopáusica enfatizan la evaluación de causas secundarias y el tratamiento individualizado, en vez de indicar automáticamente bisfosfonatos; enfoque consolidado en guías y documentos de posición posteriores a 2016.",
+   "motivo": "Una fractura por fragilidad exige evaluación y manejo, pero en una mujer premenopáusica no basta para indicar automáticamente un antirreabsortivo; ninguna de las otras opciones describe de forma completa la conducta actual.",
+   "verificador": "En una mujer premenopáusica una fractura por fragilidad exige buscar causas secundarias y valorar individualmente el tratamiento, por lo que no se justifica indicar automáticamente un antirreabsortivo antes de esa evaluación."
+  },
+  "2016-235": {
+   "v": "discutible",
+   "actual": 2,
+   "cambio": "La estrategia del «cocooning» dejó de ser la recomendación principal y fue sustituida por la vacunación materna durante cada embarazo; recomendación de la OMS de 2015 y adopción en España desde 2015-2016.",
+   "motivo": "La afirmación de que deben vacunarse los adultos por contacto con lactantes refleja la estrategia de inmunización indirecta ya desplazada por la vacunación durante el embarazo; la inmunidad frente a tosferina tampoco dura de por vida.",
+   "verificador": "Aunque la vacunación materna es hoy la estrategia principal, eso no hace que la opción 2 sea inequívocamente falsa; la pérdida de inmunidad con el tiempo sigue haciendo que la opción 3 sea la excepción clara."
+  },
+  "2017-079": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Desde 2020, atezolizumab más bevacizumab pasó a ser una opción sistémica de primera línea para el hepatocarcinoma avanzado; guías posteriores incorporaron también durvalumab más tremelimumab.",
+   "motivo": "Con invasión portal, el tumor es avanzado y hoy se prefieren combinaciones de inmunoterapia en pacientes aptos; ninguna de las opciones ofrece el estándar actual.",
+   "verificador": "Las combinaciones de inmunoterapia son hoy opciones sistémicas de primera línea para pacientes aptos con hepatocarcinoma avanzado, y ninguna de las alternativas las incluye, por lo que sorafenib ya no es la mejor opción actual."
+  },
+  "2017-088": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Consenso internacional sobre crisis hiperglucémicas de 2024: para el estado hiperosmolar, la osmolaridad efectiva diagnóstica es >300 mOsm/kg; el umbral >320 corresponde a osmolaridad total.",
+   "motivo": "La opción oficial da como criterio de osmolaridad efectiva un umbral que ya no es el vigente, y las otras opciones también son falsas.",
+   "verificador": "El consenso internacional de 2024 distingue osmolaridad efectiva mayor de 300 mOsm/kg y osmolaridad total mayor de 320, de modo que la opción 1 ya no expresa correctamente el criterio indicado y las demás también son falsas."
+  },
+  "2017-101": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Las guías contemporáneas de mieloma, especialmente desde 2021-2022, individualizan el trasplante autólogo según aptitud y favorecen esquemas de inducción más actuales, como combinaciones con daratumumab.",
+   "motivo": "La edad de 72 años no excluye por sí sola el trasplante, y VMP ya no suele ser el esquema preferente; sin datos de aptitud ni una alternativa plenamente inequívoca entre las opciones, no hay una sustitución clara.",
+   "verificador": "Las pautas actuales suelen preferir inducciones más modernas en pacientes aptos, pero ninguna opción recoge claramente esos esquemas; VMP sigue siendo la respuesta defendible en el contexto del examen."
+  },
+  "2017-106": {
+   "v": "discutible",
+   "actual": 4,
+   "cambio": "La guía ESC de endocarditis infecciosa de 2023 mantiene vancomicina o daptomicina a dosis altas para endocarditis por MRSA; no establece una superioridad universal de daptomicina.",
+   "motivo": "Daptomicina es una opción preferida en algunos escenarios de bacteriemia por MRSA, pero la elección frente a vancomicina depende del cuadro y la susceptibilidad, por lo que no hay un cambio que invalide inequívocamente la respuesta oficial.",
+   "verificador": "La guía citada no demuestra superioridad universal frente a vancomicina y no desplaza a daptomicina, que sigue siendo una opción válida y la respuesta oficial."
+  },
+  "2017-184": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "CIE-11, vigente desde 2022: eliminación de los subtipos de esquizofrenia, incluida la esquizofrenia simple.",
+   "motivo": "La descripción correspondía a la categoría histórica de esquizofrenia simple, que ya no se reconoce como subtipo diagnóstico vigente.",
+   "verificador": "La CIE-11 eliminó los subtipos, pero eso no cambia que la descripción corresponda a la categoría histórica de esquizofrenia simple preguntada en el examen."
+  },
+  "2017-197": {
+   "v": "discutible",
+   "actual": 2,
+   "cambio": "Guías de arteritis de células gigantes de 2020–2021 admiten glucocorticoides orales a dosis altas como alternativa inicial a pulsos intravenosos en pérdida visual amenazante; la evidencia comparativa es limitada.",
+   "motivo": "La metilprednisolona intravenosa en dosis altas sigue siendo una opción aceptada ante amaurosis por probable arteritis de células gigantes, aunque no es una estrategia universalmente preferida frente a glucocorticoides orales a dosis altas.",
+   "verificador": "Los pulsos intravenosos siguen siendo una opción aceptada ante pérdida visual por probable arteritis de células gigantes, aunque no sean la única estrategia admisible."
+  },
+  "2017-199": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Criterios ACR de traumatismo cervical (2018): en adultos con sospecha de lesión cervical, la TC sin contraste es la prueba de imagen inicial preferida frente a la radiografía simple.",
+   "motivo": "La radiografía lateral cervical ya no se considera imprescindible como prueba inicial cuando se dispone de TC; ninguna opción refleja el abordaje actual.",
+   "verificador": "La TC sustituyó a la radiografía simple como imagen cervical inicial preferida cuando está disponible, por lo que la opción oficial ya no describe necesariamente el abordaje actual."
+  },
+  "2017-212": {
+   "v": "desactualizada",
+   "actual": 4,
+   "cambio": "La PET/TC con análogos de somatostatina marcados con 68Ga se incorporó como técnica de elección frente a la gammagrafía convencional con octreótido; recomendación consolidada en guías ENETS recientes (2023).",
+   "motivo": "Para localizar y estadificar tumores neuroendocrinos con síndrome carcinoide, la PET/TC de receptores de somatostatina ofrece mayor sensibilidad que la gammagrafía con octreótido.",
+   "verificador": "La PET/TC con análogos de somatostatina marcados con galio-68 ha superado a la gammagrafía convencional con octreótido para localizar y estadificar estos tumores."
+  },
+  "2018-102": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Ensayo RxPONDER, publicado en 2021.",
+   "motivo": "En mujeres posmenopáusicas con cáncer HR+/HER2− y 1-3 ganglios positivos, RxPONDER mostró que el beneficio de quimioterapia depende de la puntuación de recurrencia; faltan datos genómicos para elegir hoy entre quimioterapia y hormonoterapia sola.",
+   "verificador": "RxPONDER y las recomendaciones posteriores hacen depender la indicación de quimioterapia en muchas pacientes posmenopáusicas con 1-3 ganglios de la puntuación genómica, ausente en el caso."
+  },
+  "2018-114": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Guías CDC de infecciones de transmisión sexual de 2020: se abandonó la terapia dual rutinaria con ceftriaxona y azitromicina para la gonorrea.",
+   "motivo": "La opción 4 sigue siendo falsa porque no se recomienda confirmar rutinariamente la curación de la gonorrea urogenital no complicada, pero la opción 2 también quedó desactualizada y puede ser falsa hoy.",
+   "verificador": "La pauta dual rutinaria de ceftriaxona y azitromicina quedó desactualizada y, por tanto, la opción 2 también puede ser falsa hoy, aunque la 4 siga siendo falsa."
+  },
+  "2018-135": {
+   "v": "desactualizada",
+   "actual": 0,
+   "cambio": "Las guías EAU incorporaron la resonancia magnética multiparamétrica antes de la biopsia en hombres con sospecha de cáncer de próstata, con recomendación reforzada en 2019.",
+   "motivo": "Con un tacto rectal sospechoso se mantiene la indicación de estudio, pero hoy se recomienda realizar primero una resonancia multiparamétrica, opción que no aparece entre las respuestas.",
+   "verificador": "Las recomendaciones posteriores incorporaron la resonancia multiparamétrica antes de la biopsia, por lo que hoy sería preferible ese estudio previo, aunque no figure entre las opciones."
+  },
+  "2018-139": {
+   "v": "desactualizada",
+   "actual": 1,
+   "cambio": "Las recomendaciones GINA posteriores, incluida la actualización de 2019, desaconsejan retirar o reducir el tratamiento controlador durante el embarazo y consideran seguros los LABA junto con corticoides inhalados.",
+   "motivo": "No debe suspenderse el tratamiento eficaz ni retirarse el LABA de forma rutinaria; entre las opciones, es preferible mantener una combinación de corticoide inhalado y LABA.",
+   "verificador": "Las recomendaciones actuales desaconsejan reducir el tratamiento controlador durante el embarazo y consideran apropiado mantener la combinación de corticoide inhalado y LABA, opción 1."
+  },
+  "2018-173": {
+   "v": "desactualizada",
+   "actual": 1,
+   "cambio": "Guía de práctica clínica de AAOS sobre fracturas abiertas, 2022.",
+   "motivo": "La guía actual prioriza la administración intravenosa de antibióticos lo antes posible; no recomienda como medida principal un desbridamiento con un volumen fijo o exhaustivo de 10 litros.",
+   "verificador": "La guía AAOS de 2022 prioriza administrar antibióticos intravenosos lo antes posible, haciendo que la opción 1 sea preferible al lavado con un volumen fijo no recomendado."
+  },
+  "2019-072": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Guías ESC/EACTS de valvulopatías de 2021: modificaron la consideración de la edad al elegir prótesis, situando el intervalo de decisión entre 60 y 65 años para válvula aórtica.",
+   "motivo": "La opción 2 sigue siendo incorrecta: las prótesis mecánicas se consideran sobre todo en pacientes jóvenes, mientras que en mayores de 70 suele preferirse una biológica; por tanto, el cambio de guías no hace que otra opción sea mejor y la clave oficial continúa siendo la mejor respuesta.",
+   "verificador": "Las guías actuales no convierten la opción 1 en incorrecta: la afirmación falsa sigue siendo que las prótesis mecánicas se implantan principalmente en mayores de 70 años."
+  },
+  "2019-178": {
+   "v": "desactualizada",
+   "actual": 2,
+   "cambio": "Las guías de reanimación neonatal AHA 2020 y ERC 2021 sitúan en torno a los 20 minutos, y de forma individualizada, la consideración de interrumpir la reanimación si persiste la ausencia de frecuencia cardiaca.",
+   "motivo": "A los 15 minutos no se recomienda interrumpir automáticamente; entre las opciones, corresponde continuar la reanimación y administrar adrenalina según el intervalo indicado.",
+   "verificador": "Las guías posteriores sitúan alrededor de los 20 minutos la consideración de interrumpir la reanimación; a los 15 minutos, si persiste la bradicardia grave, corresponde continuar y repetir adrenalina según intervalo."
+  },
+  "2021-130": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Guías ESC de insuficiencia cardiaca y prevención de muerte súbita de 2021; actualización de criterios de resincronización y prevención primaria",
+   "motivo": "La resincronización está indicada, pero a los dos meses del infarto aún no se cumple el periodo habitual de espera para implantar un DAI en prevención primaria (al menos 40 días tras el infarto y, en general, 3 meses de tratamiento óptimo); la opción conjunta inmediata es por ello discutible.",
+   "verificador": "Aunque se cumplen los 40 días desde el infarto, a los dos meses aún suele esperarse al menos tres meses de tratamiento óptimo y reevaluación de la fracción de eyección antes de indicar el DAI en prevención primaria."
+  },
+  "2023-035": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Desde 2023, la aparición de variantes resistentes llevó a limitar o retirar la autorización de tixagevimab-cilgavimab; la UE retiró su autorización en 2024.",
+   "motivo": "Aunque históricamente se indicó para personas inmunodeprimidas, ya no es una opción preventiva vigente frente a las variantes circulantes.",
+   "verificador": "La pérdida posterior de autorización por resistencia de variantes no convierte en incorrectas la indicación histórica para inmunodeprimidos ni las demás opciones, que describen inmunización activa."
+  },
+  "2023-131": {
+   "v": "discutible",
+   "actual": 0,
+   "cambio": "Desde 2020, atezolizumab más bevacizumab se estableció como tratamiento sistémico de primera línea del hepatocarcinoma avanzado; también existen otras combinaciones inmunoterápicas de primera línea.",
+   "motivo": "La invasión portal indica enfermedad avanzada y, sin contraindicaciones descritas, hoy se prefiere inmunoterapia combinada a sorafenib, opción que no aparece entre las respuestas.",
+   "verificador": "La inmunoterapia combinada es preferible en la práctica actual, pero ya era una alternativa de primera línea antes del examen y no figura entre las opciones, por lo que sorafenib sigue siendo la mejor respuesta disponible."
+  },
+  "2024-185": {
+   "v": "discutible",
+   "actual": 3,
+   "cambio": "Guía de la European Respiratory Society sobre tratamiento de síntomas respiratorios graves, 2024",
+   "motivo": "La ERS 2024 sugiere condicionalmente no usar opioides para la disnea crónica en enfermedad respiratoria, aunque en disnea refractaria avanzada y contexto paliativo la opción 3 sigue siendo la más adecuada entre las ofrecidas.",
+   "verificador": "La recomendación condicional de la ERS de 2024 contra el uso rutinario de opioides para la disnea crónica existe, pero no hace preferibles las opciones categóricamente incorrectas: la opción 3 sigue siendo la mejor entre las ofrecidas para esta disnea refractaria avanzada."
+  },
+  "2025-084": {
+   "v": "discutible",
+   "actual": 1,
+   "cambio": "Ensayos aleatorizados publicados en 2025 (ESCAPE-MeVO y DISTAL) no demostraron beneficio de la trombectomía sistemática en oclusiones de vasos medianos.",
+   "motivo": "La trombólisis intravenosa debe administrarse si el paciente es elegible y no retrasarse por la trombectomía; esta aún puede considerarse en oclusiones M2 seleccionadas, por lo que la opción 4 no queda claramente invalidada.",
+   "verificador": "ESCAPE-MeVO y DISTAL se publicaron después del MIR 2025 y desaconsejan la trombectomía sistemática en oclusiones de vasos medianos; si el paciente es elegible, la fibrinólisis intravenosa es el tratamiento inicial, sin que ello excluya considerar trombectomía en casos seleccionados."
+  }
+ }
+}
