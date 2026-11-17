@@ -95,6 +95,11 @@ async def main():
         txt = await p.inner_text('#retoBox pre')
         check('reto terminado con texto para compartir y racha', 'Reto #' in txt and re.search('[🟩🟥]', txt) and await p.evaluate('S.racha.n') == 1, txt)
         await h.shot(str(OUT / '4_reto.png'))
+        # nota de vigencia (data/notas.json) al corregir una pregunta oficial
+        await p.evaluate("NOTAS = {[S.reto.qs[0]]: {estado: 'desactualizada', nota: 'Guía de prueba 2024: hoy se prefiere otra opción.', opcion_actual: null, revisada: false, aviso: ''}}; S.reto.idx = 0; RENDER[step]()")
+        nt = await p.inner_text('#retoQ .om-nota') if await p.locator('#retoQ .om-nota').count() else ''
+        check('la nota de vigencia se muestra al corregir, sin cambiar la respuesta oficial', 'Guía de prueba 2024' in nt and 'sigue contando como correcta' in nt, nt)
+        await p.evaluate('NOTAS = {}')
         # generador con agentes
         await p.evaluate("go(3)"); await p.wait_for_timeout(200)
         await p.click('#btnGen'); await p.wait_for_selector('#mIA.on')

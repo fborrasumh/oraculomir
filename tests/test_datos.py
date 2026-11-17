@@ -92,4 +92,13 @@ for q in [q for q in _P if q.get('img')]:
     if w < 200 or h < 120: _mal.append((q['id'], f'demasiado pequeña {w}x{h}'))
     if not m or int(m.group(1)) != int(re.search(r'/(\d+)\.jpg$', q['img']).group(1)): _mal.append((q['id'], 'el nº de imagen no coincide con el enunciado'))
 check(f'imágenes del banco ({sum(1 for q in _P if q.get("img"))}): existen, se abren y corresponden a su pregunta', not _mal, str(_mal[:5]))
+# notas de vigencia / alegaciones: ids que existen y campos válidos
+_N = json.loads((RAIZ / 'data' / 'notas.json').read_text(encoding='utf-8'))['notas']; _ids = {q['id']: q for q in _P}; _mn = []
+for i, n in _N.items():
+    if i not in _ids: _mn.append((i, 'id inexistente')); continue
+    if n.get('estado') not in ('desactualizada', 'discutible', 'alegacion'): _mn.append((i, 'estado'))
+    if not str(n.get('nota', '')).strip(): _mn.append((i, 'nota vacía'))
+    if n.get('opcion_actual') not in (None, *range(1, len(_ids[i]['opciones']) + 1)) or n.get('opcion_actual') == _ids[i].get('correcta'): _mn.append((i, 'opcion_actual'))
+    if not isinstance(n.get('revisada'), bool): _mn.append((i, 'revisada'))
+check(f'notas de preguntas ({len(_N)}): ids existentes y campos válidos', not _mn, str(_mn[:5]))
 print('\nTODO OK' if ok else '\nHAY FALLOS'); sys.exit(0 if ok else 1)

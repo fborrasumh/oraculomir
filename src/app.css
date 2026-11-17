@@ -58,3 +58,4 @@ table{border-collapse:collapse;width:100%;font-size:13.8px}th{background:var(--p
 
 .om-fila{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--linea,#e5e5e5)}
 .om-fila:last-child{border-bottom:0}
+.om-nota{margin:10px 0}

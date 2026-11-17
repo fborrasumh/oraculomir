@@ -116,6 +116,7 @@ function pintaPregunta(box, ex, modo) {
       return `<button type="button" role="radio" aria-checked="${n === r}" class="om-op ${cls}" data-op="${n}" ${ver ? 'disabled' : ''}><b>${n}</b><span>${esc(o)}</span></button>`; }).join('')}</div>
     ${ver ? `<p class="help">${esc(origenDe(q))}${r ? '' : ' · ' + esc(t('en blanco'))}. ${esc(t('Respuesta correcta: {0}.', q.correcta))}</p>
       <div class="actions" style="margin-top:6px"><button class="btn btn-ghost btn-sm" type="button" data-porque="1">${ico('sparkles')} ${esc(t(S.explic[q.id] || q.ia ? 'Ver la explicación' : '¿Por qué? (IA)'))}</button>${q.demo || q.ia ? '' : `<a class="btn btn-ghost btn-sm" href="${esc(urlAviso(REPO, q))}" target="_blank" rel="noopener">${ico('github')} ${esc(t('Avisar de un error'))}</a>`}</div>
+      ${notaHTML(q)}
       <div class="om-exp" data-exp="${esc(q.id)}">${S.explic[q.id] ? expHTML(S.explic[q.id]) : ''}</div>` : ''}
     <div class="actions"><button class="btn btn-ghost btn-sm" type="button" data-mov="-1" ${i === 0 ? 'disabled' : ''}>${ico('left')} ${esc(t('Anterior'))}</button>
       ${!ver && r && modo === 'sim' ? `<button class="btn btn-ghost btn-sm" type="button" data-blanco="1">${esc(t('Dejar en blanco'))}</button>` : ''}
@@ -225,7 +226,7 @@ function pintaReto() {
 /* ── «¿Por qué?»: la IA explica la respuesta OFICIAL; no la puede cambiar. Si cree que hoy sería discutible, lo avisa aparte ── */
 const PROMPT_EXP = q => `Eres profesor de una academia de preparación del MIR. Explica a un estudiante esta pregunta OFICIAL del MIR ${q.anio}.
 La respuesta correcta es la ${q.correcta}, según la plantilla definitiva del Ministerio de Sanidad: NO la discutas ni la cambies; explica el razonamiento que lleva a ella.${q.imagen ? '\nLa pregunta lleva una imagen que tú no ves: no describas la imagen ni inventes lo que muestra; explica a partir del texto y dilo si hace falta.' : ''}
-Si con las guías clínicas actuales esa respuesta te parece desfasada o discutible, dilo SOLO en el campo "aviso" (si no, déjalo vacío).
+Si con las guías clínicas actuales esa respuesta te parece desfasada o discutible, dilo SOLO en el campo "aviso" (si no, déjalo vacío).${NOTAS[q.id] ? '\nNota de la app sobre esta pregunta (tenla en cuenta en el aviso): ' + NOTAS[q.id].nota : ''}
 Devuelve SOLO este JSON, en ${langIA()}:
 {"clave":"la idea que hay que saber, en una frase","explicacion":"por qué la ${q.correcta} es la correcta, en 3-5 frases","opciones":["por qué falla o acierta la opción 1, en una frase", "…una por opción, en orden…"],"aviso":"","repaso":"qué tema repasar"}
 
@@ -438,6 +439,14 @@ async function calibra(N = 100, rev = '', avance = () => {}) {
   return {fecha: new Date().toISOString().slice(0, 10), prov: PROV[pv1].n, modelo: getMod(), prov2: rev ? PROV[rev].n : PROV[pv1].n, ...metricas(filas), filas};
 }
 let CALIB = null;   // medición publicada (data/calibracion.json)
+let NOTAS = {};   // data/notas.json: preguntas oficiales cuyo criterio ha cambiado o tienen una alegación (no cambia la respuesta oficial)
+async function cargaNotas() { try { const r = await fetch('data/notas.json', {cache: 'no-cache'}); if (r.ok) NOTAS = (await r.json()).notas || {}; } catch {} }
+function notaHTML(q) {
+  const n = !q.ia && NOTAS[q.id]; if (!n) return '';
+  const tit = {desactualizada: 'El criterio ha cambiado desde este examen', discutible: 'Respuesta discutible con los criterios actuales', alegacion: 'Alegación en revisión'}[n.estado] || 'Nota sobre esta pregunta';
+  return `<div class="aviso om-nota"><b>${esc(t(tit))}</b>${LANG !== 'es' ? ' <small>(' + esc(t('nota en español')) + ')</small>' : ''}<br>${esc(n.nota)}
+    ${n.opcion_actual ? '<br>' + esc(t('Hoy sería mejor la opción {0}.', n.opcion_actual)) : ''}<br><small>${esc(t('La respuesta oficial de {0} sigue contando como correcta.', q.anio))} ${esc(t(n.revisada ? 'Revisada por una persona.' : 'Detectado con IA; pendiente de revisión por un profesor.'))}${n.aviso ? ` <a href="${esc(n.aviso)}" target="_blank" rel="noopener">${esc(t('Ver el aviso'))}</a>` : ''}</small></div>`;
+}
 async function cargaCalibracion() { try { const r = await fetch('data/calibracion.json', {cache: 'no-cache'}); if (r.ok) CALIB = await r.json(); } catch {} }
 function calibHTML(c) {
   if (!c || !c.n) return '';
@@ -703,7 +712,7 @@ function pintaClave() {
   S.archivo = S.archivo || []; S.gen = S.gen || [];
   if (S.examenIA) { const a = S.archivo.find(X => X.id === S.examenIA.id); if (a) S.examenIA = a; else S.archivo.unshift(S.examenIA); }
   S.gen.forEach(g => { if (!/^g-/.test(g.id || '')) g.id = uid('g-'); });
-  await cargaDatos(); await cargaCalibracion(); calcula(); iniciaUI();
+  await cargaDatos(); await cargaCalibracion(); await cargaNotas(); calcula(); iniciaUI();
   const q = new URLSearchParams(location.search);
   if (q.has('reto')) return go(5);
   if (q.get('anio') && creaExamenAnio(q.get('anio'), 'mir')) return go(2);
