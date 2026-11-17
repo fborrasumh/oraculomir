@@ -382,8 +382,8 @@
    "estado": "discutible",
    "nota": "En 2018, con el TNM 7.ª, un tumor de 8 cm con afectación hiliar ipsilateral era T3N1 (estadio IIIA resecable) y el estándar era la cirugía seguida de quimioterapia adyuvante. Con el TNM 8.ª pasa a T4N1 (también IIIA) y las guías actuales tienden a dar tratamiento antes de la cirugía (quimioinmunoterapia neoadyuvante o perioperatoria).",
    "opcion_actual": null,
-   "origen": "Aviso de un usuario en GitHub (issue #1), verificado con Claude Opus 5.5, 2026-11-17",
-   "revisada": false,
+   "origen": "Aviso de un usuario en GitHub (issue #1), verificado con Claude Opus 5.5 y confirmado por el autor del aviso, 2026-11-17",
+   "revisada": true,
    "aviso": "https://github.com/fborrasumh/oraculomir/issues/1"
   }
  }
